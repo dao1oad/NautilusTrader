@@ -13,6 +13,7 @@
 
 - 当前仓库来自项目启动模板拷贝。
 - 已具备治理、memory、truth-doc、脚本、GitHub workflow 和 smoke test 骨架。
+- bootstrap 治理基线已合并到 `main`，仓库已进入可直接承接真实项目 issue 的状态。
 - 当前未发现 `src/`、`app/`、`lib/`、`services/` 等业务代码目录。
 - GitHub 远端已创建：`dao1oad/NautilusTrader`（public）。
 - 远端 `main` 分支保护和 required checks 已启用。

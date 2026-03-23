@@ -20,3 +20,5 @@
 - 将仓库治理调整为单维护者模式：把 approving review 计数改为可配置，并为当前仓库设置为 `0`，保留 PR-only、required checks、remote Codex review 和 review 闭环。
 - `pr-gate` 在新提交上命中 truth-doc 门禁，定位到 `ops/review-gates.yaml` 的变更尚未同步 `docs/system-truth/module-boundaries.md`，已补齐并通过本地 `pre-pr-check` 复验。
 - GitHub merge API 进一步暴露出必需检查名错配：分支保护要求 `governance-check`，workflow 实际产出的是 `governance`；已将 workflow job 名修正为 `governance-check` 并通过本地 smoke 复验。
+- PR `#2` 已在 required checks 全绿后合并到 `main`，远端 `main` 当前要求 `governance-check`、`pr-gate`、conversation resolution，且 `required_approving_review_count` 为 `0`。
+- issue `#1` 已关闭；issue `#3` 已创建，用于将 startup memory 从“bootstrap PR 待合并”同步到“bootstrap 已完成”的当前状态。
