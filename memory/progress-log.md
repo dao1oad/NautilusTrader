@@ -10,3 +10,4 @@
 - 验证到 GitHub 私有仓库分支保护 API 受账户套餐限制，远端治理闭环暂时阻塞。
 - 将仓库改为 public，并成功启用 `main` 分支保护、required checks、PR review 和 conversation resolution。
 - 运行 `scripts/check-governance.ps1`，本地与远端治理检查全部通过。
+- 创建 GitHub issue `#1`，用于承接首个治理 PR 和端到端 gate 验证。

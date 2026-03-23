@@ -2,7 +2,7 @@
 
 | Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| N/A | Template bootstrap | High | None | Completed | No | N/A | Start issue orchestration |
+| #1 | Finalize public governance bootstrap | High | None | In Progress | No | TBD | Open PR and validate gates |
 
 
 
