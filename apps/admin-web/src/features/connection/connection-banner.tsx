@@ -1,4 +1,4 @@
-export type ConnectionState = "connected" | "connecting" | "disconnected" | "stale";
+import type { ConnectionState } from "../../shared/types/admin";
 
 
 const STATE_LABELS: Record<ConnectionState, string> = {

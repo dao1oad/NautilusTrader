@@ -1,20 +1,20 @@
-import type { ConnectionState } from "../connection/connection-banner";
+import type { ConnectionState, OverviewSnapshot } from "../../shared/types/admin";
 
 
 type Props = {
   connectionState?: ConnectionState;
-  snapshot?: unknown;
+  snapshot?: OverviewSnapshot | null;
   error?: string | null;
 };
 
 
 export function OverviewPage({ connectionState, snapshot, error }: Props = {}) {
-  let copy = "Phase 0 overview shell is ready for typed admin snapshot wiring.";
+  let copy = "Waiting for admin snapshot.";
 
-  if (connectionState === "stale") {
-    copy = "Connection stale";
-  } else if (error) {
+  if (error) {
     copy = error;
+  } else if (snapshot?.node.status === "not_configured") {
+    copy = "No live node configured";
   } else if (!snapshot && connectionState === "disconnected") {
     copy = "Disconnected from admin API";
   }
@@ -22,6 +22,7 @@ export function OverviewPage({ connectionState, snapshot, error }: Props = {}) {
   return (
     <section className="overview-card">
       <h2>Overview</h2>
+      {connectionState === "stale" ? <p className="overview-alert">Connection stale</p> : null}
       <p className="overview-copy">{copy}</p>
     </section>
   );
