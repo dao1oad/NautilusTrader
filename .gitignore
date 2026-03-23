@@ -105,6 +105,7 @@ claude.config.json
 .cursor/
 .aider*
 .continue/
+.codex-artifacts/
 
 CLAUDE.md
 CODEX.md
