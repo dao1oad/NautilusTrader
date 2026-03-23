@@ -24,6 +24,8 @@
 
 - GitHub Actions 公开 `build`、`build-v2`、`coverage`、`docker`、`performance`、`security-audit`、`build-docs`、`nightly-tests` 等工程接口
 - `governance-check` 与 `pr-gate` 继续作为当前独立仓库的合并门禁
+- `build.yml` 的 push 触发与 `cargo-deny` / `cargo-vet` 分支条件必须对齐 `main`，否则受保护分支不会运行供应链检查
+- `codeql-analysis.yml` 的 `pull_request` 分支过滤必须包含 `main`，否则面向 `main` 的 PR 不会运行 CodeQL
 - `scripts/check-governance.ps1`、`scripts/sync-issues.ps1`、`scripts/build-workset.ps1` 仍是本仓库治理与编排入口
 
 ## Non-Contracts

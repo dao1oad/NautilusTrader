@@ -24,6 +24,12 @@
 4. 校验远端 review 与线程已解决
 5. 校验本地 review 闭环记录
 
+## Security Workflow Flow
+
+1. 面向 `main` 的 PR 会触发 `codeql-analysis`
+2. 合并进入 `main` 的 push 会触发 `build.yml`
+3. `build.yml` 中的 `cargo-deny` 与 `cargo-vet` 仅在 `refs/heads/main` 上运行，用于覆盖受保护主分支的供应链检查
+
 ## PR Review Re-evaluation Flow
 
 1. PR 创建或同步时触发 `pr-gate`
