@@ -14,6 +14,14 @@
 
 `Phase 0` 只定义 `health`、`overview` 与最小 WS invalidation / connection-state 语义；不在此阶段定义最终静态资源托管或桌面交付流。
 
+## Admin Development Flow
+
+1. 终端 A：启动 `nautilus_trader/admin` 本机 FastAPI 进程，暴露 `/api/admin/*` 与 `/ws/admin/events`
+2. 终端 B：`cd apps/admin-web && npm run dev`，启动 `Vite` dev server
+3. 浏览器：连接 `Vite` 页面，由前端直接访问本机 admin REST / WS contract
+4. `Phase 0` 前端 CI 只复用最小命令面：`npm ci -> npm run lint -> npm run test -- --run -> npm run build`
+5. 本阶段不把静态资源打进 wheel，不定义桌面壳，不把 `Playwright` 或多用户部署写成既成运行流
+
 ## Example And Test Flow
 
 `examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性
