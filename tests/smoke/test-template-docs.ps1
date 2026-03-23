@@ -20,3 +20,9 @@ foreach ($doc in $docs) {
     }
   }
 }
+
+$readme = Get-Content 'README.md' -Raw
+if ($readme -notmatch 'Pull requests should target the `main` branch') {
+  Write-Error 'README.md must instruct contributors to open pull requests against main.'
+  exit 1
+}

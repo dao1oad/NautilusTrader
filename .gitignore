@@ -106,7 +106,6 @@ claude.config.json
 .aider*
 .continue/
 
-AGENTS.md
 CLAUDE.md
 CODEX.md
 GEMINI.md

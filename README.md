@@ -589,7 +589,7 @@ to ensure that your contributions can be included in the project.
 
 > [!NOTE]
 >
-> Pull requests should target the `develop` branch (the default branch). This is where new features and improvements are integrated before release.
+> Pull requests should target the `main` branch in this derivative repository. This is the protected branch where governance checks and remote Codex review are enforced before merge.
 
 Thank you again for your interest in NautilusTrader! We look forward to reviewing your contributions and working with you to improve the project.
 
