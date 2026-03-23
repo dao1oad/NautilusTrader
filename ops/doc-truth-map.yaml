@@ -64,6 +64,17 @@ rules:
       - data_model
       - api_contracts
 
+  - name: admin-web-control-plane
+    code_paths:
+      - apps/admin-web/**
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model
+      - api_contracts
+      - integrations
+
   - name: persistence-schema
     code_paths:
       - schema/**
