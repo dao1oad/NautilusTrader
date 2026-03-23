@@ -5,7 +5,7 @@
 - 使用 `gh` 同步 issues、审查 reviews、读取 branch protection
 - GitHub Actions 负责 `governance-check` 和 `pr-gate`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
+- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；其中 review/comment 触发的重跑必须显式 checkout 目标 PR head，review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
 
 ## Codex
 
