@@ -53,6 +53,11 @@ if ($script -notmatch 'review-resolution-' -or $script -notmatch 'review_resolut
   exit 1
 }
 
+if ($script -match 'git fetch origin \$env:GITHUB_BASE_REF --depth=1') {
+  Write-Error 'pre-pr-check.ps1 must not shallow-fetch the PR base branch before a triple-dot diff.'
+  exit 1
+}
+
 $originalGitHubEventPath = $env:GITHUB_EVENT_PATH
 $tempEventPath = Join-Path $env:TEMP 'nautilus-pr-review-event.json'
 

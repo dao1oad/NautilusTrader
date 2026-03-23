@@ -216,7 +216,7 @@ function Get-ChangedFiles {
   }
 
   if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_BASE_REF) {
-    git fetch origin $env:GITHUB_BASE_REF --depth=1 | Out-Null
+    git fetch origin ("{0}:refs/remotes/origin/{0}" -f $env:GITHUB_BASE_REF) | Out-Null
     $changed = git diff --name-only "origin/$env:GITHUB_BASE_REF...HEAD"
   } else {
     $changed = git diff --name-only
