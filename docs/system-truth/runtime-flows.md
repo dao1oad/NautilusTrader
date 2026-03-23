@@ -16,6 +16,14 @@
 4. 校验远端 review 与线程已解决
 5. 校验本地 review 闭环记录
 
+## PR Review Re-evaluation Flow
+
+1. PR 创建或同步时触发 `pr-gate`
+2. 若远端 review 尚未批准，`pr-gate` 失败并阻止合并
+3. 当 review 提交时，`pull_request_review` 事件再次触发 `pr-gate`
+4. `pr-gate` 重新读取 `reviewDecision` 与 review threads 状态
+5. 只有 review、闭环记录和其他门禁同时满足时，PR 才进入可合并状态
+
 ## Truth Rebinding Flow
 
 1. 识别真实代码与自动化路径
