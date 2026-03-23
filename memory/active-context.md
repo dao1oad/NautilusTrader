@@ -6,13 +6,12 @@
 
 ## Current Phase
 
-- Remote binding and hardening
+- Operationally ready
 
 ## Blockers
 
-- GitHub 私有仓库当前无法通过分支保护 API 启用 `main` 保护，GitHub 返回 `403 Upgrade to GitHub Pro or make this repository public to enable this feature`。
-- 因远端分支保护无法启用，`main only via pull request`、required checks 和远端 review 门槛暂时不能在 GitHub 侧强制生效。
-- `remote Codex review` 的 actor 级强制仍需在首个 PR 上验证。
+- 当前无阻塞项。
+- 待首个真实 PR 时验证 `remote Codex review` actor 与 review 闭环的端到端执行效果。
 
 ## Confirmed Facts
 
@@ -23,16 +22,16 @@
 - `scripts/init-project.ps1` 已运行通过。
 - `scripts/check-governance.ps1 -SkipRemoteChecks` 已运行通过。
 - `tests/smoke/run-all.ps1` 已运行通过。
-- GitHub 仓库 `dao1oad/NautilusTrader` 已创建为私有仓库。
+- GitHub 仓库 `dao1oad/NautilusTrader` 已创建并改为公开仓库。
 - `origin` 已绑定到 `ssh://git@ssh.github.com:443/dao1oad/NautilusTrader.git`。
+- 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
+- `scripts/check-governance.ps1` 已完成远端通过验证。
 
 ## Next Actions
 
-1. 若坚持私有仓库，升级 GitHub 计划或迁移到支持私有分支保护的组织。
-2. 启用 `main` 分支保护、required checks 和 review 门槛。
-3. 运行不带 `-SkipRemoteChecks` 的 `scripts/check-governance.ps1`。
-4. 在首个 PR 上验证 `remote Codex review` actor 与 review 闭环记录。
-5. 绑定远端后持续执行 `scripts/sync-issues.ps1` 进入 issue 编排闭环。
+1. 创建首个 GitHub issue，进入 issue 编排闭环。
+2. 在首个 PR 上验证 `remote Codex review` actor 与 review 闭环记录。
+3. 后续新增生产代码路径时同步更新 truth-doc 绑定。
 
 ## Repository
 
