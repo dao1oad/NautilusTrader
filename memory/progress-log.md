@@ -18,3 +18,4 @@
 - 发现 `pull_request_review_thread` 会使 GitHub 将 workflow 视为无效文件，因此回退为 `pull_request` + `pull_request_review`，并把 thread resolve 后的 gate 刷新策略记录为后续 PR 活动或手动 rerun。
 - PR `#2` 当前 required checks 全绿，唯一剩余阻塞为 GitHub 原生的非作者 approving review 要求。
 - 将仓库治理调整为单维护者模式：把 approving review 计数改为可配置，并为当前仓库设置为 `0`，保留 PR-only、required checks、remote Codex review 和 review 闭环。
+- `pr-gate` 在新提交上命中 truth-doc 门禁，定位到 `ops/review-gates.yaml` 的变更尚未同步 `docs/system-truth/module-boundaries.md`，已补齐并通过本地 `pre-pr-check` 复验。

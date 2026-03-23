@@ -25,12 +25,12 @@
 - `origin` 已绑定到 `ssh://git@ssh.github.com:443/dao1oad/NautilusTrader.git`。
 - 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
 - `scripts/check-governance.ps1` 已完成远端通过验证。
-- 当前仓库只有 1 个 GitHub 账号可用于维护，需将 approving review 计数调整为 `0`。
+- 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
 
 ## Next Actions
 
-1. 更新远端 `main` 分支保护中的 `required_approving_review_count`。
-2. 确认 GitHub `mergeStateStatus` 从 `BLOCKED` 变为可合并。
+1. 将补充的 `module-boundaries` truth doc 推送到 PR `#2`。
+2. 确认 GitHub required checks 重新变为通过。
 3. 合并 PR `#2`。
 
 ## Repository
