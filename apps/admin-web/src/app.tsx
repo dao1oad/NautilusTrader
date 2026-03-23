@@ -18,7 +18,6 @@ export function App() {
       startTransition(() => {
         setSnapshot(nextSnapshot);
         setError(null);
-        setConnectionState("connected");
       });
     } catch (nextError) {
       startTransition(() => {
