@@ -10,6 +10,28 @@ exempt_paths:
   - PROJECT_INIT.md
   - .editorconfig
   - .gitignore
+  - .codespellrc
+  - .dockerignore
+  - .env.example
+  - .gitattributes
+  - .gitlint
+  - .lycheeignore
+  - .markdownlint.jsonc
+  - .taplo.toml
+  - .typos.toml
+  - .yamllint.yaml
+  - CLA.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - LICENSE
+  - RELEASES.md
+  - ROADMAP.md
+  - SECURITY.md
+  - assets/**
+  - capnp-version
+  - uv-version
+  - uv.lock
+  - version.json
 
 rules:
   - name: rust-workspace

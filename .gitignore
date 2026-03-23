@@ -79,6 +79,15 @@ env/
 *.sh
 *tmp/
 *temp/
+!scripts/**
+!.docker/**
+!.pre-commit-hooks/**
+!tests/test_data/**/*.parquet
+!tests/test_data/**/*.zip
+!tests/test_data/**/*.dbn
+!tests/test_data/**/*.dbn.zst
+!tests/test_data/**/*.xml
+!crates/adapters/**/test_data/**
 
 # System and editor specific
 .DS_Store
