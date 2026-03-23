@@ -19,7 +19,8 @@
 
 - GitHub branch protection 通过 `gh api` 读取与校验
 - GitHub Actions 暴露 `governance-check` 与 `pr-gate` 两个 required check
-- `pr-gate` workflow 在 `pull_request` 和 `pull_request_review` 事件上运行，以便 PR 变更或 review 提交后重新计算 merge gate
+- `pr-gate` workflow 在 `pull_request`、`pull_request_review` 和 PR `issue_comment` 事件上运行，以便 PR 变更、review 提交或 Codex comment 到达后重新计算 merge gate
+- `scripts/pre-pr-check.ps1` 读取 `pulls/{number}/reviews` 与 `issues/{number}/comments`，并接受 Codex connector 的 submitted review 或 `Codex Review` comment 作为远端 review 信号
 - PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
 
 ## Product API Status

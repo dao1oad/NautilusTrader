@@ -239,6 +239,14 @@ function Get-PullRequestContext {
         RepoSlug = [string]$event.repository.full_name
       }
     }
+
+    if ($event.issue -and $event.issue.pull_request) {
+      return [pscustomobject]@{
+        Number = [int]$event.issue.number
+        Body = [string]$event.issue.body
+        RepoSlug = [string]$event.repository.full_name
+      }
+    }
   }
 
   return $null
@@ -353,8 +361,17 @@ query($owner: String!, $name: String!, $number: Int!) {
       $acceptedStates -contains $_.state -and $acceptedActors -contains $_.user.login
     })
 
-  if ($actorReviews.Count -eq 0) {
-    throw "No submitted remote Codex review found from configured actor '$RequiredActor'. Current reviewDecision is '$($pullRequest.reviewDecision)'."
+  if ($actorReviews.Count -gt 0) {
+    return
+  }
+
+  $issueComments = gh api "repos/$($PullRequestContext.RepoSlug)/issues/$prNumber/comments" | ConvertFrom-Json
+  $actorIssueComments = @($issueComments | Where-Object {
+      $acceptedActors -contains $_.user.login -and $_.body -match 'Codex Review'
+    })
+
+  if ($actorIssueComments.Count -eq 0) {
+    throw "No remote Codex review signal found from configured actor '$RequiredActor'. Current reviewDecision is '$($pullRequest.reviewDecision)'."
   }
 }
 

@@ -21,6 +21,16 @@ if ($workflow -notmatch 'submitted') {
   exit 1
 }
 
+if ($workflow -notmatch 'issue_comment') {
+  Write-Error 'pr-gate.yml must rerun on PR issue_comment events so Codex comment-only reviews can unblock the gate.'
+  exit 1
+}
+
+if ($workflow -notmatch 'created') {
+  Write-Error 'pr-gate.yml must listen for created issue_comment events so new Codex comments refresh the PR gate.'
+  exit 1
+}
+
 if ($script -notmatch 'reviewDecision' -or $script -notmatch 'isResolved') {
   Write-Error 'pre-pr-check.ps1 must validate remote review state and thread resolution.'
   exit 1
@@ -81,6 +91,67 @@ try {
 
   if (Test-Path $tempEventPath) {
     Remove-Item $tempEventPath -Force
+  }
+
+  if (Test-Path Function:\gh) {
+    Remove-Item Function:\gh
+  }
+}
+
+$tempIssueCommentEventPath = Join-Path $env:TEMP 'nautilus-pr-issue-comment-event.json'
+
+Set-Content -Path $tempIssueCommentEventPath -Value @'
+{
+  "issue": {
+    "number": 4,
+    "body": "Linked issue: #3",
+    "pull_request": {
+      "url": "https://api.github.com/repos/dao1oad/NautilusTrader/pulls/4"
+    }
+  },
+  "repository": {
+    "full_name": "dao1oad/NautilusTrader"
+  },
+  "comment": {
+    "body": "Codex Review: Didn't find any major issues. Breezy!"
+  }
+}
+'@
+
+function gh {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$Args
+  )
+
+  $joined = $Args -join ' '
+
+  if ($joined -like 'api graphql*') {
+    return '{"data":{"repository":{"pullRequest":{"reviewDecision":"REVIEW_REQUIRED","reviewThreads":{"nodes":[]}}}}}'
+  }
+
+  if ($joined -eq 'api repos/dao1oad/NautilusTrader/pulls/4/reviews') {
+    return '[]'
+  }
+
+  if ($joined -eq 'api repos/dao1oad/NautilusTrader/issues/4/comments') {
+    return '[{"body":"Codex Review: Didn''t find any major issues. Breezy!","user":{"login":"chatgpt-codex-connector"}}]'
+  }
+
+  throw ("Unexpected gh invocation: " + $joined)
+}
+
+try {
+  $env:GITHUB_EVENT_PATH = $tempIssueCommentEventPath
+  & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
+} catch {
+  Write-Error 'pre-pr-check.ps1 must accept a Codex connector PR comment when no submitted review exists.'
+  exit 1
+} finally {
+  $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+
+  if (Test-Path $tempIssueCommentEventPath) {
+    Remove-Item $tempIssueCommentEventPath -Force
   }
 
   if (Test-Path Function:\gh) {
