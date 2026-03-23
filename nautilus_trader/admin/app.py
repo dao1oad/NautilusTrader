@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from fastapi import WebSocket
 
 from nautilus_trader.admin.schemas import HealthStatus
 from nautilus_trader.admin.schemas import OverviewSnapshot
 from nautilus_trader.admin.services.overview import build_overview_snapshot
+from nautilus_trader.admin.ws import handle_admin_events_socket
 
 
 def create_admin_app() -> FastAPI:
@@ -15,5 +17,9 @@ def create_admin_app() -> FastAPI:
     @app.get("/api/admin/overview", response_model=OverviewSnapshot)
     def overview(inject_partial_error: bool = False) -> OverviewSnapshot:
         return build_overview_snapshot(inject_partial_error=inject_partial_error)
+
+    @app.websocket("/ws/admin/events")
+    async def admin_events(websocket: WebSocket) -> None:
+        await handle_admin_events_socket(websocket)
 
     return app
