@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8` / PR Slice A
+- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8` / PR Slice D
 
 ## Blockers
 
@@ -45,11 +45,13 @@
 - 2026-03-23 已为 `#8` 创建 stacked draft PR `#27`：`feat: add admin overview websocket contract`，当前 base 为 `codex/issue-8-phase0-slice-a`
 - 2026-03-23 已创建并推送 `#8` 的下一层 stacked 执行分支：`codex/issue-8-phase0-slice-c`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-c`
 - 2026-03-23 已为 `#8` 创建 stacked draft PR `#28`：`feat: scaffold admin web overview shell`，当前 base 为 `codex/issue-8-phase0-slice-b`
+- 2026-03-23 已创建并推送 `#8` 的下一层 stacked 执行分支：`codex/issue-8-phase0-slice-d`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-d`
+- 2026-03-23 已为 `#8` 创建 stacked draft PR `#29`：`feat: finalize phase 0 admin overview integration`，当前 base 为 `codex/issue-8-phase0-slice-c`
 
 ## Next Actions
 
-1. 围绕 issue `#8` 执行 `PR Slice A`：治理落点 + backend scaffold + health / overview contract。
-2. 在 `#26`、`#27` 与 `#28` 上继续推进 stacked review 流，并在 `#25` 合并后逐层 retarget / merge。
+1. 围绕 issue `#8` 继续推进 `PR Slice D`：frontend CI、开发命令、文档与 memory 收尾。
+2. 在 `#26`、`#27`、`#28` 与 `#29` 上继续推进 stacked review 流，并在 `#25` 合并后逐层 retarget / merge。
 3. 保持 `#9-#24` 为后续阶段 backlog，不提前并行实施。
 
 ## Repository
