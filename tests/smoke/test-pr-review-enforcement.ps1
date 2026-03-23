@@ -11,6 +11,16 @@ if ($workflow -notmatch 'GH_TOKEN') {
   exit 1
 }
 
+if ($workflow -notmatch 'pull_request_review') {
+  Write-Error 'pr-gate.yml must rerun on pull_request_review events so approval can unblock the gate.'
+  exit 1
+}
+
+if ($workflow -notmatch 'submitted') {
+  Write-Error 'pr-gate.yml must listen for submitted review events so approval re-evaluates the PR gate.'
+  exit 1
+}
+
 if ($script -notmatch 'reviewDecision' -or $script -notmatch 'isResolved') {
   Write-Error 'pre-pr-check.ps1 must validate remote review state and thread resolution.'
   exit 1
