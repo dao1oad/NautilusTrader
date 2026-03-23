@@ -40,11 +40,12 @@
 - `Phase 1-4` 已分别有正式计划文档与 issue 拆解，但当前不提前并行实施
 - 2026-03-23 已启动主 agent 围绕 issue `#8` / `PR Slice A` 的任务编排；`#9-#24` 维持 backlog 状态，等待 `#8` 合并后再推进。
 - 2026-03-23 已创建并推送 `#8` 的隔离执行分支：`codex/issue-8-phase0-slice-a`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-a`
+- 2026-03-23 已为 `#8` 创建 stacked draft PR `#26`：`feat: scaffold admin api and overview contracts`，当前 base 为 `codex/admin-console-phase-planning-baseline`，待 `#25` 合并后再 retarget 到 `main`
 
 ## Next Actions
 
 1. 围绕 issue `#8` 执行 `PR Slice A`：治理落点 + backend scaffold + health / overview contract。
-2. 在首个实现 PR 中同步更新 truth docs 与 `ops/doc-truth-map.yaml`，为 `apps/admin-web/**` 建立正式映射。
+2. 在 `#26` 中继续完成 `PR Slice A` 的 review-ready 收尾，并在 `#25` 合并后 retarget 到 `main`。
 3. 保持 `#9-#24` 为后续阶段 backlog，不提前并行实施。
 
 ## Repository
