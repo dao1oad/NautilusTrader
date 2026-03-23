@@ -29,6 +29,26 @@ function Get-ConfigBoolean {
   return (Get-ConfigValue -Path $Path -Key $Key).ToLowerInvariant() -eq 'true'
 }
 
+function Get-ConfigInt {
+  param(
+    [string]$Path,
+    [string]$Key,
+    [int]$Default = 0
+  )
+
+  $value = Get-ConfigValue -Path $Path -Key $Key
+  if ([string]::IsNullOrWhiteSpace($value)) {
+    return $Default
+  }
+
+  $parsed = 0
+  if (-not [int]::TryParse($value, [ref]$parsed)) {
+    throw "Configuration key '$Key' in '$Path' must be an integer."
+  }
+
+  return $parsed
+}
+
 function Get-ConfigList {
   param(
     [string]$Path,
@@ -252,8 +272,13 @@ if (-not $requiredPullRequestReviews) {
   throw 'Remote protection must require pull request reviews.'
 }
 
-if ($requiredPullRequestReviews.required_approving_review_count -lt 1) {
-  throw 'Remote protection must require at least one approving review.'
+$expectedApprovingReviewCount = Get-ConfigInt -Path 'ops/review-gates.yaml' -Key 'required_approving_review_count' -Default 1
+if ($expectedApprovingReviewCount -lt 0) {
+  throw "Configured required_approving_review_count must be 0 or greater."
+}
+
+if ($requiredPullRequestReviews.required_approving_review_count -lt $expectedApprovingReviewCount) {
+  throw ("Remote protection must require at least {0} approving review(s)." -f $expectedApprovingReviewCount)
 }
 
 $requiredStatusChecks = $protection.required_status_checks
