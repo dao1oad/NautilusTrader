@@ -22,3 +22,9 @@ if ($content -notmatch 'gpt-5\.4' -or $content -notmatch 'xhigh') {
   Write-Error 'AGENTS.md must pin gpt-5.4 and xhigh for main and sub agents.'
   exit 1
 }
+
+$gitignore = Get-Content '.gitignore' -Raw
+if ($gitignore -match '(?m)^AGENTS\.md$') {
+  Write-Error '.gitignore must not ignore AGENTS.md, so directory-scoped agent instructions stay reviewable and tracked.'
+  exit 1
+}

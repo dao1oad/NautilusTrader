@@ -10,8 +10,93 @@ exempt_paths:
   - PROJECT_INIT.md
   - .editorconfig
   - .gitignore
+  - .codespellrc
+  - .dockerignore
+  - .env.example
+  - .gitattributes
+  - .gitlint
+  - .lycheeignore
+  - .markdownlint.jsonc
+  - .taplo.toml
+  - .typos.toml
+  - .yamllint.yaml
+  - CLA.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - LICENSE
+  - RELEASES.md
+  - ROADMAP.md
+  - SECURITY.md
+  - assets/**
+  - capnp-version
+  - uv-version
+  - uv.lock
+  - version.json
 
 rules:
+  - name: rust-workspace
+    code_paths:
+      - .cargo/**
+      - Cargo.toml
+      - Cargo.lock
+      - crates/**
+      - rust-toolchain.toml
+      - rustfmt.toml
+      - clippy.toml
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model
+      - api_contracts
+      - integrations
+
+  - name: python-package
+    code_paths:
+      - pyproject.toml
+      - build.py
+      - nautilus_trader/**
+      - python/**
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model
+      - api_contracts
+
+  - name: persistence-schema
+    code_paths:
+      - schema/**
+    requires:
+      - architecture
+      - runtime_flows
+      - data_model
+      - api_contracts
+
+  - name: examples-runtime
+    code_paths:
+      - examples/**
+    requires:
+      - architecture
+      - runtime_flows
+      - integrations
+
+  - name: build-tooling
+    code_paths:
+      - .config/**
+      - .docker/**
+      - .pre-commit-hooks/**
+      - .supply-chain/**
+      - Makefile
+      - deny.toml
+      - osv-scanner.toml
+      - .pre-commit-config.yaml
+      - .codecov.yml
+    requires:
+      - architecture
+      - runtime_flows
+      - integrations
+
   - name: scripts-runtime
     code_paths:
       - scripts/**

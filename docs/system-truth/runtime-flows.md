@@ -1,10 +1,18 @@
 # Runtime Flows Truth
 
-## Bootstrap Flow
+## Build Flow
 
-`复制模板 -> 重绑 memory/system-truth -> 运行 init-project -> 运行 check-governance -> 创建 GitHub 仓库 -> 配置 main 保护 -> 启动 issue 编排`
+`pyproject/build.py 解析环境变量 -> cargo 编译关键 Rust 库 -> Cython/PyO3 扩展构建 -> 可选复制二进制回源码树 -> Python surface 导入编译产物`
 
-## Primary Operational Flow
+## Trading Runtime Flow
+
+`数据源/交易所适配器 -> 规范化 market/order/account 事件 -> common/core/model -> backtest/live/execution -> portfolio/risk/system/trading -> persistence/serialization/报告输出`
+
+## Example And Test Flow
+
+`examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性
+
+## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> subagent 执行 -> PR -> 远端 Codex review -> review 闭环 -> merge -> memory/system-truth 回写`
 
@@ -15,6 +23,12 @@
 3. 校验 truth-doc 映射与同步
 4. 校验远端 review 与线程已解决
 5. 校验本地 review 闭环记录
+
+## Security Workflow Flow
+
+1. 面向 `main` 的 PR 会触发 `codeql-analysis`
+2. 合并进入 `main` 的 push 会触发 `build.yml`
+3. `build.yml` 中的 `cargo-deny` 与 `cargo-vet` 仅在 `refs/heads/main` 上运行，用于覆盖受保护主分支的供应链检查
 
 ## PR Review Re-evaluation Flow
 
