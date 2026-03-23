@@ -16,8 +16,13 @@
 - GitHub Actions 继续负责 `governance-check` 和 `pr-gate`
 - `build.yml` 与 `codeql-analysis.yml` 需要对齐受保护分支 `main`；CodeQL 覆盖面向 `main` 的 PR，供应链检查覆盖 push 到 `main`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
-- 主 agent 本地执行，subagent 云端执行，review 仍以远端 Codex review 为合并门槛
+- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；其中 review/comment 触发的重跑必须显式 checkout 目标 PR head，review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
+
+## Codex
+
+- 主 agent 本地执行
+- subagent 云端执行
+- review 在远端作为合并门槛，可表现为 submitted review 或 `Codex Review` PR comment
 
 ## Current Status
 

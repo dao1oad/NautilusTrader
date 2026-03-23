@@ -23,3 +23,4 @@
 - PR `#2` 已在 required checks 全绿后合并到 `main`，远端 `main` 当前要求 `governance-check`、`pr-gate`、conversation resolution，且 `required_approving_review_count` 为 `0`。
 - issue `#1` 已关闭；issue `#3` 已创建，用于将 startup memory 从“bootstrap PR 待合并”同步到“bootstrap 已完成”的当前状态。
 - 在 PR `#4` 上确认 Codex connector 可能返回普通 PR comment `Codex Review: Didn't find any major issues. Breezy!` 而非 submitted review；已补齐 `pr-gate` 的 `issue_comment` 触发和 `pre-pr-check.ps1` 的 comment 识别逻辑。
+- 在 PR `#7` 上定位到 `pr-gate` 的重跑 workflow 会默认 checkout `main`，导致 comment/review 触发时看不到 PR 分支上的 `memory/issue-ledger.md`；已改为针对 issue comment checkout `refs/pull/<number>/head`，并补 smoke 覆盖与 review-resolution 记录。

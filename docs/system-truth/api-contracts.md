@@ -19,6 +19,11 @@
 - `crates/cli` 提供命令行接口产物；相关发布与打包流程由 `.github/workflows/cli-binaries.yml` 驱动
 - `schema/sql/*.sql` 是持久化数据库对象定义接口，面向 `persistence` 层
 - `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API
+- GitHub branch protection 通过 `gh api` 读取与校验
+- GitHub Actions 暴露 `governance-check` 与 `pr-gate` 两个 required check
+- `pr-gate` workflow 在 `pull_request`、`pull_request_review` 和 PR `issue_comment` 事件上运行，以便 PR 变更、review 提交或 Codex comment 到达后重新计算 merge gate；其中 `pull_request`/`pull_request_review` 使用 PR head SHA，`issue_comment` 使用 `refs/pull/<number>/head`
+- `scripts/pre-pr-check.ps1` 读取 `pulls/{number}/reviews` 与 `issues/{number}/comments`，并接受 Codex connector 的 submitted review 或 `Codex Review` comment 作为远端 review 信号
+- PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
 
 ## Repository Operational Interfaces
 

@@ -36,9 +36,10 @@
 2. 若远端 Codex review 尚未提交，或 review 线程尚未闭环，`pr-gate` 失败并阻止合并
 3. 当 Codex connector 提交 review 时，`pull_request_review` 事件再次触发 `pr-gate`
 4. 当 Codex connector 以 PR comment 形式返回 `Codex Review` 时，`issue_comment` 事件再次触发 `pr-gate`
-5. `pr-gate` 重新读取 review、PR comments、reviewDecision 与 review threads 状态
-6. 若 review 线程在失败后被手动 resolve，需要后续 PR 活动、Codex comment 或手动 rerun 来刷新 `pr-gate` 结果
-7. 在单维护者模式下，远端 Codex review 已提交或已由 Codex connector comment 明确返回、review 线程已处理且其他门禁满足后，PR 可在无额外人工 Approve 的情况下进入可合并状态
+5. `pr-gate` 在 `pull_request` 与 `pull_request_review` 重跑时必须 checkout PR head SHA；在 `issue_comment` 重跑时必须 checkout `refs/pull/<number>/head`，避免默认回落到 `main`
+6. `pr-gate` 重新读取 review、PR comments、reviewDecision 与 review threads 状态
+7. 若 review 线程在失败后被手动 resolve，需要后续 PR 活动、Codex comment 或手动 rerun 来刷新 `pr-gate` 结果
+8. 在单维护者模式下，远端 Codex review 已提交或已由 Codex connector comment 明确返回、review 线程已处理且其他门禁满足后，PR 可在无额外人工 Approve 的情况下进入可合并状态
 
 ## Truth Rebinding Flow
 
