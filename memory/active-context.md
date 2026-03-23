@@ -10,8 +10,7 @@
 
 ## Blockers
 
-- 待 PR `#2` 中的 Codex review thread `discussion_r2972986481` 完成回复并 resolve。
-- 待 PR `#2` 的 `pr-gate` 在最新 workflow 与 review 状态下重新通过。
+- PR `#2` 的 required checks 已通过，但仍缺少 1 个非作者 approving review。
 
 ## Confirmed Facts
 
@@ -29,9 +28,9 @@
 
 ## Next Actions
 
-1. 观察最新提交触发后的 `pr-gate` 结果。
-2. 若 thread 已 resolve 但 gate 未刷新，手动 rerun `pr-gate`。
-3. 若 checks 全绿，则合并 PR `#2`。
+1. 由非作者 reviewer 对 PR `#2` 提交 approving review。
+2. 确认 GitHub `mergeStateStatus` 从 `BLOCKED` 变为可合并。
+3. 合并 PR `#2`。
 
 ## Repository
 
