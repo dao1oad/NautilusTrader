@@ -41,11 +41,13 @@
 - 2026-03-23 已启动主 agent 围绕 issue `#8` / `PR Slice A` 的任务编排；`#9-#24` 维持 backlog 状态，等待 `#8` 合并后再推进。
 - 2026-03-23 已创建并推送 `#8` 的隔离执行分支：`codex/issue-8-phase0-slice-a`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-a`
 - 2026-03-23 已为 `#8` 创建 stacked draft PR `#26`：`feat: scaffold admin api and overview contracts`，当前 base 为 `codex/admin-console-phase-planning-baseline`，待 `#25` 合并后再 retarget 到 `main`
+- 2026-03-23 已创建并推送 `#8` 的下一层 stacked 执行分支：`codex/issue-8-phase0-slice-b`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-b`
+- 2026-03-23 已为 `#8` 创建 stacked draft PR `#27`：`feat: add admin overview websocket contract`，当前 base 为 `codex/issue-8-phase0-slice-a`
 
 ## Next Actions
 
 1. 围绕 issue `#8` 执行 `PR Slice A`：治理落点 + backend scaffold + health / overview contract。
-2. 在 `#26` 中继续完成 `PR Slice A` 的 review-ready 收尾，并在 `#25` 合并后 retarget 到 `main`。
+2. 在 `#26` 与 `#27` 上继续推进 stacked review 流，并在 `#25` 合并后逐层 retarget / merge。
 3. 保持 `#9-#24` 为后续阶段 backlog，不提前并行实施。
 
 ## Repository
