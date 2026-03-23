@@ -10,7 +10,7 @@
 
 ## Blockers
 
-- 待 PR #1 创建后验证 `pr-gate`、`remote Codex review` actor 与 review 闭环的端到端执行效果。
+- 待 PR `#2` 完成 `remote Codex review`，并完成 review 闭环记录后方可合并。
 
 ## Confirmed Facts
 
@@ -28,9 +28,9 @@
 
 ## Next Actions
 
-1. 为 issue `#1` 创建首个治理 PR。
-2. 为该 PR 补齐 `review-resolution-<pr>.md` 记录文件。
-3. 在该 PR 上验证 `pr-gate`、`remote Codex review` actor 与 review 闭环记录。
+1. 为 PR `#2` 补齐 `review-resolution-2.md` 记录文件。
+2. 在 PR `#2` 上获取 `remote Codex review`。
+3. 处理 review 意见并完成闭环记录。
 
 ## Repository
 
