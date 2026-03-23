@@ -1,0 +1,19 @@
+required_gates:
+  - linked_issue
+  - tests_passed
+  - memory_updated
+  - remote_codex_review
+  - review_resolution_recorded
+
+required_status_checks:
+  - governance-check
+  - pr-gate
+
+merge_requirements:
+  target_branch: main
+  pull_request_only: true
+
+required_review_actor: codex
+require_review_thread_resolution: true
+require_review_resolution_record: true
+require_linked_issue: true

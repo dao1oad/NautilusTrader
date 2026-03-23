@@ -1,0 +1,34 @@
+name: Feature
+description: Track a feature with governance and orchestration metadata.
+title: "[Feature] "
+labels:
+  - feature
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome should this issue achieve?
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List dependent issues, risks, or blocking context.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Define the done condition.
+    validations:
+      required: true
+  - type: dropdown
+    id: parallel
+    attributes:
+      label: Parallel readiness
+      options:
+        - parallel-ready
+        - serial-only
+    validations:
+      required: true

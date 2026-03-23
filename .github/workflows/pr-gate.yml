@@ -1,0 +1,37 @@
+name: pr-gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-gate:
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate memory system
+        shell: pwsh
+        run: ./tests/smoke/test-memory-files.ps1
+
+      - name: Validate ops policies
+        shell: pwsh
+        run: ./tests/smoke/test-ops-config.ps1
+
+      - name: Validate PR workflows
+        shell: pwsh
+        run: ./tests/smoke/test-github-templates.ps1
+
+      - name: Pre PR gate
+        shell: pwsh
+        run: ./scripts/pre-pr-check.ps1

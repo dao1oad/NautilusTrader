@@ -1,0 +1,15 @@
+main_agent:
+  execution: local
+  model: gpt-5.4
+  reasoning: xhigh
+  responsibility: orchestration
+
+subagent:
+  execution: codex_cloud
+  model: gpt-5.4
+  reasoning: xhigh
+  responsibility: bounded_issue_execution
+
+review_agent:
+  execution: remote_codex_review
+  gate_required: true

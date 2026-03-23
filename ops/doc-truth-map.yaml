@@ -1,0 +1,38 @@
+exempt_paths:
+  - tests/**
+  - spec/**
+  - docs/**
+  - memory/**
+  - governance/**
+  - workspace/**
+  - prompts/**
+  - README.md
+  - PROJECT_INIT.md
+  - .editorconfig
+  - .gitignore
+
+rules:
+  - name: scripts-runtime
+    code_paths:
+      - scripts/**
+    requires:
+      - architecture
+      - runtime_flows
+
+  - name: github-gates
+    code_paths:
+      - .github/**
+    requires:
+      - runtime_flows
+      - integrations
+      - api_contracts
+
+  - name: machine-policy
+    code_paths:
+      - ops/**
+      - AGENTS.md
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model

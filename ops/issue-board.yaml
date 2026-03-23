@@ -1,0 +1,16 @@
+states:
+  - blocked
+  - ready
+  - parallel_ready
+  - needs_clarification
+
+parallel_rules:
+  require_no_dependencies: true
+  require_no_shared_core_write_set: true
+  forbid_governance_file_collisions: true
+
+default_priority_order:
+  - critical
+  - high
+  - medium
+  - low

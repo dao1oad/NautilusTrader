@@ -1,0 +1,20 @@
+# Bound to the current NautilusTrader bootstrap repository.
+truth_documents:
+  - role: architecture
+    path: docs/system-truth/architecture.md
+    required: true
+  - role: module_boundaries
+    path: docs/system-truth/module-boundaries.md
+    required: true
+  - role: api_contracts
+    path: docs/system-truth/api-contracts.md
+    required: true
+  - role: data_model
+    path: docs/system-truth/data-model.md
+    required: true
+  - role: runtime_flows
+    path: docs/system-truth/runtime-flows.md
+    required: true
+  - role: integrations
+    path: docs/system-truth/integrations.md
+    required: true

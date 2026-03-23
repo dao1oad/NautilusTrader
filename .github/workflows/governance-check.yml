@@ -1,0 +1,27 @@
+name: governance-check
+
+on:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+  pull_request:
+
+jobs:
+  governance:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate governance files
+        shell: pwsh
+        run: ./scripts/check-governance.ps1 -SkipRemoteChecks
+
+      - name: Validate template layout
+        shell: pwsh
+        run: ./tests/smoke/test-template-layout.ps1
+
+      - name: Validate governance contract
+        shell: pwsh
+        run: ./tests/smoke/test-governance-files.ps1
