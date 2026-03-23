@@ -1,5 +1,6 @@
 $script = Get-Content 'scripts\check-governance.ps1' -Raw
 $gates = Get-Content 'ops\review-gates.yaml' -Raw
+$workflow = Get-Content '.github\workflows\governance-check.yml' -Raw
 
 $requiredChecks = @(
   'required_pull_request_reviews',
@@ -18,6 +19,11 @@ foreach ($check in $requiredChecks) {
 
 if ($gates -notmatch 'governance-check' -or $gates -notmatch 'pr-gate') {
   Write-Error 'review-gates.yaml must declare governance-check and pr-gate as required status checks.'
+  exit 1
+}
+
+if ($workflow -notmatch '(?s)jobs:\s+governance-check:') {
+  Write-Error 'governance-check.yml must expose a governance-check job so the emitted check context matches branch protection.'
   exit 1
 }
 

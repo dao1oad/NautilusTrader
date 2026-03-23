@@ -29,8 +29,8 @@
 
 ## Next Actions
 
-1. 将补充的 `module-boundaries` truth doc 推送到 PR `#2`。
-2. 确认 GitHub required checks 重新变为通过。
+1. 将 `governance-check` workflow job 名修正推送到 PR `#2`。
+2. 确认 GitHub required checks 重新变为通过并产出真实的 `governance-check` context。
 3. 合并 PR `#2`。
 
 ## Repository
