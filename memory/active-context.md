@@ -34,10 +34,12 @@
 - 2026-03-23 已为后续阶段创建 umbrella issues：`#9`、`#10`、`#11`、`#12`
 - 2026-03-23 已为 `Phase 1-4` 创建子 issues：`#13` 至 `#24`
 - 2026-03-23 已修复 `Phase 1-4` issue 正文，使每个 umbrella issue 都承接 phase close-out gate，并为所有 child issue 写明范围、依赖、验收与验证命令
+- 2026-03-23 已创建 draft PR `#25`：`docs: finalize admin console phase planning baseline`
 - 管理控制台首期开发范围已冻结为：typed backend overview contract + minimal frontend overview shell
 - `Phase 0` 当前不包含控制命令、多页面前端、Playwright 和打包发行链路
 - `Phase 1-4` 已分别有正式计划文档与 issue 拆解，但当前不提前并行实施
 - 2026-03-23 已启动主 agent 围绕 issue `#8` / `PR Slice A` 的任务编排；`#9-#24` 维持 backlog 状态，等待 `#8` 合并后再推进。
+- 2026-03-23 已创建并推送 `#8` 的隔离执行分支：`codex/issue-8-phase0-slice-a`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-a`
 
 ## Next Actions
 
