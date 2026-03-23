@@ -1,9 +1,57 @@
-import { ConnectionBanner, type ConnectionState } from "./features/connection/connection-banner";
+import { startTransition, useEffect, useEffectEvent, useState } from "react";
+
 import { OverviewPage } from "./features/overview/overview-page";
+import { getOverviewSnapshot } from "./shared/api/admin-client";
+import { subscribeToAdminEvents } from "./shared/realtime/admin-events";
+import type { AdminEvent, ConnectionState, OverviewSnapshot } from "./shared/types/admin";
+import { ConnectionBanner } from "./features/connection/connection-banner";
 
 
 export function App() {
-  const connectionState: ConnectionState = "connecting";
+  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
+  const [snapshot, setSnapshot] = useState<OverviewSnapshot | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshOverview = useEffectEvent(async () => {
+    try {
+      const nextSnapshot = await getOverviewSnapshot();
+      startTransition(() => {
+        setSnapshot(nextSnapshot);
+        setError(null);
+        setConnectionState("connected");
+      });
+    } catch (nextError) {
+      startTransition(() => {
+        setError(nextError instanceof Error ? nextError.message : "Failed to load admin overview");
+        setConnectionState("disconnected");
+      });
+    }
+  });
+
+  const handleAdminEvent = useEffectEvent((event: AdminEvent) => {
+    if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
+      void refreshOverview();
+      return;
+    }
+
+    if (event.type === "server.error") {
+      startTransition(() => {
+        setError(event.message ?? "Admin event stream error");
+        setConnectionState("stale");
+      });
+    }
+  });
+
+  useEffect(() => {
+    void refreshOverview();
+  }, []);
+
+  useEffect(() => {
+    return subscribeToAdminEvents({
+      onEvent: handleAdminEvent,
+      onStateChange: setConnectionState
+    });
+  }, []);
 
   return (
     <main className="app-shell">
@@ -15,7 +63,7 @@ export function App() {
           </div>
           <ConnectionBanner state={connectionState} />
         </header>
-        <OverviewPage />
+        <OverviewPage connectionState={connectionState} snapshot={snapshot} error={error} />
       </section>
     </main>
   );

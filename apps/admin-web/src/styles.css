@@ -98,6 +98,12 @@ body {
   margin-bottom: 12px;
 }
 
+.overview-alert {
+  margin: 0 0 10px;
+  color: #8a5a00;
+  font-weight: 600;
+}
+
 .overview-copy {
   margin: 0;
   color: #42566d;
