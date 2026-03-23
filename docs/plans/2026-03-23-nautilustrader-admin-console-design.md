@@ -1,303 +1,320 @@
-# NautilusTrader 管理 UI 设计文档
+# NautilusTrader 管理控制台设计文档
 
-## 1. 背景
+## 1. 文档目的
 
-当前仓库已导入 `nautechsystems/nautilus_trader` 源码快照，但上游项目在 [ROADMAP.md](/D:/NautilusTrader/ROADMAP.md) 中明确将 UI dashboard / frontend 视为开源主线范围外能力。  
-因此，本仓库新增前端的正确定位不是“补一个演示页面”，而是为当前独立仓库建立一套可持续维护的本机单人运维控制台。
+本文档用于把 `NautilusTrader` 管理控制台从“方向性想法”收敛为“可进入正式开发的设计基线”。
 
-本设计基于以下已确认约束：
+- 本文档是 `docs/plans/` 下的计划文档，不替代 `docs/system-truth/` 静态真值
+- 本文档给出首期开发边界、技术落点、治理要求和后续分期
+- 本文档对应的首个真实开发 issue 为 GitHub issue `#8`
+
+## 2. 项目定位与约束
+
+当前仓库是一个独立维护的 `NautilusTrader` 衍生仓库，允许在上游核心交易引擎之外扩展本地控制面能力。
+
+已确认约束：
 
 - 使用场景：本机单人使用
-- 交付形态：`localhost` Web 控制台
-- 目标：先定义 `NautilusTrader` 的完整能力清单，再按依赖关系分阶段建设管理 UI
-- 范围：最终覆盖实盘运维、诊断、数据浏览、后续回测与分析扩展；首期不以“只做一个页面”为目标
+- 运行位置：`localhost`
+- 当前仓库仍以 Rust + Python/Cython + PyO3 核心为主，不引入 Node 到交易热路径
+- 所有代码变更仍必须遵守 `issue -> PR -> remote Codex review -> merge`
+- 新生产路径进入仓库时，必须同步 truth docs 与 `ops/doc-truth-map.yaml`
 
-## 2. 设计目标
+上游 [ROADMAP.md](/D:/NautilusTrader/ROADMAP.md) 明确将 UI dashboard / frontend 排除在开源主线范围之外；这不构成当前独立仓库的限制，但意味着本仓库必须自己承担控制面的目录落点、契约、测试和维护边界。
 
-- 为 `NautilusTrader` 建立完整的本机管理控制面，而不是零散页面集合
-- 让前端只依赖稳定的管理 API，不直接耦合内部模块细节
-- 支持高频实时更新场景，包括日志流、订单流、持仓、连接状态和告警
-- 允许未来从“本机单人”平滑演进到“远程多用户”，但不在当前阶段引入该复杂度
-- 保持与当前 Rust + Python/Cython + PyO3 架构兼容，不强行把核心引擎搬到 Node 生态
+## 3. 决策摘要
 
-## 3. 非目标
+本次冻结的设计决策如下：
 
-- 不把前端做成营销官网
-- 不把前端做成策略开发 IDE
-- 不让浏览器直接接触交易所凭据
-- 不在第一轮引入多用户、RBAC、SSO、团队协作
-- 不把 UI 逻辑硬耦合进现有 Cython / Rust 核心模块
+- 接受独立控制面方案：`nautilus_trader/admin` + `apps/admin-web`
+- 后端控制面采用独立 Python admin API，前端只消费 admin DTO，不直接消费内部 domain object
+- 首期开发只做 `Phase 0`：只读 `Overview` 垂直切片
+- 首期运行形态只承诺开发态双进程：Python admin API + Vite dev server
+- 命令控制、审计 UI、订单页、日志页、桌面壳、打包发行全部延后，不进入 issue `#8`
 
-## 4. NautilusTrader 完整能力清单
+## 4. 首期需求边界（Phase 0）
 
-| 能力域 | 代码依据 | 当前已有能力 | 管理 UI 应覆盖的最终能力 |
-| --- | --- | --- | --- |
-| 系统内核 | `crates/system` `crates/common` `crates/core` | 事件驱动、时钟、消息总线、组件生命周期 | 节点状态、运行拓扑、事件吞吐、组件健康 |
-| 市场数据 | `crates/data` `nautilus_trader/data` | quote / trade / bar / order book / custom data 管线 | 订阅状态、行情延迟、最新数据、数据质量 |
-| 领域模型 | `crates/model` `nautilus_trader/model` | instrument、identifier、order、position、price、quantity 等统一模型 | 标的浏览、交易规则、元数据展示 |
-| 适配器集成 | `crates/adapters/*` | Binance / Bybit / OKX / Betfair / Databento / Tardis 等接入 | 连接状态、重连、配置、错误面板 |
-| 实盘运行 | `crates/live` `nautilus_trader/live` | live node、数据链路、执行链路 | 节点总览、策略挂载、运行会话 |
-| 执行管理 | `crates/execution` `nautilus_trader/execution` | 订单、成交、执行回报、算法单、模拟执行 | blotter、命令结果、订单追踪、成交联查 |
-| 账户会计 | `nautilus_trader/accounting` | cash / margin / betting 账户、保证金计算 | 余额、冻结、保证金、资金变动 |
-| 组合管理 | `crates/portfolio` `nautilus_trader/portfolio` | 持仓、PnL、估值、汇率转换 | 持仓页、盈亏、敞口、净值与资产视图 |
-| 风控 | `crates/risk` `nautilus_trader/risk` | 风险校验、限额、sizing、greeks | 风控事件、阻断原因、风险概览 |
-| 持久化 | `crates/persistence` `schema/sql` | catalog、数据库、Arrow/Parquet、wranglers | 历史查询、catalog 浏览、数据检索 |
-| 序列化 | `crates/serialization` | 事件与数据编码 | 导入导出、消息追踪、数据交换 |
-| 分析报告 | `crates/analysis` | statistics、reports、tear sheet 能力 | 运行报表、健康指标、图表摘要 |
-| 回测 | `crates/backtest` `nautilus_trader/backtest` | 多市场回测、历史重放 | 后续回测任务和结果浏览 |
-| 策略与配置 | `nautilus_trader/trading` `nautilus_trader/config` | 策略配置、系统装配、组件组合 | 策略清单、配置查看、配置差异 |
-| CLI / 工程控制 | `crates/cli` `scripts/` | CLI、构建、运维脚本、诊断能力 | 系统诊断、版本信息、任务入口 |
-| 文档 / 示例 | `docs/` `examples/` | 教程、示例、集成说明 | 内嵌帮助、错误说明、runbook |
+### 4.1 本阶段允许进入开发的范围
 
-结论：管理 UI 的真实边界不是“订单页 + 持仓页”，而是整个平台的本机控制面。
+`Phase 0` 的目标不是“完整后台”，而是交付第一个治理闭环完整、可验证、可继续扩展的垂直切片。
 
-## 5. 前端技术趋势分析
+本阶段仅包含：
 
-截至 2026-03-23，与本项目最相关的趋势如下：
+- `nautilus_trader/admin` 生产路径落地
+- typed admin DTO 与只读 `OverviewSnapshot`
+- `/api/admin/health`
+- `/api/admin/overview`
+- `/ws/admin/events` 的最小事件契约
+- `apps/admin-web` 的单页 `Overview` 壳层
+- 全局连接状态、最后更新时间、空态、错误态、过期态（stale state）
+- 前端本地 lint / test / build 命令
+- 对应 truth docs、`ops/doc-truth-map.yaml`、`memory/*` 更新
+- 针对新增路径的 CI 补齐
 
-- React 19 已稳定，适合实时订阅、副作用隔离和现代表单处理
-- React 官方已弃用 CRA，新前端应使用框架或 Vite/Rsbuild 一类现代工具链
-- Vite 持续演进，适合本机单页控制台的快速开发、低心智负担和高热更新效率
-- `shadcn/ui` 代表的 open-code 组件体系更适合高密度专业控制台，而非通用后台皮肤
-- Container Queries、View Transition API 等平台能力已足够成熟，可直接用于响应式工作台
-- AG Grid / Lightweight Charts 这类专业组件适合高频数据、金融图表和表格场景
-- Playwright 依旧是最稳妥的端到端测试基线
+### 4.2 本阶段的完成定义
 
-对本项目的含义：
+进入开发后的首个阶段必须至少满足：
 
-- 不推荐从 `Next.js` 起步。它对内容页和服务端渲染很强，但会把系统变成 `Node + Python + Rust` 三栈并行，本机运维台首轮没有必要承担这个复杂度。
-- 不推荐直接做桌面壳应用。Tauri 可以作为后续封装层，但不应成为前端第一步。
-- 推荐从独立 `React 19 + Vite` 控制台起步，并新增一层本机 Python 管理 API。
+- `pytest tests/unit_tests/admin -v` 通过
+- `apps/admin-web` 的 lint、单测、build 都可在本地执行
+- 概览页能覆盖以下状态：
+  - 无 live node 配置
+  - 后端快照为空
+  - 后端返回局部失败
+  - WebSocket 断开，前端显式显示 stale / disconnected
+- truth docs 与 `ops/doc-truth-map.yaml` 已包含新生产路径
+- CI 已对前端做基本校验
 
-## 6. 备选方案
+### 4.3 本阶段明确不做
 
-### 方案 A：独立 SPA + Python 管理 API + WebSocket 事件流
+- 任何危险控制命令：策略启停、适配器重连、订阅控制
+- 订单、成交、持仓、账户、风控、日志等独立页面
+- Playwright 端到端测试
+- 把前端静态资源打进 Python wheel
+- Tauri 或其他桌面壳
+- 多用户、RBAC、SSO、远程部署
 
-结构：
+## 5. What Already Exists
 
-- 前端：`apps/admin-web/`
-- 控制面后端：`nautilus_trader/admin/`
-- 通信：REST + WebSocket
+首期设计必须优先复用现有能力，而不是平行重建。
 
-优点：
+### 5.1 现有运行时能力
 
-- 与现有 Python/Rust 架构最兼容
-- 运行和部署最简单
-- 易于后续扩展为桌面壳或远程版
+- `nautilus_trader/live/node.py`
+  - 已有 node 生命周期：`run`、`stop`、`dispose`
+  - 已有内部消息总线处理和外部 stream 接入点
+- `nautilus_trader/live/execution_client.py`
+  - 已有 `generate_order_status_reports`
+  - 已有 `generate_fill_reports`
+  - 已有 `generate_position_status_reports`
+  - 已有 `generate_mass_status`
+- `nautilus_trader/persistence/catalog/base.py`
+  - 已有 queryable catalog 抽象
+- `tests/unit_tests/live/**` 与 `tests/unit_tests/persistence/**`
+  - 已有可复用的 runtime / persistence 测试基座
 
-缺点：
+### 5.2 现有治理与工程能力
 
-- 需要自己设计管理 API 契约
-- 需要单独处理前端工程集成
+- `.github/workflows/build.yml` 已是主工程 CI 面
+- `scripts/check-governance.ps1` 已校验治理基线
+- `ops/project-policy.yaml` 已启用 unmapped production path 阻断
+- `memory/issue-ledger.md` 已作为 issue 执行账本
 
-### 方案 B：Next.js 全栈前端
+### 5.3 复用原则
 
-优点：
+- 浏览器不直接绑定 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
+- admin API 只包装和投影既有运行时能力
+- 除非出现第二个独立读取场景，否则不提前抽象多层 bridge / gateway / repository
 
-- 服务端路由、表单、SSR、鉴权生态成熟
+## 6. 技术与目录落点
 
-缺点：
+### 6.1 接受的生产路径
 
-- 三栈并行复杂度明显升高
-- 对本机单用户运维台收益有限
+- 后端：admin API 落在 `nautilus_trader/admin/`
+- 前端：admin web 源码落在 `apps/admin-web/`
+- 后端单测落在 `tests/unit_tests/admin/`
+- 前端单测落在 `apps/admin-web/src/test/`
 
-### 方案 C：Tauri 桌面壳优先
+### 6.2 首期接受的技术栈
 
-优点：
+- 后端：FastAPI + Pydantic
+- 前端：React 19 + TypeScript + Vite
+- 前端测试：Vitest + Testing Library
+- 后端测试：pytest
 
-- 交互上更像专业终端
-- 更适合长期桌面产品化
+### 6.3 首期明确延后的技术决策
 
-缺点：
+以下工具不进入 `Phase 0`：
 
-- 打包、升级、桌面权限和进程协同成本更高
-- 过早把问题转成桌面工程问题
+- TanStack Router
+- TanStack Query
+- Tailwind CSS
+- shadcn/ui
+- AG Grid
+- Lightweight Charts
+- Playwright
 
-### 结论
-
-推荐方案 A。  
-未来如果需要桌面交付，再在方案 A 的基础上用 Tauri 封装。
+原因很简单：`Phase 0` 只有单页 `Overview` 垂直切片，上述依赖都会明显抬高变更面和 CI 成本，但不会提高首轮验证质量。
 
 ## 7. 推荐架构
 
-### 7.1 组件结构
+### 7.1 逻辑结构
 
-- `apps/admin-web/`
-  - `src/app/`: 应用壳层、路由、布局、主题
-  - `src/features/`: dashboard、nodes、strategies、orders、fills、positions、accounts、risk、logs、adapters、catalog
-  - `src/entities/`: instrument、order、position、strategy、adapter、account
-  - `src/shared/`: API client、event bus、types、components、charts、grid、utils
-- `nautilus_trader/admin/`
-  - `api/`: REST 路由
-  - `ws/`: WebSocket 事件推送
-  - `services/`: 快照服务、命令服务、日志聚合、节点状态服务
-  - `schemas/`: API DTO / 事件 DTO
-  - `bridge/`: 与现有 live / execution / portfolio / risk / persistence 的桥接层
+```text
++-----------------------+        REST / WS        +------------------------+
+| Browser (localhost)   | <--------------------> | nautilus_trader/admin  |
+| apps/admin-web        |                        | Python control plane   |
++-----------+-----------+                        +-----------+------------+
+            |                                                |
+            | Vite dev server (Phase 0 only)                 |
+            |                                                v
+            |                         +--------------------------------------+
+            +-----------------------> | Existing NautilusTrader runtime      |
+                                      | live / execution / portfolio / risk /|
+                                      | persistence / msgbus                 |
+                                      +--------------------------------------+
+```
 
-### 7.2 通信模型
+### 7.2 数据边界
 
-- `REST`
-  - 获取快照
-  - 查询详情
-  - 发送控制命令
-- `WebSocket`
-  - 推送状态更新
-  - 推送日志、告警、订单/成交/持仓变化
-  - 推送命令执行结果和任务进度
+前端只消费 admin DTO。
 
-### 7.3 UI 原则
+`Phase 0` 只定义以下对象：
 
-- 桌面优先，但必须可在较窄窗口退化
-- 高信息密度，少装饰、多状态
-- 读写分离，危险操作必须明确二次确认
-- 页面不假设单一交易所或单一账户
-- 所有实时卡片都必须有“最后更新时间”和“连接状态”
+- `OverviewSnapshot`
+- `NodeSummary`
+- `StrategySummary`
+- `AdapterSummary`
+- `AccountSummary`
+- `PositionSummary`
+- `SectionError`
 
-## 8. 信息架构
+`OverviewSnapshot` 必须至少包含：
 
-最终工作台建议采用以下一级导航：
+- `generated_at`
+- `stale`
+- `partial`
+- `node`
+- `strategies`
+- `adapters`
+- `accounts`
+- `positions`
+- `errors`
 
-- `Overview`
-- `Nodes`
-- `Strategies`
-- `Adapters`
-- `Orders`
-- `Fills`
-- `Positions`
-- `Accounts`
-- `Risk`
-- `Logs`
-- `Data / Catalog`
-- `Reports`
-- `Settings`
+### 7.3 事件边界
 
-说明：
+`Phase 0` 的 WebSocket 只允许最小事件集合：
 
-- `Overview` 是全局驾驶舱
-- `Nodes / Strategies / Adapters` 是运行控制面
-- `Orders / Fills / Positions / Accounts / Risk` 是交易运维主面
-- `Logs / Data / Catalog / Reports` 是诊断与历史侧
+- `subscribed`
+- `connection.state`
+- `overview.updated`
+- `snapshot.invalidate`
+- `server.error`
 
-## 9. 数据与事件模型
+以下事件类型明确延后：
 
-前端不应直接消费内部 domain object。控制面应提供单独的 admin DTO。
+- `order.*`
+- `fill.*`
+- `position.*`
+- `account.*`
+- `risk.*`
+- `command.*`
 
-核心快照对象：
+## 8. 交付与运行模型
 
-- `NodeSnapshot`
-- `StrategySnapshot`
-- `AdapterSnapshot`
-- `OrderSnapshot`
-- `FillSnapshot`
-- `PositionSnapshot`
-- `AccountSnapshot`
-- `RiskSnapshot`
-- `LogEntry`
-- `AlertEvent`
+### 8.1 `Phase 0` 运行模型
 
-核心事件类型：
+`Phase 0` 只定义开发态运行方式：
 
-- `node.updated`
-- `strategy.started`
-- `strategy.stopped`
-- `adapter.connected`
-- `adapter.disconnected`
-- `order.created`
-- `order.updated`
-- `fill.received`
-- `position.updated`
-- `account.updated`
-- `risk.triggered`
-- `log.appended`
-- `command.accepted`
-- `command.completed`
-- `command.failed`
+- 进程 1：Python admin API
+- 进程 2：Vite dev server
 
-## 10. 安全与控制边界
+本阶段不宣称“可发布安装包”或“可打包进 wheel”。
 
-虽然当前场景是本机单人使用，仍然需要明确边界：
+### 8.2 延后的交付问题
 
-- 浏览器不直接持有交易所 API key
-- 所有控制动作只能通过本机管理 API 下发
-- 危险命令必须显式确认，并记录审计日志
-- 即使没有多用户，也要预留命令审计和错误可追溯能力
-- WebSocket 断开后 UI 必须显式降级，而不是静默展示过期状态
+以下问题必须在后续独立 issue 中解决，不能挤进 `#8`：
 
-## 11. 分阶段实施
+- 静态资源是否嵌入 wheel
+- Python 包发布时如何构建前端产物
+- 离线资源策略
+- 是否由后端托管静态文件
+- 是否需要桌面壳
 
-### Phase 0：控制面地基
+## 9. 治理对齐要求
 
-- 新增本机管理 API
-- 新增快照接口和 WebSocket 事件总线
-- 新增命令总线、错误码和审计模型
-- 新建前端工程骨架
+要让管理控制台真正进入正式开发，必须同时满足以下治理约束：
 
-### Phase 1：控制台壳层
+- 首个实现 PR 必须绑定 GitHub issue `#8`
+- 首个实现 PR 必须在同一 PR 内更新：
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `ops/doc-truth-map.yaml`
+- `ops/doc-truth-map.yaml` 必须新增 `apps/admin-web/**` 的生产路径映射
+- `memory/active-context.md` 与 `memory/issue-ledger.md` 必须同步记录当前阶段
+- 任何单个 PR 都不得同时引入：
+  - 新控制命令
+  - 多页面前端导航
+  - 打包发行链路
 
-- 路由、布局、导航、主题、全局状态、通知、快捷键
-- 全局连接栏、事件时间戳、空态和错误态标准化
+建议的 PR 粒度：
 
-### Phase 2：只读观测面
+- PR 1：治理落点 + backend scaffold + typed overview contract
+- PR 2：frontend overview shell
+- PR 3：WS 更新语义 + stale state
+- PR 4：CI 接入与开发命令收尾
 
-- Dashboard
-- 节点状态
-- 适配器状态
-- 策略列表
-- 日志流
-- 订单 / 成交 / 持仓 / 余额只读页
+## 10. Failure Modes
 
-### Phase 3：运行控制面
+`Phase 0` 至少要显式处理以下失败模式：
 
-- 启停策略
-- 适配器重连 / 启停
-- 行情订阅控制
-- 配置查看与命令结果回执
+| 失败模式 | 用户可见结果 | 测试要求 |
+| --- | --- | --- |
+| 未配置 live node | 显示 `not_configured` / 空态，不崩溃 | 后端单测 + 前端空态单测 |
+| 快照构建局部失败 | `partial=true` 且 `errors` 有内容 | 后端单测 |
+| WebSocket 断开 | 前端显示 disconnected / stale banner | 后端单测 + 前端单测 |
+| 后端返回 5xx | 页面显示错误态，不静默空白 | 前端单测 |
+| Overview 数据过期 | 显示最后更新时间与 stale 状态 | 前端单测 |
 
-### Phase 4：交易运维面
+如果某个失败模式既没有测试，也没有显式 UI 降级，就不算达到进入下一阶段的条件。
 
-- 深度 blotter
-- 持仓 drill-down
-- 账户与保证金
-- 风控事件和告警中心
+## 11. NOT In Scope
 
-### Phase 5：数据与诊断面
+以下工作已明确评估，但不进入本轮：
 
-- catalog / persistence 浏览
-- 历史查询
-- 事件回放
-- 数据链路诊断
+- 策略控制命令：风险高，必须等只读契约稳定后再做
+- 多页面运维台：会同时引入路由、导航和大量数据表，超出首期边界
+- 专业表格与图表库：当前没有高密度表格场景，过早引入会增加维护负担
+- Playwright：在没有稳定双进程 CI 和最终交付模型前收益有限
+- 静态资源打包发行：这是独立交付问题，不应与首个只读垂直切片绑定
+- Tauri：会把问题转成桌面工程，不符合当前最小可行路径
 
-### Phase 6：高级运维面
+## 12. 后续路线图
 
-- 配置 diff
-- 批量操作
-- 命令审计
-- 恢复工具和 runbook
+在 `#8` 合并前，不再扩展 `Phase 0` 范围。
 
-### Phase 7：统一工作台
+`#8` 之后采用正式执行 phase，而不是继续沿用原始路线图的细碎阶段。
 
-- 接入回测任务、分析和报告
-- 实现运维与分析工作台统一壳层
+### 12.1 原始路线图到正式执行 phase 的映射
 
-### Phase 8：交付硬化
+- 正式 `Phase 1` 对应原始 `Phase 1 + Phase 2`
+  - 目标：多页面控制台壳层 + 只读运维面
+  - Umbrella issue：`#9`
+  - 子 issue：`#13`、`#14`、`#15`
+- 正式 `Phase 2` 对应原始 `Phase 3 + Phase 6` 中与命令/审计直接相关的部分
+  - 目标：低风险控制命令 + 确认 + 审计闭环
+  - Umbrella issue：`#10`
+  - 子 issue：`#16`、`#17`、`#18`
+- 正式 `Phase 3` 对应原始 `Phase 4 + Phase 5`
+  - 目标：交易运维面 + 数据与诊断面
+  - Umbrella issue：`#11`
+  - 子 issue：`#19`、`#20`、`#21`
+- 正式 `Phase 4` 对应原始 `Phase 7 + Phase 8`
+  - 目标：统一工作台 + 交付硬化
+  - Umbrella issue：`#12`
+  - 子 issue：`#22`、`#23`、`#24`
 
-- 本机安装包
-- 离线资源
-- 可选 Tauri 壳层
-- 性能预算与前端监控
+### 12.2 对应计划文档
 
-## 12. 风险
+- `Phase 1`：[2026-03-23-nautilustrader-admin-console-phase-1-read-only-operations.md](/D:/NautilusTrader/docs/plans/2026-03-23-nautilustrader-admin-console-phase-1-read-only-operations.md)
+- `Phase 2`：[2026-03-23-nautilustrader-admin-console-phase-2-control-audit.md](/D:/NautilusTrader/docs/plans/2026-03-23-nautilustrader-admin-console-phase-2-control-audit.md)
+- `Phase 3`：[2026-03-23-nautilustrader-admin-console-phase-3-trading-operations-diagnostics.md](/D:/NautilusTrader/docs/plans/2026-03-23-nautilustrader-admin-console-phase-3-trading-operations-diagnostics.md)
+- `Phase 4`：[2026-03-23-nautilustrader-admin-console-phase-4-workbench-delivery.md](/D:/NautilusTrader/docs/plans/2026-03-23-nautilustrader-admin-console-phase-4-workbench-delivery.md)
 
-- 当前仓库没有现成管理 API，首个真正成本不在页面，而在控制面协议
-- 实时事件源分散在 live / execution / portfolio / risk / persistence 多层，需要统一桥接
-- 若前端过早直接依赖内部对象，会导致后续 Rust/Cython 演进时大量返工
-- 若首轮就加入高风险交易命令，安全护栏复杂度会显著提高
+### 12.3 执行顺序
+
+1. 先完成 `#8`
+2. 再推进 `#9`
+3. `#9` 完成后再推进 `#10`
+4. `#10` 完成后再推进 `#11`
+5. `#11` 完成后再推进 `#12`
 
 ## 13. 结论
 
-正确路线不是“给 NautilusTrader 补一个前端页面”，而是：
+修复后的结论是：
 
-1. 把平台完整能力映射成独立控制面
-2. 建立本机管理 API 与事件桥接层
-3. 用 `React 19 + Vite` 构建高密度专业运维台
-4. 按依赖关系分阶段建设，从基础设施到完整工作台逐步推进
+- 当前仓库可以进入正式开发
+- 但只能按 issue `#8` 的 `Phase 0` 有界范围进入
+- 进入开发的前提不再是“做完整后台”，而是“先做只读 overview 垂直切片，并把治理、契约、CI 和失败路径一次补齐”

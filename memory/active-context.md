@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-- Upstream source synced; ready for UI architecture and scoped implementation work
+- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8` / PR Slice A
 
 ## Blockers
 
@@ -29,12 +29,21 @@
 - 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
 - 远端 Codex review 当前可通过 submitted review 或 `Codex Review` PR comment 体现，`pr-gate` 已支持两种信号。
 - 当前仓库未保留上游 `nautechsystems/nautilus_trader` 的 Git remote 或提交历史。
+- 2026-03-23 已关闭 GitHub issue `#5`，其规划基线已正式交接给 issue `#8`。
+- 2026-03-23 已创建 GitHub issue `#8`：`Phase 0: admin control plane foundation and read-only overview slice`
+- 2026-03-23 已为后续阶段创建 umbrella issues：`#9`、`#10`、`#11`、`#12`
+- 2026-03-23 已为 `Phase 1-4` 创建子 issues：`#13` 至 `#24`
+- 2026-03-23 已修复 `Phase 1-4` issue 正文，使每个 umbrella issue 都承接 phase close-out gate，并为所有 child issue 写明范围、依赖、验收与验证命令
+- 管理控制台首期开发范围已冻结为：typed backend overview contract + minimal frontend overview shell
+- `Phase 0` 当前不包含控制命令、多页面前端、Playwright 和打包发行链路
+- `Phase 1-4` 已分别有正式计划文档与 issue 拆解，但当前不提前并行实施
+- 2026-03-23 已启动主 agent 围绕 issue `#8` / `PR Slice A` 的任务编排；`#9-#24` 维持 backlog 状态，等待 `#8` 合并后再推进。
 
 ## Next Actions
 
-1. 明确管理 UI 应落在现有仓库的哪个技术平面中。
-2. 为管理 UI 创建首个真实工作 issue，并写回 `memory/issue-ledger.md`。
-3. 基于新的生产路径继续使用 `issue -> PR -> remote Codex review -> review 闭环 -> merge` 的默认推进方式。
+1. 围绕 issue `#8` 执行 `PR Slice A`：治理落点 + backend scaffold + health / overview contract。
+2. 在首个实现 PR 中同步更新 truth docs 与 `ops/doc-truth-map.yaml`，为 `apps/admin-web/**` 建立正式映射。
+3. 保持 `#9-#24` 为后续阶段 backlog，不提前并行实施。
 
 ## Repository
 
