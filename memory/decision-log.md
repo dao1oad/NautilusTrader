@@ -69,3 +69,17 @@
 ### Impact
 
 GitHub merge API 不再因 `Required status check "governance-check" is expected` 拒绝合并，治理配置与执行结果保持同名闭环。
+
+## 2026-03-23
+
+### Context
+
+Codex connector 在无问题场景下可能只留下 `Codex Review` PR comment，而不创建 submitted review；原有 gate 只识别 `pulls/{number}/reviews`，会误判为缺少远端 review。
+
+### Decision
+
+将 `pr-gate` 扩展到 PR `issue_comment` 事件，并让 `scripts/pre-pr-check.ps1` 同时接受 Codex connector 的 submitted review 与 `Codex Review` comment 作为远端 review 信号。
+
+### Impact
+
+远端 Codex review 的“有意见 review”与“无意见 comment”两种真实返回形态都能驱动 gate 正确重评，避免 comment-only 场景把 PR 错误阻塞在 merge 前。

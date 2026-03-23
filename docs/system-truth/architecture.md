@@ -19,4 +19,4 @@
 - merge 前必须完成远端 Codex review 与本地 review 闭环记录
 - 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，但不能替代远端 Codex review
 - 新增任何生产代码路径前，必须先建立 truth role 绑定
-- GitHub 中的远端 Codex review 由提交到 PR 的 Codex connector review 事件体现，而不是仓库协作者手工代替
+- GitHub 中的远端 Codex review 由 Codex connector 在 PR 上留下的 submitted review 或 `Codex Review` 评论体现，而不是仓库协作者手工代替

@@ -26,6 +26,7 @@
 - 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
 - 远端 required checks 当前为 `governance-check` 与 `pr-gate`。
 - 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
+- 远端 Codex review 当前可通过 submitted review 或 `Codex Review` PR comment 体现，`pr-gate` 已支持两种信号。
 
 ## Next Actions
 
