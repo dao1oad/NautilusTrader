@@ -33,6 +33,11 @@ if ($workflow -notmatch 'created') {
   exit 1
 }
 
+if ($workflow -notmatch 'refs/pull/' -or $workflow -notmatch 'github\.event\.issue\.number') {
+  Write-Error 'pr-gate.yml must checkout the commented PR head for issue_comment events instead of defaulting to main.'
+  exit 1
+}
+
 if ($script -notmatch 'reviewDecision' -or $script -notmatch 'isResolved') {
   Write-Error 'pre-pr-check.ps1 must validate remote review state and thread resolution.'
   exit 1
