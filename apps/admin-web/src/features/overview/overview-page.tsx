@@ -15,6 +15,8 @@ export function OverviewPage({ connectionState, snapshot, error }: Props = {}) {
     copy = error;
   } else if (snapshot?.node.status === "not_configured") {
     copy = "No live node configured";
+  } else if (snapshot) {
+    copy = `Node status: ${snapshot.node.status}`;
   } else if (!snapshot && connectionState === "disconnected") {
     copy = "Disconnected from admin API";
   }

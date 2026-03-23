@@ -19,6 +19,7 @@ export function subscribeToAdminEvents({ onEvent, onStateChange }: Options): () 
   }
 
   const socket = new WebSocket(buildWebSocketUrl());
+  let isClosing = false;
   onStateChange("connecting");
 
   socket.addEventListener("open", () => {
@@ -37,14 +38,19 @@ export function subscribeToAdminEvents({ onEvent, onStateChange }: Options): () 
   });
 
   socket.addEventListener("error", () => {
-    onStateChange("stale");
+    if (!isClosing) {
+      onStateChange("stale");
+    }
   });
 
   socket.addEventListener("close", () => {
-    onStateChange("stale");
+    if (!isClosing) {
+      onStateChange("stale");
+    }
   });
 
   return () => {
+    isClosing = true;
     socket.close();
   };
 }
