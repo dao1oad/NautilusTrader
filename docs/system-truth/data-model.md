@@ -15,7 +15,7 @@
 - `workspace/handoffs/review-resolution-*.md`
   - 数据职责：review 闭环凭据
 - `ops/*.yaml`
-  - 数据职责：治理策略、agent 配置、review gate 和编排设置
+  - 数据职责：治理策略、agent 配置、review gate、所需 approving review 计数和编排设置
 
 ## Current Product Data Status
 

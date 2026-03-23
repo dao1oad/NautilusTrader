@@ -2,27 +2,7 @@
 
 | Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| N/A | Template bootstrap | High | None | Blocked | No | N/A | Enable private-repo branch protection capability |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+| #1 | Finalize public governance bootstrap | High | None | In Progress | No | #2 | Push governance-check context fix and merge |
 
 
 

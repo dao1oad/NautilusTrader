@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  governance:
+  governance-check:
     runs-on: windows-latest
     steps:
       - name: Checkout

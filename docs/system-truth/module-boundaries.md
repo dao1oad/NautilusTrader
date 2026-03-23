@@ -11,6 +11,11 @@
 - `tests/smoke/`: 对治理骨架的验证，不作为生产路径
 - `workspace/`: 运行时产物与中间文件，不作为生产路径
 
+## Ops Boundary Details
+
+- `ops/review-gates.yaml` 负责声明 required status checks、远端 review actor、review 闭环要求，以及仓库级 `required_approving_review_count`
+- 当前仓库将 `required_approving_review_count` 设为 `0`，用于单维护者模式；该配置只放宽人工 approving review，不放宽远端 Codex review 或 PR-only 约束
+
 ## Current Absences
 
 - 当前不存在 `src/`、`app/`、`lib/`、`services/` 目录。

@@ -16,6 +16,15 @@
 4. 校验远端 review 与线程已解决
 5. 校验本地 review 闭环记录
 
+## PR Review Re-evaluation Flow
+
+1. PR 创建或同步时触发 `pr-gate`
+2. 若远端 Codex review 尚未提交，或 review 线程尚未闭环，`pr-gate` 失败并阻止合并
+3. 当 Codex connector 提交 review 时，`pull_request_review` 事件再次触发 `pr-gate`
+4. `pr-gate` 重新读取 review 事件、reviewDecision 与 review threads 状态
+5. 若 review 线程在失败后被手动 resolve，需要后续 PR 活动或手动 rerun 来刷新 `pr-gate` 结果
+6. 在单维护者模式下，远端 Codex review 已提交、review 线程已处理且其他门禁满足后，PR 可在无额外人工 Approve 的情况下进入可合并状态
+
 ## Truth Rebinding Flow
 
 1. 识别真实代码与自动化路径

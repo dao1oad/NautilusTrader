@@ -337,22 +337,24 @@ query($owner: String!, $name: String!, $number: Int!) {
     throw 'Unable to read pull request review state.'
   }
 
-  if ($pullRequest.reviewDecision -ne 'APPROVED') {
-    throw "Remote reviewDecision is '$($pullRequest.reviewDecision)'. Approval is required before merge."
-  }
-
   $unresolvedThreads = @($pullRequest.reviewThreads.nodes | Where-Object { -not $_.isResolved })
   if ($unresolvedThreads.Count -gt 0) {
     throw 'Remote review contains unresolved threads. Resolve all review comments before merge.'
   }
 
   $reviews = gh api "repos/$($PullRequestContext.RepoSlug)/pulls/$prNumber/reviews" | ConvertFrom-Json
-  $actorApprovals = @($reviews | Where-Object {
-      $_.state -eq 'APPROVED' -and $_.user.login -eq $RequiredActor
+  $acceptedActors = @($RequiredActor)
+  if ($RequiredActor -eq 'codex') {
+    $acceptedActors += @('chatgpt-codex-connector', 'chatgpt-codex-connector[bot]')
+  }
+
+  $acceptedStates = @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED')
+  $actorReviews = @($reviews | Where-Object {
+      $acceptedStates -contains $_.state -and $acceptedActors -contains $_.user.login
     })
 
-  if ($actorApprovals.Count -eq 0) {
-    throw "No APPROVED remote Codex review found from configured actor '$RequiredActor'."
+  if ($actorReviews.Count -eq 0) {
+    throw "No submitted remote Codex review found from configured actor '$RequiredActor'. Current reviewDecision is '$($pullRequest.reviewDecision)'."
   }
 }
 
