@@ -8,8 +8,10 @@
 
 - `crates/`: Rust workspace，承载核心领域模型、回测、实盘、网络、持久化、风险、组合管理、CLI 与各交易所/数据源适配器。
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
+- `nautilus_trader/admin/`: 本地管理控制面 Python API 与 DTO 投影层，负责把运行时状态包装成浏览器可消费的 admin contract。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
+- `apps/admin-web/`: 本机运维控制台前端源码树；`Phase 0` 仅承诺开发态 `Vite` 入口，不进入交易热路径。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
 - `tests/`: 单元、集成、验收、性能、内存泄漏测试和测试数据。
 - `scripts/`、`.github/`、`ops/`、`memory/`、`governance/`: 当前仓库保留的治理与自动化控制面。
@@ -30,5 +32,7 @@
 - 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，但不能替代远端 Codex review
 - 当前仓库保留自己的 `.git`、`origin` 和治理规则；上游源码仅作为文件快照导入
 - Python 运行时表面必须保持 `nautilus_trader/`、`python/nautilus_trader/`、`crates/pyo3` 与 Rust core crates 的接口一致性
+- `apps/admin-web` 只能通过 `nautilus_trader/admin` 暴露的 admin DTO 与 REST/WS contract 读取状态，不直接绑定内部 domain object
+- `Phase 0` 的 admin control plane 只承诺开发态双进程：Python admin API + `Vite` dev server；不宣称 wheel 打包、桌面壳或最终静态资源托管模型
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - GitHub 中的远端 Codex review 由 Codex connector 在 PR 上留下的 submitted review 或 `Codex Review` 评论体现，而不是仓库协作者手工代替

@@ -8,6 +8,12 @@
 
 `数据源/交易所适配器 -> 规范化 market/order/account 事件 -> common/core/model -> backtest/live/execution -> portfolio/risk/system/trading -> persistence/serialization/报告输出`
 
+## Admin Control Plane Flow
+
+`Browser -> apps/admin-web (Vite dev server, Phase 0 only) -> REST/WS -> nautilus_trader/admin -> 既有 live/execution/portfolio/risk/persistence surfaces -> typed admin DTO / connection state -> Browser`
+
+`Phase 0` 只定义 `health`、`overview` 与最小 WS invalidation / connection-state 语义；不在此阶段定义最终静态资源托管或桌面交付流。
+
 ## Example And Test Flow
 
 `examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性

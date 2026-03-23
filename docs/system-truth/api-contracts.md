@@ -16,6 +16,13 @@
 ## Runtime Interfaces
 
 - Python import root 为 `nautilus_trader`；其包结构覆盖 `accounting`、`adapters`、`analysis`、`backtest`、`cache`、`common`、`config`、`core`、`data`、`execution`、`indicators`、`live`、`model`、`persistence`、`portfolio`、`risk`、`serialization`、`system`、`trading`
+- `nautilus_trader/admin` 在 `Phase 0` 暴露本地 admin control plane contract：
+  - `GET /api/admin/health`
+  - `GET /api/admin/overview`
+  - `GET/WS /ws/admin/events`
+- `GET /api/admin/overview` 返回 typed admin DTO，而不是内部 domain object；`Phase 0` 至少包含 `OverviewSnapshot`、`NodeSummary`、`StrategySummary`、`AdapterSummary`、`AccountSummary`、`PositionSummary`、`SectionError`
+- `/ws/admin/events` 在 `Phase 0` 只允许最小事件集合：`subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
+- `apps/admin-web` 在 `Phase 0` 只消费上述 admin REST/WS contract，并以开发态双进程方式运行：浏览器 / `Vite` dev server <-> `nautilus_trader/admin`
 - `crates/cli` 提供命令行接口产物；相关发布与打包流程由 `.github/workflows/cli-binaries.yml` 驱动
 - `schema/sql/*.sql` 是持久化数据库对象定义接口，面向 `persistence` 层
 - `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API
@@ -36,3 +43,4 @@
 ## Non-Contracts
 
 - `memory/`、`workspace/` 和 `docs/system-truth/` 不是产品运行时 API
+- `Phase 0` 不把前端静态资源打进 wheel，不定义桌面壳，不把 Playwright 当作已承诺接口

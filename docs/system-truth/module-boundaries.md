@@ -5,7 +5,9 @@
 - `crates/analysis` 到 `crates/trading`: Rust 核心领域与运行时模块，负责性能关键路径。
 - `crates/adapters/*`: 交易所、数据源与 sandbox 适配器；边界职责是协议接入、字段转换与 venue-specific 行为，不承载通用核心逻辑。
 - `nautilus_trader/*`: Python/Cython 域层，向策略、回测、实盘和工具使用者暴露统一包结构。
+- `nautilus_trader/admin/*`: 本地管理控制面；职责是把 `live`、`execution`、`portfolio`、`risk`、`persistence` 等运行时能力投影成 admin DTO 与最小控制台 contract，而不是复制核心业务逻辑。
 - `python/nautilus_trader/*`: PyO3 输出层与类型桩；职责是稳定 Python import surface，而不是重新实现业务逻辑。
+- `apps/admin-web/*`: 本机控制台前端；职责是展示 admin DTO、连接状态与显式 degraded state，不承载交易热路径或内部对象访问。
 - `schema/sql/*`: 数据库持久化对象定义；其边界与 `crates/persistence`、`nautilus_trader/persistence` 对齐。
 - `examples/*`: 示例与演示流，不作为产品真值来源。
 - `tests/*`: 验证层，不作为产品真值来源。
@@ -24,5 +26,7 @@
 
 - 新的 venue adapter 应进入 `crates/adapters/<venue>`，并在 Python surface、文档与测试层保持同名或同职责映射。
 - 性能关键逻辑优先进入 Rust crates；Python/Cython 层负责用户接口、组合装配和编译后暴露。
+- `apps/admin-web` 不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象；浏览器边界必须固定在 `nautilus_trader/admin` 的 DTO contract。
+- `nautilus_trader/admin` 可以包装既有运行时能力，但在 `Phase 0` 只允许 `health`、`overview` 与最小 WS 事件集合，不扩展到命令控制、多页面或最终交付链路。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
 - `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽远端 Codex review 或 PR-only 约束。
