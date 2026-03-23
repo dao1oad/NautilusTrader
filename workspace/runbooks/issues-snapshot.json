@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "number": 5,
+    "title": "Sync NautilusTrader upstream snapshot and admin console design baseline",
+    "url": "https://github.com/dao1oad/NautilusTrader/issues/5",
+    "labels": [],
+    "assignees": [],
+    "milestone": "",
+    "body": "## Goal\n\nImport the upstream `nautechsystems/nautilus_trader` source snapshot into this independent repository, update truth docs/memory to match the real code layout, and add the admin console design + implementation planning baseline.\n\n## Scope\n\n- sync upstream source snapshot into this repository without keeping upstream git linkage\n- preserve governance, memory, truth-doc, and PR gate controls\n- update system truth and repo memory to reflect the imported codebase\n- write the admin console design and implementation plan for localhost single-user operations\n\n## Notes\n\n- This work should continue through PR only.\n- Remote Codex review is required before merge."
+  }
+]

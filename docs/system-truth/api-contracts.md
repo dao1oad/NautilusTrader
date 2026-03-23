@@ -1,28 +1,31 @@
 # API Contracts Truth
 
-## External Interfaces
+## Build And Packaging Contracts
 
-- `scripts/init-project.ps1`
-  - 输入：`ProjectName`、`Repository`、`SkipRemoteChecks`
-  - 契约：校验 `git`、`gh` 和认证状态，写入项目名或仓库信息，输出远端硬化清单
-- `scripts/check-governance.ps1`
-  - 输入：`SkipRemoteChecks`
-  - 契约：校验本地治理文件与 truth-doc 配置；如存在远端则校验 `main` 保护和 required checks
-- `scripts/sync-issues.ps1`
-  - 输入：`OutputPath`、`Limit`
-  - 契约：通过 `gh issue list` 拉取 open issues，并写出标准化快照 JSON
-- `scripts/build-workset.ps1`
-  - 输入：`InputPath`
-  - 契约：消费 issue 快照，生成 `memory/issue-ledger.md` 和 `workspace/issue-packets/*.md`
+- `pyproject.toml`
+  - 包名：`nautilus_trader`
+  - Python 版本：`>=3.12,<3.15`
+  - 构建后端：`poetry.core.masonry.api`
+  - 可选依赖组：`betfair`、`ib`、`docker`、`polymarket`、`visualization`
+- `build.py`
+  - 输入：环境变量 `RUSTUP_TOOLCHAIN`、`BUILD_MODE`、`PROFILE_MODE`、`ANNOTATION_MODE`、`PARALLEL_BUILD`、`COPY_TO_SOURCE`、`FORCE_STRIP`、`PYO3_ONLY`、`DRY_RUN`、`HIGH_PRECISION`
+  - 契约：先编译 Rust 关键库，再构建 Cython 扩展，并按平台处理链接参数与精度模式
+- `Cargo.toml`
+  - 契约：声明 workspace members、共享依赖与 adapter/core crate 边界；新 Rust 生产模块必须进入 workspace
 
-## Remote Interfaces
+## Runtime Interfaces
 
-- GitHub branch protection 通过 `gh api` 读取与校验
-- GitHub Actions 暴露 `governance-check` 与 `pr-gate` 两个 required check
-- `pr-gate` workflow 在 `pull_request`、`pull_request_review` 和 PR `issue_comment` 事件上运行，以便 PR 变更、review 提交或 Codex comment 到达后重新计算 merge gate
-- `scripts/pre-pr-check.ps1` 读取 `pulls/{number}/reviews` 与 `issues/{number}/comments`，并接受 Codex connector 的 submitted review 或 `Codex Review` comment 作为远端 review 信号
-- PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
+- Python import root 为 `nautilus_trader`；其包结构覆盖 `accounting`、`adapters`、`analysis`、`backtest`、`cache`、`common`、`config`、`core`、`data`、`execution`、`indicators`、`live`、`model`、`persistence`、`portfolio`、`risk`、`serialization`、`system`、`trading`
+- `crates/cli` 提供命令行接口产物；相关发布与打包流程由 `.github/workflows/cli-binaries.yml` 驱动
+- `schema/sql/*.sql` 是持久化数据库对象定义接口，面向 `persistence` 层
+- `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API
 
-## Product API Status
+## Repository Operational Interfaces
 
-- 当前尚未声明业务 API 或服务接口
+- GitHub Actions 公开 `build`、`build-v2`、`coverage`、`docker`、`performance`、`security-audit`、`build-docs`、`nightly-tests` 等工程接口
+- `governance-check` 与 `pr-gate` 继续作为当前独立仓库的合并门禁
+- `scripts/check-governance.ps1`、`scripts/sync-issues.ps1`、`scripts/build-workset.ps1` 仍是本仓库治理与编排入口
+
+## Non-Contracts
+
+- `memory/`、`workspace/` 和 `docs/system-truth/` 不是产品运行时 API

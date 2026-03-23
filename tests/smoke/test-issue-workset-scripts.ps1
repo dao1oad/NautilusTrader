@@ -56,3 +56,41 @@ try {
     Remove-Item $outputPath -Force
   }
 }
+
+$singleOutputPath = 'workspace\runbooks\test-single-issue-snapshot.json'
+if (Test-Path $singleOutputPath) {
+  Remove-Item $singleOutputPath -Force
+}
+
+function gh {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$Args
+  )
+
+  if ($Args.Count -ge 2 -and $Args[0] -eq 'issue' -and $Args[1] -eq 'list') {
+    return '[{"number":5,"title":"Single issue","labels":[],"assignees":[],"milestone":null,"url":"https://example.com/issues/5","body":"Issue body"}]'
+  }
+
+  throw ("Unexpected gh invocation: " + ($Args -join ' '))
+}
+
+try {
+  & 'scripts\sync-issues.ps1' -OutputPath $singleOutputPath
+  $rawPayload = Get-Content $singleOutputPath -Raw
+  $payload = $rawPayload | ConvertFrom-Json
+  $items = @($payload)
+
+  if ($rawPayload -notmatch '^\s*\[' -or $items.Count -ne 1 -or $items[0].number -ne 5) {
+    Write-Error 'sync-issues.ps1 must preserve a single GitHub issue as a JSON array with one element.'
+    exit 1
+  }
+} finally {
+  if (Test-Path Function:\gh) {
+    Remove-Item Function:\gh
+  }
+
+  if (Test-Path $singleOutputPath) {
+    Remove-Item $singleOutputPath -Force
+  }
+}

@@ -1,5 +1,7 @@
 $workflow = Get-Content '.github\workflows\pr-gate.yml' -Raw
 $script = Get-Content 'scripts\pre-pr-check.ps1' -Raw
+$ledgerPath = 'memory\issue-ledger.md'
+$originalLedger = Get-Content $ledgerPath -Raw
 
 if ($workflow -match '-SkipGitDiff') {
   Write-Error 'pr-gate.yml must not bypass the memory diff check.'
@@ -81,26 +83,36 @@ function gh {
 }
 
 try {
-  $env:GITHUB_EVENT_PATH = $tempEventPath
-  & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
-} catch {
-  Write-Error 'pre-pr-check.ps1 must accept a submitted remote Codex review from the GitHub Codex connector bot.'
-  exit 1
-} finally {
-  $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+  Set-Content -Path $ledgerPath -Value @'
+# Issue Ledger
 
-  if (Test-Path $tempEventPath) {
-    Remove-Item $tempEventPath -Force
+| Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| #1 | Review gate smoke validation | High | None | ready | No | TBD | Dispatch subagent |
+| #3 | Comment-only review smoke validation | High | None | ready | No | TBD | Dispatch subagent |
+'@
+
+  try {
+    $env:GITHUB_EVENT_PATH = $tempEventPath
+    & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
+  } catch {
+    Write-Error 'pre-pr-check.ps1 must accept a submitted remote Codex review from the GitHub Codex connector bot.'
+    exit 1
+  } finally {
+    $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+
+    if (Test-Path $tempEventPath) {
+      Remove-Item $tempEventPath -Force
+    }
+
+    if (Test-Path Function:\gh) {
+      Remove-Item Function:\gh
+    }
   }
 
-  if (Test-Path Function:\gh) {
-    Remove-Item Function:\gh
-  }
-}
+  $tempIssueCommentEventPath = Join-Path $env:TEMP 'nautilus-pr-issue-comment-event.json'
 
-$tempIssueCommentEventPath = Join-Path $env:TEMP 'nautilus-pr-issue-comment-event.json'
-
-Set-Content -Path $tempIssueCommentEventPath -Value @'
+  Set-Content -Path $tempIssueCommentEventPath -Value @'
 {
   "issue": {
     "number": 4,
@@ -141,20 +153,23 @@ function gh {
   throw ("Unexpected gh invocation: " + $joined)
 }
 
-try {
-  $env:GITHUB_EVENT_PATH = $tempIssueCommentEventPath
-  & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
-} catch {
-  Write-Error 'pre-pr-check.ps1 must accept a Codex connector PR comment when no submitted review exists.'
-  exit 1
+  try {
+    $env:GITHUB_EVENT_PATH = $tempIssueCommentEventPath
+    & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
+  } catch {
+    Write-Error 'pre-pr-check.ps1 must accept a Codex connector PR comment when no submitted review exists.'
+    exit 1
+  } finally {
+    $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+
+    if (Test-Path $tempIssueCommentEventPath) {
+      Remove-Item $tempIssueCommentEventPath -Force
+    }
+
+    if (Test-Path Function:\gh) {
+      Remove-Item Function:\gh
+    }
+  }
 } finally {
-  $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
-
-  if (Test-Path $tempIssueCommentEventPath) {
-    Remove-Item $tempIssueCommentEventPath -Force
-  }
-
-  if (Test-Path Function:\gh) {
-    Remove-Item Function:\gh
-  }
+  Set-Content -Path $ledgerPath -Value $originalLedger
 }

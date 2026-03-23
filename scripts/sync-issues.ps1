@@ -34,6 +34,6 @@ if ($parent) {
 }
 
 $normalizedList = @($normalized)
-$payload = if ($normalizedList.Count -eq 0) { '[]' } else { $normalizedList | ConvertTo-Json -Depth 6 }
+$payload = if ($normalizedList.Count -eq 0) { '[]' } else { ConvertTo-Json -InputObject $normalizedList -Depth 6 }
 $payload | Set-Content -Path $OutputPath
 Write-Host "Synced $($normalized.Count) issues to $OutputPath"

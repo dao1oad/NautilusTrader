@@ -12,6 +12,69 @@ exempt_paths:
   - .gitignore
 
 rules:
+  - name: rust-workspace
+    code_paths:
+      - .cargo/**
+      - Cargo.toml
+      - Cargo.lock
+      - crates/**
+      - rust-toolchain.toml
+      - rustfmt.toml
+      - clippy.toml
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model
+      - api_contracts
+      - integrations
+
+  - name: python-package
+    code_paths:
+      - pyproject.toml
+      - build.py
+      - nautilus_trader/**
+      - python/**
+    requires:
+      - architecture
+      - module_boundaries
+      - runtime_flows
+      - data_model
+      - api_contracts
+
+  - name: persistence-schema
+    code_paths:
+      - schema/**
+    requires:
+      - architecture
+      - runtime_flows
+      - data_model
+      - api_contracts
+
+  - name: examples-runtime
+    code_paths:
+      - examples/**
+    requires:
+      - architecture
+      - runtime_flows
+      - integrations
+
+  - name: build-tooling
+    code_paths:
+      - .config/**
+      - .docker/**
+      - .pre-commit-hooks/**
+      - .supply-chain/**
+      - Makefile
+      - deny.toml
+      - osv-scanner.toml
+      - .pre-commit-config.yaml
+      - .codecov.yml
+    requires:
+      - architecture
+      - runtime_flows
+      - integrations
+
   - name: scripts-runtime
     code_paths:
       - scripts/**
