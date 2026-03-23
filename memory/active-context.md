@@ -29,8 +29,8 @@
 
 ## Next Actions
 
-1. 回复并 resolve PR `#2` 上的 Codex review thread。
-2. 观察 `pull_request_review_thread` 触发后的 `pr-gate` 结果。
+1. 观察最新提交触发后的 `pr-gate` 结果。
+2. 若 thread 已 resolve 但 gate 未刷新，手动 rerun `pr-gate`。
 3. 若 checks 全绿，则合并 PR `#2`。
 
 ## Repository

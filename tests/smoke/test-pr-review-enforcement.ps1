@@ -21,16 +21,6 @@ if ($workflow -notmatch 'submitted') {
   exit 1
 }
 
-if ($workflow -notmatch 'pull_request_review_thread') {
-  Write-Error 'pr-gate.yml must rerun on pull_request_review_thread events so resolved conversations can unblock the gate.'
-  exit 1
-}
-
-if ($workflow -notmatch 'resolved') {
-  Write-Error 'pr-gate.yml must listen for resolved review-thread events so conversation closure re-evaluates the PR gate.'
-  exit 1
-}
-
 if ($script -notmatch 'reviewDecision' -or $script -notmatch 'isResolved') {
   Write-Error 'pre-pr-check.ps1 must validate remote review state and thread resolution.'
   exit 1

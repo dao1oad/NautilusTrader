@@ -15,3 +15,4 @@
 - 通过 `@codex review` 成功触发远端 Codex review，确认实际 review actor 为 `chatgpt-codex-connector[bot]`。
 - 修复 `pr-gate` 仅监听 `pull_request` 的问题，补齐 `pull_request_review` 与 `pull_request_review_thread` 触发。
 - 同步更新受影响的 truth-doc，并把 `review-resolution-2.md` 从占位记录改为实际闭环记录。
+- 发现 `pull_request_review_thread` 会使 GitHub 将 workflow 视为无效文件，因此回退为 `pull_request` + `pull_request_review`，并把 thread resolve 后的 gate 刷新策略记录为后续 PR 活动或手动 rerun。
