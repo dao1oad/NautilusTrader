@@ -26,7 +26,6 @@
 - 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
 - 远端 required checks 当前为 `governance-check` 与 `pr-gate`。
 - 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
-- issue `#1` 已关闭，bootstrap 收尾改由 issue `#3` 负责同步 memory 到 post-bootstrap 完成态。
 
 ## Next Actions
 
