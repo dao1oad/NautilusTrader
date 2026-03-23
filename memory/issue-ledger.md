@@ -3,7 +3,7 @@
 | Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | #5 | Sync NautilusTrader upstream snapshot and admin console design baseline | Medium | None | closed | No | #25 (draft) | Planning baseline PR open for merge to main |
-| #8 | Phase 0: admin control plane foundation and read-only overview slice | High | #5 | in_progress | No | #26 (draft, stacked on #25); #27 (draft, stacked on #26) | Continue stacked review flow for Slice A/B |
+| #8 | Phase 0: admin control plane foundation and read-only overview slice | High | #5 | in_progress | No | #26 (draft, stacked on #25); #27 (draft, stacked on #26); #28 (draft, stacked on #27) | Continue stacked review flow for Slice A/B/C |
 | #9 | Phase 1: admin console read-only operations surfaces | High | #8 | planned | No | TBD | Start after #8 merges |
 | #10 | Phase 2: admin control commands and audit loop | High | #9 | planned | No | TBD | Start after #9 merges |
 | #11 | Phase 3: trading operations and diagnostics surfaces | High | #10 | planned | No | TBD | Start after #10 merges |
