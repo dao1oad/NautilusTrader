@@ -20,9 +20,10 @@
 
 1. PR 创建或同步时触发 `pr-gate`
 2. 若远端 review 尚未批准，`pr-gate` 失败并阻止合并
-3. 当 review 提交时，`pull_request_review` 事件再次触发 `pr-gate`
-4. `pr-gate` 重新读取 `reviewDecision` 与 review threads 状态
-5. 只有 review、闭环记录和其他门禁同时满足时，PR 才进入可合并状态
+3. 当 Codex connector 提交 review 时，`pull_request_review` 事件再次触发 `pr-gate`
+4. 当 review 线程被 resolve 时，`pull_request_review_thread` 事件再次触发 `pr-gate`
+5. `pr-gate` 重新读取 review 事件、reviewDecision 与 review threads 状态
+6. 只有远端 Codex review 已提交、review 线程已处理且其他门禁满足时，PR 才进入可合并状态
 
 ## Truth Rebinding Flow
 

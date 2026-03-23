@@ -18,3 +18,4 @@
 - `main` 只通过 PR 合并，初始化阶段除外
 - merge 前必须完成远端 Codex review 与本地 review 闭环记录
 - 新增任何生产代码路径前，必须先建立 truth role 绑定
+- GitHub 中的远端 Codex review 由提交到 PR 的 Codex connector review 事件体现，而不是仓库协作者手工代替

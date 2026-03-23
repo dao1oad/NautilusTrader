@@ -12,3 +12,6 @@
 - 运行 `scripts/check-governance.ps1`，本地与远端治理检查全部通过。
 - 创建 GitHub issue `#1`，用于承接首个治理 PR 和端到端 gate 验证。
 - 创建 PR `#2`：`docs: finalize public governance bootstrap`。
+- 通过 `@codex review` 成功触发远端 Codex review，确认实际 review actor 为 `chatgpt-codex-connector[bot]`。
+- 修复 `pr-gate` 仅监听 `pull_request` 的问题，补齐 `pull_request_review` 与 `pull_request_review_thread` 触发。
+- 同步更新受影响的 truth-doc，并把 `review-resolution-2.md` 从占位记录改为实际闭环记录。

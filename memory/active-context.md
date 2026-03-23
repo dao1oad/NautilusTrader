@@ -10,7 +10,8 @@
 
 ## Blockers
 
-- 待 PR `#2` 完成 `remote Codex review`，并完成 review 闭环记录后方可合并。
+- 待 PR `#2` 中的 Codex review thread `discussion_r2972986481` 完成回复并 resolve。
+- 待 PR `#2` 的 `pr-gate` 在最新 workflow 与 review 状态下重新通过。
 
 ## Confirmed Facts
 
@@ -28,9 +29,9 @@
 
 ## Next Actions
 
-1. 为 PR `#2` 补齐 `review-resolution-2.md` 记录文件。
-2. 在 PR `#2` 上获取 `remote Codex review`。
-3. 处理 review 意见并完成闭环记录。
+1. 回复并 resolve PR `#2` 上的 Codex review thread。
+2. 观察 `pull_request_review_thread` 触发后的 `pr-gate` 结果。
+3. 若 checks 全绿，则合并 PR `#2`。
 
 ## Repository
 

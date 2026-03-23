@@ -2,7 +2,7 @@
 
 - PR: #2
 - Review Type: remote Codex review
-- Comment: Pending first remote review pass
-- Resolution: Placeholder record created to satisfy repository review-resolution tracking convention before the first review cycle starts
-- Evidence: Review comments and resolutions will be appended in follow-up commits on this branch
-- Status: Open
+- Comment: `discussion_r2972986481` flagged that this file was still a placeholder and could be mistaken for a closed merge-ready review record
+- Resolution: Replaced the placeholder with a concrete record, updated the PR gate workflow so review submissions and resolved threads retrigger gate evaluation, and synced the affected truth documents
+- Evidence: PR comment `discussion_r2972986481`, commits on `codex/finalize-public-governance-bootstrap`, and local verification via `scripts/pre-pr-check.ps1` plus `tests/smoke/run-all.ps1`
+- Status: Resolved

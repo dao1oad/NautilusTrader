@@ -5,7 +5,7 @@
 - 使用 `gh` 同步 issues、审查 reviews、读取 branch protection
 - GitHub Actions 负责 `governance-check` 和 `pr-gate`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 必须在 PR 更新和 review 提交后都能重跑，否则远端 approval 无法自动反映到 required check 结果
+- `pr-gate` 必须在 PR 更新、review 提交和 review 线程 resolve 后都能重跑，否则 required check 结果会滞后于真实 review 状态
 
 ## Codex
 

@@ -19,7 +19,7 @@
 
 - GitHub branch protection 通过 `gh api` 读取与校验
 - GitHub Actions 暴露 `governance-check` 与 `pr-gate` 两个 required check
-- `pr-gate` workflow 在 `pull_request` 和 `pull_request_review` 事件上运行，以便 review 状态变化后重新计算 merge gate
+- `pr-gate` workflow 在 `pull_request`、`pull_request_review` 和 `pull_request_review_thread` 事件上运行，以便 review 或线程状态变化后重新计算 merge gate
 - PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
 
 ## Product API Status
