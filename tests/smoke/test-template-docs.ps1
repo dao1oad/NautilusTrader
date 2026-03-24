@@ -3,7 +3,9 @@ $requiredPhrases = @(
   'remote Codex review',
   'issue-ledger',
   'init-project.ps1',
-  'check-governance.ps1'
+  'check-governance.ps1',
+  'init-project.sh',
+  'check-governance.sh'
 )
 
 $docs = @(

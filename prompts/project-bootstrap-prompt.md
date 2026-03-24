@@ -3,6 +3,7 @@
 将下面整段内容粘贴给 Codex 或其他兼容 agent，用于在**复制当前模板目录**后的新项目中完成治理框架搭建和初始化。
 
 English anchors for tooling:
+
 - `copy the template directory`
 - `minimal confirmation list`
 
@@ -53,6 +54,8 @@ English anchors for tooling:
 4. 运行初始化与治理检查：
 - `scripts/init-project.ps1`
 - `scripts/check-governance.ps1`
+- `scripts/init-project.sh`
+- `scripts/check-governance.sh`
 
 5. 如果仓库已连接 GitHub，则检查并报告这些远端要求是否已满足：
 - 分支保护

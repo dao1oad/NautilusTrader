@@ -166,7 +166,7 @@ def _build_rust_libs() -> None:
 
     try:
         # Build the Rust libraries using Cargo
-        if RUSTUP_TOOLCHAIN not in ("stable", "nightly"):
+        if not re.fullmatch(r"(stable|nightly|\d+\.\d+(?:\.\d+)?)", RUSTUP_TOOLCHAIN):
             raise ValueError(f"Invalid `RUSTUP_TOOLCHAIN` '{RUSTUP_TOOLCHAIN}'")
 
         needed_crates = [
@@ -203,8 +203,10 @@ def _build_rust_libs() -> None:
             *features,
         ]
 
-        if RUSTUP_TOOLCHAIN == "nightly":
-            cmd_args.insert(1, "+nightly")
+        # Keep the default `stable` behavior compatible with `rust-toolchain.toml`,
+        # but allow explicit version pins or nightly overrides when requested.
+        if RUSTUP_TOOLCHAIN != "stable":
+            cmd_args.insert(1, f"+{RUSTUP_TOOLCHAIN}")
 
         print(" ".join(cmd_args))
 

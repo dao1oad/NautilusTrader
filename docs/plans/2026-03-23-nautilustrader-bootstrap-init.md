@@ -10,9 +10,10 @@
 
 ---
 
-### Task 1: Inspect current repository reality
+## Task 1: Inspect current repository reality
 
 **Files:**
+
 - Read: `D:\NautilusTrader\AGENTS.md`
 - Read: `D:\NautilusTrader\README.md`
 - Read: `D:\NautilusTrader\PROJECT_INIT.md`
@@ -28,9 +29,10 @@
 
 **Step 3:** Read bootstrap scripts and review-gate config to understand local and remote governance expectations.
 
-### Task 2: Rebind local memory and truth documents
+## Task 2: Rebind local memory and truth documents
 
 **Files:**
+
 - Modify: `D:\NautilusTrader\memory\product-context.md`
 - Modify: `D:\NautilusTrader\memory\repo-map.md`
 - Modify: `D:\NautilusTrader\memory\active-context.md`
@@ -48,9 +50,10 @@
 
 **Step 3:** Capture the current absence of business code and define the current truth surface around governance assets and automation flows.
 
-### Task 3: Rebind truth registry and truth map to real paths
+## Task 3: Rebind truth registry and truth map to real paths
 
 **Files:**
+
 - Modify: `D:\NautilusTrader\ops\doc-truth-registry.yaml`
 - Modify: `D:\NautilusTrader\ops\doc-truth-map.yaml`
 
@@ -62,9 +65,10 @@
 
 **Step 4:** Leave `tests/**`, `docs/**`, `memory/**`, and `governance/**` exempt, and avoid inventing missing `src/`-style layouts.
 
-### Task 4: Validate initialization locally
+## Task 4: Validate initialization locally
 
 **Files:**
+
 - Run: `D:\NautilusTrader\scripts\init-project.ps1`
 - Run: `D:\NautilusTrader\scripts\check-governance.ps1`
 
@@ -74,9 +78,10 @@
 
 **Step 3:** Optionally run smoke checks if they can provide additional confidence without conflicting with bootstrap state.
 
-### Task 5: Prepare remote bootstrap and report blockers
+## Task 5: Prepare remote bootstrap and report blockers
 
 **Files:**
+
 - Inspect: git config and `gh` repository availability
 
 **Step 1:** Check whether `dao1oad/NautilusTrader` already exists.

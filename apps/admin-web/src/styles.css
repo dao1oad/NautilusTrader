@@ -1,0 +1,120 @@
+:root {
+  color-scheme: light;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background:
+    radial-gradient(circle at top right, rgba(40, 120, 220, 0.14), transparent 32%),
+    linear-gradient(180deg, #eef3f8 0%, #f8fafc 100%);
+  color: #112033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 32px 20px;
+}
+
+.app-panel {
+  max-width: 960px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 32, 51, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(17, 32, 51, 0.08);
+  padding: 28px;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.app-kicker {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: #36506c;
+}
+
+.connection-banner {
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.connection-banner[data-state="connected"] {
+  background: #daf5e8;
+  color: #11663e;
+}
+
+.connection-banner[data-state="connecting"] {
+  background: #e6f0ff;
+  color: #1c4da6;
+}
+
+.connection-banner[data-state="disconnected"] {
+  background: #fde6e4;
+  color: #9b2c2c;
+}
+
+.connection-banner[data-state="stale"] {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.overview-card {
+  border: 1px solid rgba(17, 32, 51, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.95), #ffffff);
+}
+
+.overview-card h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.overview-alert {
+  margin: 0 0 10px;
+  color: #8a5a00;
+  font-weight: 600;
+}
+
+.overview-copy {
+  margin: 0;
+  color: #42566d;
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    flex-direction: column;
+  }
+
+  .connection-banner {
+    white-space: normal;
+  }
+}

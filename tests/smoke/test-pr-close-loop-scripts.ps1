@@ -1,6 +1,7 @@
 $required = @(
   'scripts\pre-pr-check.ps1',
   'scripts\close-loop.ps1',
+  'scripts\close-loop.sh',
   'workspace\handoffs\review-resolution-template.md'
 )
 
@@ -12,6 +13,7 @@ if ($missing.Count -gt 0) {
 
 $pre = Get-Content 'scripts\pre-pr-check.ps1' -Raw
 $close = Get-Content 'scripts\close-loop.ps1' -Raw
+$closeSh = Get-Content 'scripts\close-loop.sh' -Raw
 
 if ($pre -notmatch 'memory' -or $pre -notmatch 'remote Codex review') {
   Write-Error 'pre-pr-check.ps1 must validate memory updates and remote review prerequisites.'
@@ -21,4 +23,89 @@ if ($pre -notmatch 'memory' -or $pre -notmatch 'remote Codex review') {
 if ($close -notmatch 'progress-log' -or $close -notmatch 'active-context') {
   Write-Error 'close-loop.ps1 must update memory after merge.'
   exit 1
+}
+
+if ($closeSh -notmatch 'progress-log' -or $closeSh -notmatch 'active-context') {
+  Write-Error 'close-loop.sh must update memory after merge.'
+  exit 1
+}
+
+$ledgerPath = 'memory\issue-ledger.md'
+$progressLogPath = 'memory\progress-log.md'
+$activeContextPath = 'memory\active-context.md'
+$originalLedger = if (Test-Path $ledgerPath) { Get-Content $ledgerPath -Raw } else { $null }
+$originalProgressLog = if (Test-Path $progressLogPath) { Get-Content $progressLogPath -Raw } else { $null }
+$originalActiveContext = if (Test-Path $activeContextPath) { Get-Content $activeContextPath -Raw } else { $null }
+
+$seedLedger = @'
+# Issue Ledger
+
+| Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| #401 | Preserve PR metadata | Medium | None | ready | No | #77 | Review complete |
+'@
+
+$seedProgressLog = @'
+# Progress Log
+'@
+
+$seedActiveContext = @'
+# Active Context
+'@
+
+$powershellExe = if (Get-Command 'powershell' -ErrorAction SilentlyContinue) {
+  'powershell'
+} elseif (Get-Command 'pwsh' -ErrorAction SilentlyContinue) {
+  'pwsh'
+} else {
+  Write-Error 'Neither powershell nor pwsh is available to run close-loop.ps1.'
+  exit 1
+}
+
+try {
+  Set-Content -Path $ledgerPath -Value $seedLedger
+  Set-Content -Path $progressLogPath -Value $seedProgressLog
+  Set-Content -Path $activeContextPath -Value $seedActiveContext
+
+  & $powershellExe -ExecutionPolicy Bypass -File scripts\close-loop.ps1 -IssueNumber 401 -Summary 'Closed without explicit PR number'
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error 'close-loop.ps1 must succeed without an explicit PR number.'
+    exit 1
+  }
+
+  $updatedLedger = Get-Content $ledgerPath -Raw
+  if ($updatedLedger -notlike '*| #401 | Preserve PR metadata | Medium | None | merged | No | #77 | Archived |*') {
+    Write-Error 'close-loop.ps1 must preserve existing PR metadata when PrNumber is omitted.'
+    exit 1
+  }
+
+  if ($IsLinux -or $IsMacOS) {
+    Set-Content -Path $ledgerPath -Value $seedLedger
+    Set-Content -Path $progressLogPath -Value $seedProgressLog
+    Set-Content -Path $activeContextPath -Value $seedActiveContext
+
+    bash scripts/close-loop.sh --issue-number 401 --summary 'Closed without explicit PR number'
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error 'close-loop.sh must succeed without an explicit PR number.'
+      exit 1
+    }
+
+    $updatedShellLedger = Get-Content $ledgerPath -Raw
+    if ($updatedShellLedger -notlike '*| #401 | Preserve PR metadata | Medium | None | merged | No | #77 | Archived |*') {
+      Write-Error 'close-loop.sh must preserve existing PR metadata when --pr-number is omitted.'
+      exit 1
+    }
+  }
+} finally {
+  if ($originalLedger -ne $null) {
+    Set-Content -Path $ledgerPath -Value $originalLedger
+  }
+
+  if ($originalProgressLog -ne $null) {
+    Set-Content -Path $progressLogPath -Value $originalProgressLog
+  }
+
+  if ($originalActiveContext -ne $null) {
+    Set-Content -Path $activeContextPath -Value $originalActiveContext
+  }
 }

@@ -54,17 +54,76 @@ function Get-Dependencies {
   return @($matches | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
 }
 
+function Get-ExistingLedgerMetadata {
+  param([string]$LedgerPath)
+
+  $metadata = @{}
+  if (-not (Test-Path $LedgerPath)) {
+    return $metadata
+  }
+
+  foreach ($line in Get-Content $LedgerPath) {
+    if ($line -notmatch '^\|\s*#(?<number>\d+)\s*\|') {
+      continue
+    }
+
+    $cells = @($line.Trim('|').Split('|') | ForEach-Object { $_.Trim() })
+    if ($cells.Count -lt 8) {
+      continue
+    }
+
+    $metadata[$Matches.number] = @{
+      pr = $cells[6]
+      next = $cells[7]
+    }
+  }
+
+  return $metadata
+}
+
 $issues = Get-Content $InputPath -Raw | ConvertFrom-Json
 $openIssueNumbers = @{}
 foreach ($issue in $issues) {
   $openIssueNumbers[[string]$issue.number] = $true
 }
 
+$defaultNextValues = @(
+  'Resolve dependency',
+  'Clarify scope',
+  'Dispatch subagent'
+)
+$existingLedgerMetadata = Get-ExistingLedgerMetadata -LedgerPath 'memory\issue-ledger.md'
+
 $rows = foreach ($issue in $issues) {
   $labels = @($issue.labels)
   $dependencies = Get-Dependencies -Body $issue.body
   $state = Get-IssueState -Labels $labels -Dependencies $dependencies -OpenIssueNumbers $openIssueNumbers
   $parallel = if ($state -eq 'parallel-ready') { 'Yes' } else { 'No' }
+  $defaultNext = if ($state -eq 'blocked') {
+    'Resolve dependency'
+  } elseif ($state -eq 'needs-clarification') {
+    'Clarify scope'
+  } else {
+    'Dispatch subagent'
+  }
+
+  $existing = if ($existingLedgerMetadata.ContainsKey([string]$issue.number)) {
+    $existingLedgerMetadata[[string]$issue.number]
+  } else {
+    $null
+  }
+
+  $pr = if ($existing -and $existing.pr -and $existing.pr -ne 'TBD') {
+    $existing.pr
+  } else {
+    'TBD'
+  }
+
+  $next = if (($state -eq 'ready' -or $state -eq 'parallel-ready') -and $existing -and $existing.next -and $defaultNextValues -notcontains $existing.next) {
+    $existing.next
+  } else {
+    $defaultNext
+  }
 
   [pscustomobject]@{
     number = $issue.number
@@ -73,8 +132,8 @@ $rows = foreach ($issue in $issues) {
     dependencies = if ($dependencies.Count -gt 0) { ($dependencies -join ', ') } else { 'None' }
     state = $state
     parallel = $parallel
-    pr = 'TBD'
-    next = if ($state -eq 'blocked') { 'Resolve dependency' } elseif ($state -eq 'needs-clarification') { 'Clarify scope' } else { 'Dispatch subagent' }
+    pr = $pr
+    next = $next
   }
 }
 

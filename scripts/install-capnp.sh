@@ -18,6 +18,18 @@ get_capnp_version() {
   capnp --version 2> /dev/null | awk '{print $NF}' || echo ""
 }
 
+run_with_elevation() {
+  if [[ "${EUID}" -eq 0 ]]; then
+    "$@"
+  elif command -v sudo &> /dev/null; then
+    sudo "$@"
+  else
+    echo "Error: '${*}' requires elevated privileges, but sudo is not available."
+    echo "Run as root or set CAPNP_PREFIX to a writable user prefix."
+    exit 1
+  fi
+}
+
 # Detect OS
 OS="$(uname -s)"
 case "${OS}" in
@@ -66,10 +78,12 @@ if [[ "${OS_TYPE}" == "Linux" ]]; then
 
   echo "Installing to ${INSTALL_PREFIX}..."
   if [[ "${INSTALL_PREFIX}" == "/usr/local" ]]; then
-    sudo make install
-    sudo ldconfig
+    run_with_elevation make install
+    run_with_elevation ldconfig
   else
     make install
+    export PATH="${INSTALL_PREFIX}/bin:${PATH}"
+    export LD_LIBRARY_PATH="${INSTALL_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
   fi
 
   popd
@@ -135,6 +149,11 @@ else
 fi
 
 # Final verification that correct version is installed and in PATH
+if [[ -n "${CAPNP_PREFIX:-}" ]]; then
+  export PATH="${CAPNP_PREFIX}/bin:${PATH}"
+  export LD_LIBRARY_PATH="${CAPNP_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
+fi
+
 FINAL_VER=$(get_capnp_version)
 if [[ "$FINAL_VER" != "$CAPNP_VERSION" ]]; then
   echo "Error: Version mismatch after install!"

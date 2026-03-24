@@ -1,6 +1,7 @@
 $script = Get-Content 'scripts\check-governance.ps1' -Raw
 $gates = Get-Content 'ops\review-gates.yaml' -Raw
 $workflow = Get-Content '.github\workflows\governance-check.yml' -Raw
+$checkGovernanceScript = Join-Path 'scripts' 'check-governance.ps1'
 
 $requiredChecks = @(
   'required_pull_request_reviews',
@@ -96,7 +97,7 @@ function gh {
 }
 
 try {
-  & 'scripts\check-governance.ps1'
+  & $checkGovernanceScript
 } catch {
   Write-Error 'check-governance.ps1 must honor required_approving_review_count from review-gates.yaml and allow a remote count of 0 when configured.'
   exit 1

@@ -2,7 +2,16 @@ $fixturePath = 'workspace\runbooks\issues-dependency-fixture.json'
 $ledgerPath = 'memory\issue-ledger.md'
 $packetDir = 'workspace\issue-packets'
 $originalLedger = if (Test-Path $ledgerPath) { Get-Content $ledgerPath -Raw } else { $null }
-$backupDir = Join-Path $env:TEMP ('issue-packets-backup-' + [guid]::NewGuid().ToString())
+$tempRoot = [System.IO.Path]::GetTempPath()
+$backupDir = Join-Path $tempRoot ('issue-packets-backup-' + [guid]::NewGuid().ToString())
+$powershellExe = if (Get-Command 'powershell' -ErrorAction SilentlyContinue) {
+  'powershell'
+} elseif (Get-Command 'pwsh' -ErrorAction SilentlyContinue) {
+  'pwsh'
+} else {
+  Write-Error 'Neither powershell nor pwsh is available to run build-workset.ps1.'
+  exit 1
+}
 
 New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 if (Test-Path $packetDir) {
@@ -36,7 +45,7 @@ $fixture = @'
 
 try {
   Set-Content -Path $fixturePath -Value $fixture
-  powershell -ExecutionPolicy Bypass -File scripts\build-workset.ps1 -InputPath $fixturePath
+  & $powershellExe -ExecutionPolicy Bypass -File scripts\build-workset.ps1 -InputPath $fixturePath
   if ($LASTEXITCODE -ne 0) {
     Write-Error 'build-workset.ps1 failed on dependency fixture.'
     exit 1

@@ -2,6 +2,9 @@ $workflow = Get-Content '.github\workflows\pr-gate.yml' -Raw
 $script = Get-Content 'scripts\pre-pr-check.ps1' -Raw
 $ledgerPath = 'memory\issue-ledger.md'
 $originalLedger = Get-Content $ledgerPath -Raw
+$prePrCheckScript = Join-Path 'scripts' 'pre-pr-check.ps1'
+$reviewResolutionFile = Join-Path 'workspace/handoffs' 'review-resolution-template.md'
+$tempRoot = [System.IO.Path]::GetTempPath()
 
 if ($workflow -match '-SkipGitDiff') {
   Write-Error 'pr-gate.yml must not bypass the memory diff check.'
@@ -54,7 +57,7 @@ if ($script -notmatch 'review-resolution-' -or $script -notmatch 'review_resolut
 }
 
 $originalGitHubEventPath = $env:GITHUB_EVENT_PATH
-$tempEventPath = Join-Path $env:TEMP 'nautilus-pr-review-event.json'
+$tempEventPath = Join-Path $tempRoot 'nautilus-pr-review-event.json'
 
 Set-Content -Path $tempEventPath -Value @'
 {
@@ -99,7 +102,7 @@ try {
 
   try {
     $env:GITHUB_EVENT_PATH = $tempEventPath
-    & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
+    & $prePrCheckScript -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride @('memory\active-context.md')
   } catch {
     Write-Error 'pre-pr-check.ps1 must accept a submitted remote Codex review from the GitHub Codex connector bot.'
     exit 1
@@ -115,7 +118,7 @@ try {
     }
   }
 
-  $tempIssueCommentEventPath = Join-Path $env:TEMP 'nautilus-pr-issue-comment-event.json'
+  $tempIssueCommentEventPath = Join-Path $tempRoot 'nautilus-pr-issue-comment-event.json'
 
   Set-Content -Path $tempIssueCommentEventPath -Value @'
 {
@@ -160,7 +163,7 @@ function gh {
 
   try {
     $env:GITHUB_EVENT_PATH = $tempIssueCommentEventPath
-    & 'scripts\pre-pr-check.ps1' -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -ChangedFilesOverride @('memory\active-context.md')
+    & $prePrCheckScript -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride @('memory\active-context.md')
   } catch {
     Write-Error 'pre-pr-check.ps1 must accept a Codex connector PR comment when no submitted review exists.'
     exit 1

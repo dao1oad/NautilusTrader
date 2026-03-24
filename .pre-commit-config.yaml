@@ -120,6 +120,16 @@ repos:
         language: system
         types: [text]
         files: '\.(rs|py|pyx|md|toml|yaml|yml)$'
+        exclude: >-
+          (?x)^(
+            PROJECT_INIT\.md|
+            memory/|
+            governance/|
+            prompts/|
+            docs/system-truth/|
+            docs/plans/|
+            ops/bootstrap-checklist\.md
+          )
 
       - id: check-toml-codegen
         name: check toml-codegen

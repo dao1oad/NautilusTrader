@@ -5,6 +5,14 @@
 - 当前代码树已包含以下 adapter 集成边界：`architect_ax`、`betfair`、`binance`、`bitmex`、`blockchain`、`bybit`、`databento`、`deribit`、`dydx`、`hyperliquid`、`kraken`、`okx`、`polymarket`、`sandbox`、`tardis`
 - 集成说明位于 `docs/integrations/`，对应行为验证主要位于 `tests/integration_tests/adapters/`
 
+## Admin Control Plane Integration
+
+- `Phase 0` 的前后端集成是本机 `localhost` 开发态双进程：
+  - `apps/admin-web` 通过 `Vite` dev server 提供浏览器入口
+  - `nautilus_trader/admin` 提供 admin REST / WebSocket contract
+- 浏览器与后端的集成边界固定在 admin DTO 与最小事件契约；前端不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
+- `Phase 0` 只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
+
 ## Toolchain Integrations
 
 - Rust/Cargo workspace、Cython、PyO3、Poetry build backend、uv lockfile、Docker、Codecov、Codspeed 与 GitHub Actions 共同组成工程工具链
