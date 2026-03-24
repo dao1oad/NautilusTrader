@@ -12,6 +12,7 @@ $buildWorksetShellScript = Join-Path 'scripts' 'build-workset.sh'
 $outputPath = Join-Path 'workspace/runbooks' 'test-empty-issues-snapshot.json'
 $singleOutputPath = Join-Path 'workspace/runbooks' 'test-single-issue-snapshot.json'
 $shellOutputPath = Join-Path 'workspace/runbooks' 'test-shell-single-issue-snapshot.json'
+$shellFailureOutputPath = Join-Path 'workspace/runbooks' 'test-shell-failure-issues-snapshot.json'
 $worksetFixturePath = Join-Path 'workspace/runbooks' 'test-preserve-metadata-issues.json'
 $ledgerPath = 'memory\issue-ledger.md'
 $packetDir = 'workspace\issue-packets'
@@ -162,6 +163,10 @@ exit 1
       Remove-Item $shellOutputPath -Force
     }
 
+    if (Test-Path $shellFailureOutputPath) {
+      Remove-Item $shellFailureOutputPath -Force
+    }
+
     bash $syncIssuesShellScript --output-path $shellOutputPath
     if ($LASTEXITCODE -ne 0) {
       Write-Error 'sync-issues.sh must succeed when gh returns a single issue.'
@@ -176,6 +181,30 @@ exit 1
       Write-Error 'sync-issues.sh must preserve a single GitHub issue as a JSON array with one element.'
       exit 1
     }
+
+    @'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "issue" && "${2:-}" == "list" ]]; then
+  printf 'gh failure\n' >&2
+  exit 23
+fi
+
+printf 'Unexpected gh invocation: %s\n' "$*" >&2
+exit 1
+'@ | Set-Content -Path $stubGh -NoNewline
+
+    bash $syncIssuesShellScript --output-path $shellFailureOutputPath 2>$null
+    if ($LASTEXITCODE -eq 0) {
+      Write-Error 'sync-issues.sh must fail when gh issue list returns a non-zero exit code.'
+      exit 1
+    }
+
+    if (Test-Path $shellFailureOutputPath) {
+      Write-Error 'sync-issues.sh must not write a snapshot when gh issue list fails.'
+      exit 1
+    }
   } finally {
     $env:PATH = $originalPath
 
@@ -185,6 +214,10 @@ exit 1
 
     if (Test-Path $shellOutputPath) {
       Remove-Item $shellOutputPath -Force
+    }
+
+    if (Test-Path $shellFailureOutputPath) {
+      Remove-Item $shellFailureOutputPath -Force
     }
   }
 }
