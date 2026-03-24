@@ -22,7 +22,6 @@ export function App() {
     } catch (nextError) {
       startTransition(() => {
         setError(nextError instanceof Error ? nextError.message : "Failed to load admin overview");
-        setConnectionState("disconnected");
       });
     }
   });

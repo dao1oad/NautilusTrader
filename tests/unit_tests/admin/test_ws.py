@@ -23,3 +23,14 @@ def test_ws_rejects_unknown_channel():
 
     assert payload["type"] == "server.error"
     assert payload["code"] == "unsupported_channel"
+
+
+def test_ws_rejects_non_object_payload():
+    client = TestClient(create_admin_app())
+
+    with client.websocket_connect("/ws/admin/events") as websocket:
+        websocket.send_json(["overview"])
+        payload = websocket.receive_json()
+
+    assert payload["type"] == "server.error"
+    assert payload["code"] == "invalid_payload"

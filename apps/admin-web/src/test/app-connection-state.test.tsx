@@ -63,3 +63,30 @@ test("keeps stale connection state after a pending overview refresh resolves", a
 
   expect(screen.queryByText("Connected")).not.toBeInTheDocument();
 });
+
+
+test("does not force disconnected state when overview refresh fails but websocket is connected", async () => {
+  vi.doMock("../shared/api/admin-client", () => ({
+    getOverviewSnapshot: vi.fn(async () => {
+      throw new Error("Transient overview failure");
+    })
+  }));
+
+  vi.doMock("../shared/realtime/admin-events", () => ({
+    subscribeToAdminEvents: vi.fn(({ onStateChange }: { onStateChange: (state: "connected") => void }) => {
+      onStateChange("connected");
+      return () => {};
+    })
+  }));
+
+  const { App } = await import("../app");
+
+  render(<App />);
+
+  await waitFor(() => {
+    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Transient overview failure")).toBeInTheDocument();
+  });
+
+  expect(screen.queryByText("Disconnected")).not.toBeInTheDocument();
+});
