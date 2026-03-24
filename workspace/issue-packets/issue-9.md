@@ -5,7 +5,7 @@
 - ID: 9
 - Title: Phase 1: admin console read-only operations surfaces
 - Priority: Medium
-- Dependencies: 13, 14, 15, 8
+- Dependencies: 8
 
 ## Goal
 

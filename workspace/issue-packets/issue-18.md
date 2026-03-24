@@ -5,7 +5,7 @@
 - ID: 18
 - Title: Phase 2C: command confirmations, audit timeline, and recovery runbooks
 - Priority: Medium
-- Dependencies: 10, 16, 17
+- Dependencies: 16, 17
 
 ## Goal
 

@@ -5,7 +5,7 @@
 - ID: 20
 - Title: Phase 3B: accounts, margin, and risk center
 - Priority: Medium
-- Dependencies: 11, 19
+- Dependencies: 19
 
 ## Goal
 

@@ -5,7 +5,7 @@
 - ID: 10
 - Title: Phase 2: admin control commands and audit loop
 - Priority: Medium
-- Dependencies: 16, 17, 18, 9
+- Dependencies: 9
 
 ## Goal
 

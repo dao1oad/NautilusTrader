@@ -33,6 +33,7 @@
 - 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，但不能替代远端 Codex review
 - 当前仓库保留自己的 `.git`、`origin` 和治理规则；上游源码仅作为文件快照导入
 - `scripts/build-workset.ps1` 与 `scripts/build-workset.sh` 会根据 issues snapshot 重建 `memory/issue-ledger.md` 和 issue packets，但不应抹掉活跃 issue 已记录的 PR 关联或非默认 next 注释
+- `scripts/build-workset.ps1` 与 `scripts/build-workset.sh` 只把 issue 正文中 `Depends on` 段声明的引用纳入执行依赖图；`Parent`、`Child issues` 与其它说明性引用属于编排元数据，不得反向阻塞具体实施 issue
 - 仓库中的治理、记忆、truth-doc 与计划文档允许保留本地化运营语言；English-only 的非 Latin lint 主要约束共享源码、workflow、脚本与通用工程配置
 - Python 运行时表面必须保持 `nautilus_trader/`、`python/nautilus_trader/`、`crates/pyo3` 与 Rust core crates 的接口一致性
 - `apps/admin-web` 只能通过 `nautilus_trader/admin` 暴露的 admin DTO 与 REST/WS contract 读取状态，不直接绑定内部 domain object

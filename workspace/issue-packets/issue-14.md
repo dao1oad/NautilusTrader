@@ -5,7 +5,7 @@
 - ID: 14
 - Title: Phase 1B: read-only nodes, strategies, and adapters surfaces
 - Priority: Medium
-- Dependencies: 13, 9
+- Dependencies: 13
 
 ## Goal
 

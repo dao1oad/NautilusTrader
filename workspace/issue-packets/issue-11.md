@@ -5,7 +5,7 @@
 - ID: 11
 - Title: Phase 3: trading operations and diagnostics surfaces
 - Priority: Medium
-- Dependencies: 10, 19, 20, 21
+- Dependencies: 10
 
 ## Goal
 

@@ -5,7 +5,7 @@
 - ID: 16
 - Title: Phase 2A: command contract, error codes, and audit sink
 - Priority: Medium
-- Dependencies: 10, 9
+- Dependencies: 9
 
 ## Goal
 

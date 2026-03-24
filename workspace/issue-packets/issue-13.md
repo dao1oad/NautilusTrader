@@ -5,7 +5,7 @@
 - ID: 13
 - Title: Phase 1A: console shell, routing, and shared page states
 - Priority: Medium
-- Dependencies: 8, 9
+- Dependencies: 8
 
 ## Goal
 

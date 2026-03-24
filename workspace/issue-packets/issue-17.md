@@ -5,7 +5,7 @@
 - ID: 17
 - Title: Phase 2B: low-risk strategy, adapter, and subscription controls
 - Priority: Medium
-- Dependencies: 10, 16
+- Dependencies: 16
 
 ## Goal
 
