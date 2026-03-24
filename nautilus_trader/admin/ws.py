@@ -29,6 +29,16 @@ async def handle_admin_events_socket(websocket: WebSocket) -> None:
                 continue
 
             channels = payload.get("channels", [])
+            if not isinstance(channels, list) or any(
+                not isinstance(channel, str) for channel in channels
+            ):
+                await websocket.send_json(
+                    {
+                        "type": "server.error",
+                        "code": "invalid_payload",
+                    },
+                )
+                continue
 
             unsupported = _unsupported_channels(channels)
             if payload.get("type") != "subscribe" or unsupported:
