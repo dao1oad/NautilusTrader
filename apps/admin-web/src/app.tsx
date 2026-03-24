@@ -1,37 +1,30 @@
+import { QueryClientProvider } from "@tanstack/react-query";
 import { startTransition, useEffect, useEffectEvent, useState } from "react";
+import { RouterProvider } from "@tanstack/react-router";
 
-import { OverviewPage } from "./features/overview/overview-page";
-import { getOverviewSnapshot } from "./shared/api/admin-client";
+import { AdminRuntimeProvider } from "./app/admin-runtime";
+import { router } from "./app/router";
 import { subscribeToAdminEvents } from "./shared/realtime/admin-events";
-import type { AdminEvent, ConnectionState, OverviewSnapshot } from "./shared/types/admin";
-import { ConnectionBanner } from "./features/connection/connection-banner";
+import { adminQueryKeys, queryClient } from "./shared/query/query-client";
+import { subscribeToInvalidations } from "./shared/realtime/invalidation-bus";
+import type { AdminEvent, ConnectionState } from "./shared/types/admin";
 
 
 export function App() {
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
-  const [snapshot, setSnapshot] = useState<OverviewSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshOverview = useEffectEvent(async () => {
-    try {
-      const nextSnapshot = await getOverviewSnapshot();
-      startTransition(() => {
-        setSnapshot(nextSnapshot);
+  const handleConnectionStateChange = useEffectEvent((nextState: ConnectionState) => {
+    startTransition(() => {
+      setConnectionState(nextState);
+
+      if (nextState === "connected") {
         setError(null);
-      });
-    } catch (nextError) {
-      startTransition(() => {
-        setError(nextError instanceof Error ? nextError.message : "Failed to load admin overview");
-      });
-    }
+      }
+    });
   });
 
   const handleAdminEvent = useEffectEvent((event: AdminEvent) => {
-    if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
-      void refreshOverview();
-      return;
-    }
-
     if (event.type === "server.error") {
       startTransition(() => {
         setError(event.message ?? "Admin event stream error");
@@ -41,28 +34,25 @@ export function App() {
   });
 
   useEffect(() => {
-    void refreshOverview();
+    return subscribeToAdminEvents({
+      onEvent: handleAdminEvent,
+      onStateChange: handleConnectionStateChange
+    });
   }, []);
 
   useEffect(() => {
-    return subscribeToAdminEvents({
-      onEvent: handleAdminEvent,
-      onStateChange: setConnectionState
+    return subscribeToInvalidations((topic) => {
+      if (topic === "overview") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.overview() });
+      }
     });
   }, []);
 
   return (
-    <main className="app-shell">
-      <section className="app-panel">
-        <header className="app-header">
-          <div>
-            <p className="app-kicker">Local Control Plane</p>
-            <h1>NautilusTrader Admin</h1>
-          </div>
-          <ConnectionBanner state={connectionState} />
-        </header>
-        <OverviewPage connectionState={connectionState} snapshot={snapshot} error={error} />
-      </section>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <AdminRuntimeProvider value={{ connectionState, error }}>
+        <RouterProvider router={router} />
+      </AdminRuntimeProvider>
+    </QueryClientProvider>
   );
 }

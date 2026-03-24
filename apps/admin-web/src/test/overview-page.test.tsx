@@ -4,7 +4,23 @@ import { OverviewPage } from "../features/overview/overview-page";
 
 
 test("renders overview heading", () => {
-  render(<OverviewPage />);
+  render(
+    <OverviewPage
+      connectionState="connected"
+      snapshot={{
+        generated_at: "2026-03-24T00:00:00Z",
+        stale: false,
+        partial: false,
+        node: { status: "running", node_id: "node-1" },
+        strategies: [],
+        adapters: [],
+        accounts: [],
+        positions: [],
+        errors: []
+      }}
+    />
+  );
+
   expect(screen.getByRole("heading", { name: "Overview" })).toBeInTheDocument();
 });
 

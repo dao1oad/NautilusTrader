@@ -43,7 +43,7 @@ test("keeps stale connection state after a pending overview refresh resolves", a
 
   render(<App />);
 
-  expect(screen.getAllByText("Connection stale").length).toBeGreaterThan(0);
+  expect((await screen.findAllByText("Connection stale")).length).toBeGreaterThan(0);
 
   deferred.resolve({
     generated_at: "2026-03-23T00:00:00Z",
