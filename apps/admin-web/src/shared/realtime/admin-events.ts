@@ -1,3 +1,4 @@
+import { publishInvalidation } from "./invalidation-bus";
 import type { AdminEvent, ConnectionState } from "../types/admin";
 
 
@@ -34,6 +35,7 @@ export function subscribeToAdminEvents({ onEvent, onStateChange }: Options): () 
       onStateChange(event.state);
     }
 
+    publishInvalidation(event);
     onEvent(event);
   });
 

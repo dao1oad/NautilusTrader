@@ -31,3 +31,8 @@
 - Closed superseded stacked draft PRs #25-#29 after Phase 0 landed on `main`.
 - Refined `build-workset` dependency extraction so only `Depends on` references affect execution ordering; `Parent` and `Child issues` no longer create false dependency cycles.
 - Rebuilt the local issue snapshot and workset after the Phase 0 merge; `#13` is now restored as the next concrete implementation entrypoint.
+- Merged PR #31 to main and completed the Phase 0 post-merge close-loop; `#13` remains the next execution target.
+- Created `/root/NautilusTrader-phase1a` on branch `codex/issue-13-phase1a-shell` from `origin/main`.
+- Added Phase 1A routed admin console shell, placeholder read-only route surfaces, shared page-state UI, and `TanStack Query` + invalidation-bus overview refresh plumbing in `apps/admin-web`.
+- Re-verified `apps/admin-web` with `npm test -- --run`, issue-specific shell/page-state tests, and `npm run build`.
+- Opened PR #32 (`feat: add phase1 admin console shell`) for issue #13 and prepared the remote review handoff.

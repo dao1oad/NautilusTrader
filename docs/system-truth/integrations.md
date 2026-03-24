@@ -11,7 +11,8 @@
   - `apps/admin-web` 通过 `Vite` dev server 提供浏览器入口
   - `nautilus_trader/admin` 提供 admin REST / WebSocket contract
 - 浏览器与后端的集成边界固定在 admin DTO 与最小事件契约；前端不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
-- `Phase 0` 只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
+- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 query 失效语义
+- 当前阶段仍只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
 
 ## Toolchain Integrations
 

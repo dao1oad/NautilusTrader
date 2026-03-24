@@ -34,6 +34,13 @@
 
 `Phase 0` 下浏览器唯一可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
 
+- `apps/admin-web/src/shared/ui/page-state.tsx`
+  - 数据职责：统一浏览器侧 page-state view model；当前固定状态集合为 `loading`、`empty`、`error`、`stale`
+- `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - 数据职责：浏览器侧 invalidation topic 投影；当前只定义 `overview` topic，并把最小 WS 事件集合映射到 query invalidation
+- `apps/admin-web/src/shared/query/query-client.ts`
+  - 数据职责：浏览器侧 query key 与缓存入口；当前 `overview` query key 固定为 `["admin", "overview"]`
+
 ## Governance Data
 
 - `ops/doc-truth-registry.yaml`: 定义 `truth role -> 文档路径`
