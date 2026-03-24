@@ -68,10 +68,11 @@
 - 2026-03-24 已创建独立 worktree `/root/NautilusTrader-phase1a`，分支 `codex/issue-13-phase1a-shell` 跟踪 `origin/main`。
 - 2026-03-24 已在 `apps/admin-web` 上完成 `#13` 的 routed console shell、placeholder read-only routes、shared page states、`TanStack Query` overview query 与 WS invalidation bus 实现。
 - 2026-03-24 已在 `apps/admin-web` 上验证 `npm test -- --run` 与 `npm run build` 通过；`vite build` 会打印来自 `@tanstack/react-query` 的 `"use client"` 指令忽略警告，但构建结果为成功。
+- 2026-03-24 已创建 PR `#32`：`feat: add phase1 admin console shell`，对应 head SHA `94bf2bef76459f3ebad3da35e008c76dc8c43d1e`，当前等待 remote Codex review 与 required checks。
 
 ## Next Actions
 
-1. 为 `#13` 创建 PR，补齐 remote Codex review、review-resolution 记录与 merge close-loop。
+1. 完成 PR `#32` 的 remote Codex review、review-resolution 记录、required checks 与 merge close-loop。
 2. 将 issue `#9` 保持为 Phase 1 umbrella close-out gate，而不是直接承载功能实现。
 3. 在 `#13` 合并后再启动 `#14`，避免提前并行进入 `Nodes / Strategies / Adapters` 数据面。
 

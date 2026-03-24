@@ -35,3 +35,4 @@
 - Created `/root/NautilusTrader-phase1a` on branch `codex/issue-13-phase1a-shell` from `origin/main`.
 - Added Phase 1A routed admin console shell, placeholder read-only route surfaces, shared page-state UI, and `TanStack Query` + invalidation-bus overview refresh plumbing in `apps/admin-web`.
 - Re-verified `apps/admin-web` with `npm test -- --run`, issue-specific shell/page-state tests, and `npm run build`.
+- Opened PR #32 (`feat: add phase1 admin console shell`) for issue #13 and prepared the remote review handoff.
