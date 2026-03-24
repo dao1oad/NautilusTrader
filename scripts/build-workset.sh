@@ -8,7 +8,7 @@ cd "$repo_root"
 input_path="workspace/runbooks/issues-snapshot.json"
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/build-workset.sh [--input-path PATH]
 EOF
 }
@@ -34,7 +34,7 @@ while [[ $# -gt 0 ]]; do
       input_path=$2
       shift 2
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -48,7 +48,7 @@ done
 resolved_input_path=$(resolve_repo_path "$input_path")
 [[ -f "$resolved_input_path" ]] || fail "Issue snapshot not found: $resolved_input_path"
 
-python3 - "$resolved_input_path" "$repo_root" <<'PY'
+python3 - "$resolved_input_path" "$repo_root" << 'PY'
 import json
 import re
 import sys
