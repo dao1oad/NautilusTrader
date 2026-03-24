@@ -18,8 +18,7 @@
 | #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10, 19, 20, 21 | blocked | No | TBD | Resolve dependency |
 | #10 | Phase 2: admin control commands and audit loop | Medium | 16, 17, 18, 9 | blocked | No | TBD | Resolve dependency |
 | #9 | Phase 1: admin console read-only operations surfaces | Medium | 13, 14, 15, 8 | blocked | No | TBD | Resolve dependency |
-| #8 | Phase 0: admin control plane foundation and read-only overview slice | Medium | 5 | ready | No | Pending direct mainline PR from `codex/phase0-integration`; legacy drafts #26-#29 remain open | Finish Linux build/import validation, then push direct PR to main |
-
+| #8 | Phase 0: admin control plane foundation and read-only overview slice | Medium | 5 | ready | No | #30 (`main`); legacy drafts #26-#29 remain open | Track PR #30 checks/review, merge to main, then retire old draft chain |
 
 
 

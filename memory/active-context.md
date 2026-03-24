@@ -10,7 +10,7 @@
 
 ## Blockers
 
-- 无本地代码阻塞；当前只剩 `/root/NautilusTrader-phase0` 的全量 Linux build/import 收尾验证与直达 `main` 的 PR/merge 闭环
+- 无本地代码阻塞；当前只剩 PR `#30` 的远端 checks / Codex review / merge 闭环
 - 旧的 stacked draft PR 链 `#25-#29` 仍处于 open 状态，但已不再作为当前主合并路径
 
 ## Confirmed Facts
@@ -58,12 +58,14 @@
 - 2026-03-24 已确认 draft PR `#25` 是当前 stacked 链的前置阻塞；其 `pr-gate` 与 `pre-commit` 仍失败，未进入可 retarget / merge 状态
 - 2026-03-24 已决定不再以 `#25-#29` 作为 Phase 0 的主合并路径，而是把 Linux 上已验证的 `codex/phase0-integration` 收口为一个直达 `main` 的新 PR
 - 2026-03-24 已在 Linux 上完成 `uvx --from pre-commit pre-commit run --all-files`、`bash scripts/check-governance.sh`、`pwsh -File tests/smoke/run-all.ps1`、`pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`apps/admin-web` lint/test/build 的验证；当前仅剩全量 `uv run --active --no-sync build.py` 与导入验证收尾
+- 2026-03-24 已完成全量 `uv run --active --no-sync build.py` 与 `import nautilus_trader` 导入验证
+- 2026-03-24 已创建直达 `main` 的 PR `#30`：`fix: finalize linux governance and phase0 mainline`
 
 ## Next Actions
 
-1. 等待 `/root/NautilusTrader-phase0` 的全量 Linux build 完成，并执行 `import nautilus_trader` 收尾验证。
-2. 将 `codex/phase0-integration` 收口到新的主线分支并创建直达 `main` 的 Phase 0 PR。
-3. 在远端检查与 Codex review 通过后合并到 `main`，再清理或关闭旧的 stacked draft PR 链。
+1. 跟踪 PR `#30` 的 required checks，并在需要时修复剩余远端门禁问题。
+2. 触发并完成 PR `#30` 的远端 Codex review。
+3. 在 `#30` 合并到 `main` 后，清理或关闭旧的 stacked draft PR 链 `#25-#29`。
 
 ## Repository
 
