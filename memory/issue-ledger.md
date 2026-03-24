@@ -12,7 +12,7 @@
 | #17 | Phase 2B: low-risk strategy, adapter, and subscription controls | Medium | 16 | blocked | No | TBD | Resolve dependency |
 | #16 | Phase 2A: command contract, error codes, and audit sink | Medium | 9 | blocked | No | TBD | Resolve dependency |
 | #15 | Phase 1C: read-only orders, positions, accounts, and logs surfaces | Medium | 13, 14 | blocked | No | TBD | Resolve dependency |
-| #14 | Phase 1B: read-only nodes, strategies, and adapters surfaces | Medium | 13 | ready | No | TBD | Dispatch subagent |
+| #14 | Phase 1B: read-only nodes, strategies, and adapters surfaces | Medium | 13 | in_progress | No | TBD | Open PR |
 | #12 | Phase 4: unified workbench and delivery hardening | Medium | 11 | blocked | No | TBD | Resolve dependency |
 | #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10 | blocked | No | TBD | Resolve dependency |
 | #10 | Phase 2: admin control commands and audit loop | Medium | 9 | blocked | No | TBD | Resolve dependency |

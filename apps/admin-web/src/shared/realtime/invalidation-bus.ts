@@ -1,29 +1,31 @@
 import type { AdminEvent } from "../types/admin";
 
 
-export type InvalidationTopic = "overview";
+export type InvalidationTopic = "overview" | "nodes" | "strategies" | "adapters";
 
 type InvalidationListener = (topic: InvalidationTopic, event: AdminEvent) => void;
 
 const listeners = new Set<InvalidationListener>();
 
-function getInvalidationTopic(event: AdminEvent): InvalidationTopic | null {
+function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
   if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
-    return "overview";
+    return ["overview", "nodes", "strategies", "adapters"];
   }
 
-  return null;
+  return [];
 }
 
 export function publishInvalidation(event: AdminEvent) {
-  const topic = getInvalidationTopic(event);
+  const topics = getInvalidationTopics(event);
 
-  if (!topic) {
+  if (topics.length === 0) {
     return;
   }
 
-  for (const listener of listeners) {
-    listener(topic, event);
+  for (const topic of topics) {
+    for (const listener of listeners) {
+      listener(topic, event);
+    }
   }
 }
 

@@ -19,15 +19,19 @@
 ## Runtime Interfaces
 
 - Python import root 为 `nautilus_trader`；其包结构覆盖 `accounting`、`adapters`、`analysis`、`backtest`、`cache`、`common`、`config`、`core`、`data`、`execution`、`indicators`、`live`、`model`、`persistence`、`portfolio`、`risk`、`serialization`、`system`、`trading`
-- `nautilus_trader/admin` 在 `Phase 0` 暴露本地 admin control plane contract：
+- `nautilus_trader/admin` 当前暴露本地 admin control plane contract：
   - `GET /api/admin/health`
   - `GET /api/admin/overview`
+  - `GET /api/admin/nodes`
+  - `GET /api/admin/strategies`
+  - `GET /api/admin/adapters`
   - `GET/WS /ws/admin/events`
 - `GET /api/admin/overview` 返回 typed admin DTO，而不是内部 domain object；`Phase 0` 至少包含 `OverviewSnapshot`、`NodeSummary`、`StrategySummary`、`AdapterSummary`、`AccountSummary`、`PositionSummary`、`SectionError`
+- `GET /api/admin/nodes`、`/strategies`、`/adapters` 返回 typed list snapshot，而不是内部 runtime object；当前 payload 统一包含 `generated_at`、`partial`、`items`、`errors`
 - `/ws/admin/events` 在 `Phase 0` 只允许最小事件集合：`subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
 - `apps/admin-web` 当前仍只消费上述 admin REST/WS contract，并以开发态双进程方式运行：浏览器 / `Vite` dev server <-> `nautilus_trader/admin`
-- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；除 `/` 之外的只读页面在 `#13` 阶段仍允许只渲染 shared empty state 占位，不要求已接具体 domain 数据
-- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview` query invalidation topic，并由 query client 负责触发 overview 重新拉取
+- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；其中 `/nodes`、`/strategies`、`/adapters` 已绑定各自的只读 list endpoint，`/orders`、`/positions`、`/accounts`、`/logs` 仍可保持 shared empty state 占位
+- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview`、`nodes`、`strategies`、`adapters` 四个 query invalidation topic，并由 query client 负责触发对应页面重新拉取
 - `apps/admin-web/vite.config.ts` 必须把同源 `/api/admin/*` 与 `/ws/admin/*` 请求代理到本地 admin API origin；默认目标为 `http://127.0.0.1:8000`
 - `apps/admin-web/package.json` 当前约定的前端命令面：
   - `npm run dev`：启动 `Vite` dev server

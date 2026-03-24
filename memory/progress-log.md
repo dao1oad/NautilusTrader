@@ -39,3 +39,7 @@
 - Addressed three remote Codex review findings on PR #32 covering cached overview refresh failures, transient runtime error clearing, and invalidation-triggered early error clearing.
 - Merged PR #32 to main and automatically closed Phase 1A issue #13.
 - Rebuilt the local issue snapshot and workset after the Phase 1A merge; open issues are now 15 and `#14` is the next concrete implementation target.
+- Merged PR #33 to main to close the Phase 1A post-merge loop and refresh memory/workset to `#14` ready.
+- Created `/root/NautilusTrader-phase1b` on branch `codex/issue-14-phase1b-read-only-surfaces` from `origin/main`.
+- Added typed read-only `nodes` / `strategies` / `adapters` admin endpoints plus query-backed frontend pages, shared invalidation fan-out, and synced truth docs for Phase 1B issue `#14`.
+- Verified `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin` plus `apps/admin-web` test/lint/build locally after the Phase 1B implementation.

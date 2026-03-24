@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-- Phase 1A 已通过 PR `#32` 合并到 `main`；当前执行的是 merge 后 close-loop 账本同步，下一具体实施入口为 `#14`（read-only nodes / strategies / adapters surfaces）
+- Phase 1A close-loop 已通过 PR `#33` 合并到 `main`；当前在独立 worktree `/root/NautilusTrader-phase1b` 上执行 `#14`（read-only nodes / strategies / adapters surfaces），本地实现与验证已完成，下一步是 PR / review / merge 收口
 
 ## Blockers
 
@@ -71,12 +71,17 @@
 - 2026-03-24 已创建 PR `#32`：`feat: add phase1 admin console shell`，并在 review 驱动下补齐 cached overview refresh error、transient runtime error clearing 与 invalidation 过早清错的修复。
 - 2026-03-24 PR `#32` 已合并到 `main`，merge commit 为 `be68412be66640bbb46281c6be7971dc35943f43`。
 - 2026-03-24 issue `#13` 已自动关闭；workset 刷新后 open issues 为 15 个，`#14` 已变为 `ready`，`#9` 继续作为 Phase 1 umbrella close-out gate。
+- 2026-03-24 PR `#33` 已合并到 `main`，merge commit 为 `30bba2769b0f9874450e87511e7849c8b8389e89`；open PR 列表当前为空，`origin/main` 已同步到该提交。
+- 2026-03-24 `main` 上 merge 后 `governance-check` run `23502084044` 已成功；`build` run `23502084064` 再次命中 `cargo-deny` 失败，和前一轮 `23501393959` 的同一仓库级失败一致，暂不视为 `#14` 的新增阻塞。
+- 2026-03-24 已创建独立 worktree `/root/NautilusTrader-phase1b`，分支 `codex/issue-14-phase1b-read-only-surfaces` 跟踪 `origin/main`。
+- 2026-03-24 已在 `nautilus_trader/admin` 上新增 `nodes`、`strategies`、`adapters` 只读 list snapshot endpoint，并在 `apps/admin-web` 上接通对应 query-backed 页面、shared invalidation 和 truth docs 更新。
+- 2026-03-24 已本地验证 `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build` 全部通过。
 
 ## Next Actions
 
-1. 合并当前 Phase 1A post-merge close-loop PR，同步 memory/workset 到 `#13` 已关闭、`#14` 已 ready 的状态。
-2. 将 issue `#9` 保持为 Phase 1 umbrella close-out gate，而不是直接承载功能实现。
-3. 在 close-loop 合并后启动 `#14`，避免提前并行进入 `Nodes / Strategies / Adapters` 数据面。
+1. 基于当前 `codex/issue-14-phase1b-read-only-surfaces` 分支为 issue `#14` 创建 PR。
+2. 请求远端 Codex review，处理 review 线程并补 review-resolution 记录。
+3. 合并 `#14` 后刷新 workset，把 `#15` 切到 `ready`，同时保留 `#9` 作为 Phase 1 umbrella close-out gate。
 
 ## Repository
 
@@ -84,4 +89,4 @@
 
 ## Last Merge Update
 
-- 2026-03-24: Merged PR #32 to main and moved the next concrete execution target from #13 to #14.
+- 2026-03-24: Merged PR #33 to main and moved the next concrete execution target into active issue #14 execution.

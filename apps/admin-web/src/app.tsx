@@ -43,6 +43,21 @@ export function App() {
     return subscribeToInvalidations((topic) => {
       if (topic === "overview") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.overview() });
+        return;
+      }
+
+      if (topic === "nodes") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.nodes() });
+        return;
+      }
+
+      if (topic === "strategies") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.strategies() });
+        return;
+      }
+
+      if (topic === "adapters") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.adapters() });
       }
     });
   }, []);
@@ -58,7 +73,13 @@ export function App() {
       }
 
       const [scope, resource] = event.query.queryKey;
-      if (scope !== "admin" || resource !== "overview") {
+      if (
+        scope !== "admin" ||
+        (resource !== "overview" &&
+          resource !== "nodes" &&
+          resource !== "strategies" &&
+          resource !== "adapters")
+      ) {
         return;
       }
 
