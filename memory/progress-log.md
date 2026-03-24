@@ -36,3 +36,6 @@
 - Added Phase 1A routed admin console shell, placeholder read-only route surfaces, shared page-state UI, and `TanStack Query` + invalidation-bus overview refresh plumbing in `apps/admin-web`.
 - Re-verified `apps/admin-web` with `npm test -- --run`, issue-specific shell/page-state tests, and `npm run build`.
 - Opened PR #32 (`feat: add phase1 admin console shell`) for issue #13 and prepared the remote review handoff.
+- Addressed three remote Codex review findings on PR #32 covering cached overview refresh failures, transient runtime error clearing, and invalidation-triggered early error clearing.
+- Merged PR #32 to main and automatically closed Phase 1A issue #13.
+- Rebuilt the local issue snapshot and workset after the Phase 1A merge; open issues are now 15 and `#14` is the next concrete implementation target.
