@@ -12,7 +12,8 @@ type Props = {
 
 
 export function OverviewPage({ connectionState, snapshot, error, isLoading = false }: Props = {}) {
-  const isStale = connectionState === "stale" || snapshot?.stale === true;
+  const hasCachedError = Boolean(error) && Boolean(snapshot);
+  const isStale = connectionState === "stale" || snapshot?.stale === true || hasCachedError;
   const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
 
   if (isLoading && !snapshot) {
@@ -63,7 +64,7 @@ export function OverviewPage({ connectionState, snapshot, error, isLoading = fal
     return (
       <PageState
         kind="stale"
-        title="Connection stale"
+        title={hasCachedError ? "Overview refresh failed" : "Connection stale"}
         description={error ?? "Showing the last successfully received admin snapshot."}
         meta={lastUpdated}
       />
