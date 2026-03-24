@@ -28,7 +28,6 @@ export function App() {
     if (event.type === "server.error") {
       startTransition(() => {
         setError(event.message ?? "Admin event stream error");
-        setConnectionState("stale");
       });
     }
   });
@@ -45,6 +44,27 @@ export function App() {
       if (topic === "overview") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.overview() });
       }
+    });
+  }, []);
+
+  useEffect(() => {
+    return queryClient.getQueryCache().subscribe((event) => {
+      if (event?.type !== "updated") {
+        return;
+      }
+
+      const [scope, resource] = event.query.queryKey;
+      if (scope !== "admin" || resource !== "overview") {
+        return;
+      }
+
+      if (event.query.state.status !== "success" || event.query.state.data == null) {
+        return;
+      }
+
+      startTransition(() => {
+        setError(null);
+      });
     });
   }, []);
 

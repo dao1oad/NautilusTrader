@@ -90,3 +90,57 @@ test("does not force disconnected state when overview refresh fails but websocke
 
   expect(screen.queryByText("Disconnected")).not.toBeInTheDocument();
 });
+
+
+test("clears transient server errors once a fresh overview snapshot arrives", async () => {
+  const deferred = createDeferred<OverviewSnapshot>();
+
+  vi.doMock("../shared/api/admin-client", () => ({
+    getOverviewSnapshot: vi.fn(() => deferred.promise)
+  }));
+
+  vi.doMock("../shared/realtime/admin-events", () => ({
+    subscribeToAdminEvents: vi.fn(
+      ({
+        onEvent,
+        onStateChange
+      }: {
+        onEvent: (event: { type: "server.error"; code: string; message: string }) => void;
+        onStateChange: (state: "connected") => void;
+      }) => {
+        onStateChange("connected");
+        queueMicrotask(() => {
+          onEvent({
+            type: "server.error",
+            code: "transient",
+            message: "Stream hiccup"
+          });
+        });
+        return () => {};
+      }
+    )
+  }));
+
+  const { App } = await import("../app");
+
+  render(<App />);
+
+  deferred.resolve({
+    generated_at: "2026-03-24T00:00:00Z",
+    stale: false,
+    partial: false,
+    node: { status: "not_configured", node_id: null },
+    strategies: [],
+    adapters: [],
+    accounts: [],
+    positions: [],
+    errors: []
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("No live node configured")).toBeInTheDocument();
+  });
+
+  expect(screen.queryByText("Connection stale")).not.toBeInTheDocument();
+});
