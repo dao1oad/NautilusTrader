@@ -53,6 +53,10 @@ export function App() {
         return;
       }
 
+      if (event.action.type !== "success") {
+        return;
+      }
+
       const [scope, resource] = event.query.queryKey;
       if (scope !== "admin" || resource !== "overview") {
         return;
