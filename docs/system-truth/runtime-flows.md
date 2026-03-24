@@ -34,6 +34,7 @@
 
 本地治理入口在 Windows 使用 `scripts/*.ps1`，在 Linux/macOS 使用对应的 `scripts/*.sh`。两组脚本都围绕同一仓库根目录、`memory/` 和 `workspace/` 产物工作。
 `scripts/build-workset.ps1` / `scripts/build-workset.sh` 根据最新 issues snapshot 重建依赖状态与 issue packets 时，必须保留 `memory/issue-ledger.md` 中已存在的非默认 PR 跟踪与人工 next 注释，避免活跃执行状态被刷新脚本抹掉。
+`scripts/build-workset.ps1` / `scripts/build-workset.sh` 只把 issue 正文中 `Depends on` 段内的 issue 引用视为执行依赖；`Parent`、`Child issues` 和其它说明性引用不能进入依赖图。
 仓库的本地化治理文档和计划文档不参与 English-only non-Latin gate；该 lint 主要用于保护共享源码、workflow、脚本和通用工程配置不混入非预期脚本字符。
 
 ## PR Gate Flow

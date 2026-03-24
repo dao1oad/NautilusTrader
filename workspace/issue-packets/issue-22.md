@@ -5,7 +5,7 @@
 - ID: 22
 - Title: Phase 4A: backtest and report integration
 - Priority: Medium
-- Dependencies: 11, 12
+- Dependencies: 11
 
 ## Goal
 

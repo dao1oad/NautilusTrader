@@ -5,7 +5,7 @@
 - ID: 15
 - Title: Phase 1C: read-only orders, positions, accounts, and logs surfaces
 - Priority: Medium
-- Dependencies: 13, 14, 9
+- Dependencies: 13, 14
 
 ## Goal
 

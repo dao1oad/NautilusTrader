@@ -5,7 +5,7 @@
 - ID: 23
 - Title: Phase 4B: unified workbench navigation and workspace model
 - Priority: Medium
-- Dependencies: 12, 22
+- Dependencies: 22
 
 ## Goal
 

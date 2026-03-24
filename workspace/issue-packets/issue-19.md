@@ -5,7 +5,7 @@
 - ID: 19
 - Title: Phase 3A: blotter, fills, and position drill-down
 - Priority: Medium
-- Dependencies: 10, 11
+- Dependencies: 10
 
 ## Goal
 

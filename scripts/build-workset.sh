@@ -97,7 +97,27 @@ def load_existing_issue_metadata(ledger_path: Path) -> dict[str, dict[str, str]]
 def get_dependencies(body: str) -> list[str]:
     if not body:
         return []
-    return sorted(set(re.findall(r"#(\d+)", body)))
+
+    dependencies: list[str] = []
+    in_depends_section = False
+
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+
+        if not in_depends_section:
+            if re.match(r"^(?:#+\s*)?Depends on\b", line, flags=re.IGNORECASE):
+                in_depends_section = True
+            else:
+                continue
+        elif re.match(r"^#+\s+\S+", line):
+            break
+
+        if not line:
+            continue
+
+        dependencies.extend(re.findall(r"#(\d+)", line))
+
+    return list(dict.fromkeys(dependencies))
 
 
 def get_issue_state(labels: list[str], dependencies: list[str]) -> str:

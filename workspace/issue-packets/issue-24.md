@@ -5,7 +5,7 @@
 - ID: 24
 - Title: Phase 4C: frontend hosting, packaging, E2E, and delivery hardening
 - Priority: Medium
-- Dependencies: 12, 22, 23
+- Dependencies: 22, 23
 
 ## Goal
 

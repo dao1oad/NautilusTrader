@@ -5,7 +5,7 @@
 - ID: 21
 - Title: Phase 3C: catalog, history, event playback, and diagnostics
 - Priority: Medium
-- Dependencies: 11, 19, 20
+- Dependencies: 19, 20
 
 ## Goal
 

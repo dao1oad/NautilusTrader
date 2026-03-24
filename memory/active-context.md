@@ -6,12 +6,11 @@
 
 ## Current Phase
 
-- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8`, with Linux validation currently consolidated in `/root/NautilusTrader-phase0`
+- Phase 0 read-only overview slice 已通过 PR `#30` 合并到 `main`；当前进入 Phase 1 启动前的 post-merge close-loop，并已恢复 `#13` 作为下一个具体可执行入口
 
 ## Blockers
 
-- 无本地代码阻塞；当前只剩 PR `#30` 的远端 checks / Codex review / merge 闭环
-- 旧的 stacked draft PR 链 `#25-#29` 仍处于 open 状态，但已不再作为当前主合并路径
+- 无
 
 ## Confirmed Facts
 
@@ -60,13 +59,22 @@
 - 2026-03-24 已在 Linux 上完成 `uvx --from pre-commit pre-commit run --all-files`、`bash scripts/check-governance.sh`、`pwsh -File tests/smoke/run-all.ps1`、`pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`apps/admin-web` lint/test/build 的验证；当前仅剩全量 `uv run --active --no-sync build.py` 与导入验证收尾
 - 2026-03-24 已完成全量 `uv run --active --no-sync build.py` 与 `import nautilus_trader` 导入验证
 - 2026-03-24 已创建直达 `main` 的 PR `#30`：`fix: finalize linux governance and phase0 mainline`
+- 2026-03-24 PR `#30` 已合并到 `main`，GitHub issue `#8` 已自动关闭。
+- 2026-03-24 旧的 stacked draft PR 链 `#25`-`#29` 已全部关闭，并统一标记为被 `#30` 取代。
+- 2026-03-24 已重新同步 open issues，本地 `workspace/runbooks/issues-snapshot.json` 当前为 16 个开放 issue。
+- 2026-03-24 已修正 `scripts/build-workset.ps1` / `scripts/build-workset.sh` 的依赖提取逻辑：仅 `Depends on` 段会进入执行依赖；`Parent` 与 `Child issues` 仅保留为编排说明，不再制造虚假循环阻塞。
+- 2026-03-24 在新 workset 下，umbrella issue `#9` 与具体执行 issue `#13` 均已恢复为 `ready`；其中 `#13` 是更合适的下一个实施入口。
 
 ## Next Actions
 
-1. 跟踪 PR `#30` 的 required checks，并在需要时修复剩余远端门禁问题。
-2. 触发并完成 PR `#30` 的远端 Codex review。
-3. 在 `#30` 合并到 `main` 后，清理或关闭旧的 stacked draft PR 链 `#25-#29`。
+1. 以 issue `#13` 作为 Phase 1A 的具体执行入口，启动 console shell / routing / shared page state 的实现分支。
+2. 将 issue `#9` 保持为 Phase 1 umbrella close-out gate，而不是直接承载功能实现。
+3. 继续沿用 `issue -> PR -> remote Codex review -> merge -> close-loop` 的默认推进路径。
 
 ## Repository
 
 - dao1oad/NautilusTrader
+
+## Last Merge Update
+
+- 2026-03-24: Merged PR #30 to main and closed Phase 0 issue #8.

@@ -1,4 +1,5 @@
 $fixturePath = 'workspace\runbooks\issues-dependency-fixture.json'
+$shellFixturePath = $fixturePath -replace '\\', '/'
 $ledgerPath = 'memory\issue-ledger.md'
 $packetDir = 'workspace\issue-packets'
 $originalLedger = if (Test-Path $ledgerPath) { Get-Content $ledgerPath -Raw } else { $null }
@@ -39,6 +40,24 @@ $fixture = @'
     "assignees": [],
     "milestone": "",
     "body": "Depends on #101"
+  },
+  {
+    "number": 103,
+    "title": "Parent reference only",
+    "url": "https://example.com/103",
+    "labels": ["parallel-ready"],
+    "assignees": [],
+    "milestone": "",
+    "body": "## Parent`n`n- #101"
+  },
+  {
+    "number": 104,
+    "title": "Umbrella issue",
+    "url": "https://example.com/104",
+    "labels": [],
+    "assignees": [],
+    "milestone": "",
+    "body": "## Child issues`n`n- #101`n- #102"
   }
 ]
 '@
@@ -55,6 +74,40 @@ try {
   if ($ledger -notmatch '\| #102 \| Dependent issue \| .* \| 101 \| blocked \|') {
     Write-Error 'Dependent issue must be blocked when it references an open dependency.'
     exit 1
+  }
+
+  if ($ledger -notmatch '\| #103 \| Parent reference only \| .* \| None \| parallel-ready \|') {
+    Write-Error 'Parent references must not be treated as execution dependencies.'
+    exit 1
+  }
+
+  if ($ledger -notmatch '\| #104 \| Umbrella issue \| .* \| None \| ready \|') {
+    Write-Error 'Child issue references must not be treated as execution dependencies.'
+    exit 1
+  }
+
+  if ($IsLinux -or $IsMacOS) {
+    & bash scripts/build-workset.sh --input-path $shellFixturePath
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error 'build-workset.sh failed on dependency fixture.'
+      exit 1
+    }
+
+    $shellLedger = Get-Content $ledgerPath -Raw
+    if ($shellLedger -notmatch '\| #102 \| Dependent issue \| .* \| 101 \| blocked \|') {
+      Write-Error 'Shell build-workset must block issues that reference an open dependency.'
+      exit 1
+    }
+
+    if ($shellLedger -notmatch '\| #103 \| Parent reference only \| .* \| None \| parallel-ready \|') {
+      Write-Error 'Shell build-workset must ignore Parent references when planning dependencies.'
+      exit 1
+    }
+
+    if ($shellLedger -notmatch '\| #104 \| Umbrella issue \| .* \| None \| ready \|') {
+      Write-Error 'Shell build-workset must ignore Child issues references when planning dependencies.'
+      exit 1
+    }
   }
 } finally {
   Remove-Item -Path $fixturePath -Force -ErrorAction SilentlyContinue

@@ -5,7 +5,7 @@
 - ID: 12
 - Title: Phase 4: unified workbench and delivery hardening
 - Priority: Medium
-- Dependencies: 11, 22, 23, 24
+- Dependencies: 11
 
 ## Goal
 
