@@ -43,3 +43,4 @@
 - Created `/root/NautilusTrader-phase1b` on branch `codex/issue-14-phase1b-read-only-surfaces` from `origin/main`.
 - Added typed read-only `nodes` / `strategies` / `adapters` admin endpoints plus query-backed frontend pages, shared invalidation fan-out, and synced truth docs for Phase 1B issue `#14`.
 - Verified `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin` plus `apps/admin-web` test/lint/build locally after the Phase 1B implementation.
+- Opened PR #34 (`feat: add read-only node strategy adapter surfaces`) for issue `#14`.

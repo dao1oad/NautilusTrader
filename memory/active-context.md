@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-- Phase 1A close-loop 已通过 PR `#33` 合并到 `main`；当前在独立 worktree `/root/NautilusTrader-phase1b` 上执行 `#14`（read-only nodes / strategies / adapters surfaces），本地实现与验证已完成，下一步是 PR / review / merge 收口
+- `#14` 已通过 PR `#34` 进入 review；当前分支为 `codex/issue-14-phase1b-read-only-surfaces`，下一步是远端 Codex review、线程闭环与合并收口
 
 ## Blockers
 
@@ -76,12 +76,13 @@
 - 2026-03-24 已创建独立 worktree `/root/NautilusTrader-phase1b`，分支 `codex/issue-14-phase1b-read-only-surfaces` 跟踪 `origin/main`。
 - 2026-03-24 已在 `nautilus_trader/admin` 上新增 `nodes`、`strategies`、`adapters` 只读 list snapshot endpoint，并在 `apps/admin-web` 上接通对应 query-backed 页面、shared invalidation 和 truth docs 更新。
 - 2026-03-24 已本地验证 `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build` 全部通过。
+- 2026-03-24 已创建 PR `#34`：`feat: add read-only node strategy adapter surfaces`，对应 issue `#14`。
 
 ## Next Actions
 
-1. 基于当前 `codex/issue-14-phase1b-read-only-surfaces` 分支为 issue `#14` 创建 PR。
-2. 请求远端 Codex review，处理 review 线程并补 review-resolution 记录。
-3. 合并 `#14` 后刷新 workset，把 `#15` 切到 `ready`，同时保留 `#9` 作为 Phase 1 umbrella close-out gate。
+1. 请求远端 Codex review，并在 `workspace/handoffs/review-resolution-34.md` 中记录处理结果。
+2. 处理 PR `#34` 的 review 线程与必要修复，直到 `pr-gate` 全绿。
+3. 合并 `#34` 后刷新 workset，把 `#15` 切到 `ready`，同时保留 `#9` 作为 Phase 1 umbrella close-out gate。
 
 ## Repository
 
