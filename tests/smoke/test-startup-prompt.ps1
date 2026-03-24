@@ -14,6 +14,8 @@ $requiredPhrases = @(
   'doc-truth-map.yaml',
   'scripts/init-project.ps1',
   'scripts/check-governance.ps1',
+  'scripts/init-project.sh',
+  'scripts/check-governance.sh',
   'remote Codex review',
   'minimal confirmation list',
   'copy the template directory'

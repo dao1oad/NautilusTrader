@@ -1,1 +1,3 @@
-"""Admin service modules."""
+"""
+Admin service modules.
+"""

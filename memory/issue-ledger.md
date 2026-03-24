@@ -2,21 +2,24 @@
 
 | Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| #5 | Sync NautilusTrader upstream snapshot and admin console design baseline | Medium | None | closed | No | #25 (draft) | Planning baseline PR open for merge to main |
-| #8 | Phase 0: admin control plane foundation and read-only overview slice | High | #5 | in_progress | No | #26 (draft, stacked on #25); #27 (draft, stacked on #26); #28 (draft, stacked on #27); #29 (draft, stacked on #28) | Continue stacked review flow for Slice A/B/C/D |
-| #9 | Phase 1: admin console read-only operations surfaces | High | #8 | planned | No | TBD | Start after #8 merges |
-| #10 | Phase 2: admin control commands and audit loop | High | #9 | planned | No | TBD | Start after #9 merges |
-| #11 | Phase 3: trading operations and diagnostics surfaces | High | #10 | planned | No | TBD | Start after #10 merges |
-| #12 | Phase 4: unified workbench and delivery hardening | High | #11 | planned | No | TBD | Start after #11 merges |
-| #13 | Phase 1A: console shell, routing, and shared page states | Medium | #9 | planned | No | TBD | Execute inside Phase 1 |
-| #14 | Phase 1B: read-only nodes, strategies, and adapters surfaces | Medium | #13 | planned | No | TBD | Execute after shell lands |
-| #15 | Phase 1C: read-only orders, positions, accounts, and logs surfaces | Medium | #13, #14 | planned | No | TBD | Execute after core read-only surfaces land |
-| #16 | Phase 2A: command contract, error codes, and audit sink | Medium | #10 | planned | No | TBD | Execute first in Phase 2 |
-| #17 | Phase 2B: low-risk strategy, adapter, and subscription controls | Medium | #16 | planned | No | TBD | Execute after command contract lands |
-| #18 | Phase 2C: command confirmations, audit timeline, and recovery runbooks | Medium | #16, #17 | planned | No | TBD | Execute after core controls land |
-| #19 | Phase 3A: blotter, fills, and position drill-down | Medium | #11 | planned | No | TBD | Execute first in Phase 3 |
-| #20 | Phase 3B: accounts, margin, and risk center | Medium | #19 | planned | No | TBD | Execute after blotter baseline lands |
-| #21 | Phase 3C: catalog, history, event playback, and diagnostics | Medium | #19, #20 | planned | No | TBD | Execute after ops core surfaces land |
-| #22 | Phase 4A: backtest and report integration | Medium | #12 | planned | No | TBD | Execute first in Phase 4 |
-| #23 | Phase 4B: unified workbench navigation and workspace model | Medium | #22 | planned | No | TBD | Execute after backtest/report surfaces land |
-| #24 | Phase 4C: frontend hosting, packaging, E2E, and delivery hardening | Medium | #22, #23 | planned | No | TBD | Execute after workbench model lands |
+| #24 | Phase 4C: frontend hosting, packaging, E2E, and delivery hardening | Medium | 12, 22, 23 | blocked | No | TBD | Resolve dependency |
+| #23 | Phase 4B: unified workbench navigation and workspace model | Medium | 12, 22 | blocked | No | TBD | Resolve dependency |
+| #22 | Phase 4A: backtest and report integration | Medium | 11, 12 | blocked | No | TBD | Resolve dependency |
+| #21 | Phase 3C: catalog, history, event playback, and diagnostics | Medium | 11, 19, 20 | blocked | No | TBD | Resolve dependency |
+| #20 | Phase 3B: accounts, margin, and risk center | Medium | 11, 19 | blocked | No | TBD | Resolve dependency |
+| #19 | Phase 3A: blotter, fills, and position drill-down | Medium | 10, 11 | blocked | No | TBD | Resolve dependency |
+| #18 | Phase 2C: command confirmations, audit timeline, and recovery runbooks | Medium | 10, 16, 17 | blocked | No | TBD | Resolve dependency |
+| #17 | Phase 2B: low-risk strategy, adapter, and subscription controls | Medium | 10, 16 | blocked | No | TBD | Resolve dependency |
+| #16 | Phase 2A: command contract, error codes, and audit sink | Medium | 10, 9 | blocked | No | TBD | Resolve dependency |
+| #15 | Phase 1C: read-only orders, positions, accounts, and logs surfaces | Medium | 13, 14, 9 | blocked | No | TBD | Resolve dependency |
+| #14 | Phase 1B: read-only nodes, strategies, and adapters surfaces | Medium | 13, 9 | blocked | No | TBD | Resolve dependency |
+| #13 | Phase 1A: console shell, routing, and shared page states | Medium | 8, 9 | blocked | No | TBD | Resolve dependency |
+| #12 | Phase 4: unified workbench and delivery hardening | Medium | 11, 22, 23, 24 | blocked | No | TBD | Resolve dependency |
+| #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10, 19, 20, 21 | blocked | No | TBD | Resolve dependency |
+| #10 | Phase 2: admin control commands and audit loop | Medium | 16, 17, 18, 9 | blocked | No | TBD | Resolve dependency |
+| #9 | Phase 1: admin console read-only operations surfaces | Medium | 13, 14, 15, 8 | blocked | No | TBD | Resolve dependency |
+| #8 | Phase 0: admin control plane foundation and read-only overview slice | Medium | 5 | ready | No | Pending direct mainline PR from `codex/phase0-integration`; legacy drafts #26-#29 remain open | Finish Linux build/import validation, then push direct PR to main |
+
+
+
+

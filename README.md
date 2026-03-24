@@ -34,8 +34,9 @@ and `remote Codex review` before changes reach the protected branch.
 Operational governance entry points for this repository:
 
 - `memory/issue-ledger.md` is the active execution ledger for issue orchestration.
-- `scripts/init-project.ps1` remains the local bootstrap entry point.
-- `scripts/check-governance.ps1` remains the local governance validation entry point.
+- `scripts/init-project.ps1` and `scripts/init-project.sh` are the local bootstrap entry points.
+- `scripts/check-governance.ps1` and `scripts/check-governance.sh` are the local governance validation entry points.
+- `scripts/sync-issues.ps1` / `scripts/sync-issues.sh` and `scripts/build-workset.ps1` / `scripts/build-workset.sh` are the issue sync and workset refresh entry points.
 - `prompts/project-bootstrap-prompt.md` explains how to start from the governance template and how to use the startup prompt in this repository.
 
 If you are operating this derivative repository rather than contributing back upstream, read:

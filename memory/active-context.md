@@ -6,11 +6,12 @@
 
 ## Current Phase
 
-- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8` / PR Slice D
+- UI scope frozen to Phase 0 read-only overview slice; main-agent orchestration is active on issue `#8`, with Linux validation currently consolidated in `/root/NautilusTrader-phase0`
 
 ## Blockers
 
-- 无
+- 无本地代码阻塞；当前只剩 `/root/NautilusTrader-phase0` 的全量 Linux build/import 收尾验证与直达 `main` 的 PR/merge 闭环
+- 旧的 stacked draft PR 链 `#25-#29` 仍处于 open 状态，但已不再作为当前主合并路径
 
 ## Confirmed Facts
 
@@ -47,12 +48,22 @@
 - 2026-03-23 已为 `#8` 创建 stacked draft PR `#28`：`feat: scaffold admin web overview shell`，当前 base 为 `codex/issue-8-phase0-slice-b`
 - 2026-03-23 已创建并推送 `#8` 的下一层 stacked 执行分支：`codex/issue-8-phase0-slice-d`，对应本地 worktree `D:\\NautilusTrader\\.worktrees\\issue-8-phase0-slice-d`
 - 2026-03-23 已为 `#8` 创建 stacked draft PR `#29`：`feat: finalize phase 0 admin overview integration`，当前 base 为 `codex/issue-8-phase0-slice-c`
+- 2026-03-24 已创建 Linux 集成 worktree `/root/NautilusTrader-phase0`，分支 `codex/phase0-integration` 跟踪 `origin/codex/issue-8-phase0-slice-d`
+- 2026-03-24 已在 Linux 上验证 `apps/admin-web` 的 `npm ci`、`npm test -- --run`、`npm run build` 全部通过
+- 2026-03-24 已在 Linux 上验证 `tests/unit_tests/admin` 全部通过
+- 2026-03-24 已在 Linux 上验证 `bash scripts/check-governance.sh --skip-remote-checks`、`bash scripts/check-governance.sh`、`bash scripts/build-workset.sh` 与 `pwsh -File tests/smoke/run-all.ps1` 全部通过
+- 2026-03-24 已确认 `scripts/build-workset.ps1` / `scripts/build-workset.sh` 会保留 issue-ledger 中活跃 issue 的非默认 PR/next 元数据，避免 workset 刷新时抹掉执行态记忆
+- 2026-03-24 已确认远端 issue `#8` 仍为 `OPEN`，范围维持 `Phase 0`：typed admin API + minimal overview frontend + minimal WS invalidation semantics
+- 2026-03-24 已确认 draft PR `#26`、`#27`、`#28`、`#29` 仍为 open，当前都只有 `governance-check` 成功记录，尚未进入 review 决策阶段
+- 2026-03-24 已确认 draft PR `#25` 是当前 stacked 链的前置阻塞；其 `pr-gate` 与 `pre-commit` 仍失败，未进入可 retarget / merge 状态
+- 2026-03-24 已决定不再以 `#25-#29` 作为 Phase 0 的主合并路径，而是把 Linux 上已验证的 `codex/phase0-integration` 收口为一个直达 `main` 的新 PR
+- 2026-03-24 已在 Linux 上完成 `uvx --from pre-commit pre-commit run --all-files`、`bash scripts/check-governance.sh`、`pwsh -File tests/smoke/run-all.ps1`、`pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`apps/admin-web` lint/test/build 的验证；当前仅剩全量 `uv run --active --no-sync build.py` 与导入验证收尾
 
 ## Next Actions
 
-1. 围绕 issue `#8` 继续推进 `PR Slice D`：frontend CI、开发命令、文档与 memory 收尾。
-2. 在 `#26`、`#27`、`#28` 与 `#29` 上继续推进 stacked review 流，并在 `#25` 合并后逐层 retarget / merge。
-3. 保持 `#9-#24` 为后续阶段 backlog，不提前并行实施。
+1. 等待 `/root/NautilusTrader-phase0` 的全量 Linux build 完成，并执行 `import nautilus_trader` 收尾验证。
+2. 将 `codex/phase0-integration` 收口到新的主线分支并创建直达 `main` 的 Phase 0 PR。
+3. 在远端检查与 Codex review 通过后合并到 `main`，再清理或关闭旧的 stacked draft PR 链。
 
 ## Repository
 

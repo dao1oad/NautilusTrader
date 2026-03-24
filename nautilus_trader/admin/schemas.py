@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel
 from pydantic import Field
 
+
 class HealthStatus(BaseModel):
     status: str
 

@@ -64,6 +64,7 @@
 ### Task 1: Add Typed Command Contracts, Error Codes, And Audit Records
 
 **Files:**
+
 - Modify: `nautilus_trader/admin/schemas.py`
 - Create: `nautilus_trader/admin/services/commands.py`
 - Create: `nautilus_trader/admin/services/audit.py`
@@ -110,6 +111,7 @@ git commit -m "feat: add admin command contracts and audit sink"
 ### Task 2: Add Backend Command Endpoints For Low-Risk Controls
 
 **Files:**
+
 - Modify: `nautilus_trader/admin/app.py`
 - Modify: `nautilus_trader/admin/ws.py`
 - Modify: `nautilus_trader/admin/services/commands.py`
@@ -161,6 +163,7 @@ git commit -m "feat: add low-risk admin control endpoints"
 ### Task 3: Add Frontend Confirmations, Command Receipts, And Audit Timeline
 
 **Files:**
+
 - Create: `apps/admin-web/src/features/commands/confirm-command-dialog.tsx`
 - Create: `apps/admin-web/src/features/commands/use-command-action.ts`
 - Create: `apps/admin-web/src/features/audit/audit-timeline.tsx`
@@ -214,6 +217,7 @@ git commit -m "feat: add admin command confirmations and audit timeline"
 ### Task 4: Close The Phase 2 Governance Loop
 
 **Files:**
+
 - Modify: `docs/system-truth/api-contracts.md`
 - Modify: `docs/system-truth/runtime-flows.md`
 - Modify: `docs/system-truth/data-model.md`

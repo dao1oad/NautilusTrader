@@ -65,6 +65,7 @@
 ### Task 1: Introduce The Multi-Page Console Shell
 
 **Files:**
+
 - Create: `apps/admin-web/src/app/router.tsx`
 - Create: `apps/admin-web/src/app/layouts/console-shell.tsx`
 - Create: `apps/admin-web/src/app/routes/__root.tsx`
@@ -123,6 +124,7 @@ git commit -m "feat: add admin console shell and routes"
 ### Task 2: Add Shared Page States And Realtime Query Infrastructure
 
 **Files:**
+
 - Create: `apps/admin-web/src/shared/query/query-client.ts`
 - Create: `apps/admin-web/src/shared/ui/page-state.tsx`
 - Create: `apps/admin-web/src/shared/ui/last-updated-badge.tsx`
@@ -171,6 +173,7 @@ git commit -m "feat: add shared read-only query and page state infrastructure"
 ### Task 3: Add Read-Only Nodes, Strategies, And Adapters APIs And Pages
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/nodes.py`
 - Create: `nautilus_trader/admin/services/strategies.py`
 - Create: `nautilus_trader/admin/services/adapters.py`
@@ -244,6 +247,7 @@ git commit -m "feat: add read-only node strategy adapter surfaces"
 ### Task 4: Add Read-Only Orders, Positions, Accounts, And Logs APIs And Pages
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/orders.py`
 - Create: `nautilus_trader/admin/services/positions.py`
 - Create: `nautilus_trader/admin/services/accounts.py`
@@ -305,6 +309,7 @@ git commit -m "feat: add read-only trading and logs surfaces"
 ### Task 5: Close The Phase 1 Governance Loop
 
 **Files:**
+
 - Modify: `docs/system-truth/api-contracts.md`
 - Modify: `docs/system-truth/runtime-flows.md`
 - Modify: `docs/system-truth/module-boundaries.md`

@@ -60,6 +60,7 @@ issue `#8` 推荐拆成 4 个顺序 PR：
 ### Task 1: Reserve The Admin Code Plane And Scaffold The Backend Contract
 
 **Files:**
+
 - Modify: `pyproject.toml`
 - Create: `nautilus_trader/admin/__init__.py`
 - Create: `nautilus_trader/admin/app.py`
@@ -122,6 +123,7 @@ git commit -m "feat: scaffold admin control plane and truth bindings"
 ### Task 2: Add A Typed Overview Snapshot Contract Backed By Existing Runtime Surfaces
 
 **Files:**
+
 - Modify: `nautilus_trader/admin/schemas.py`
 - Create: `nautilus_trader/admin/services/overview.py`
 - Modify: `nautilus_trader/admin/app.py`
@@ -201,6 +203,7 @@ git commit -m "feat: add typed admin overview snapshot contract"
 ### Task 3: Add The Minimal WebSocket Contract For Connection State And Snapshot Invalidation
 
 **Files:**
+
 - Create: `nautilus_trader/admin/ws.py`
 - Modify: `nautilus_trader/admin/app.py`
 - Modify: `nautilus_trader/admin/schemas.py`
@@ -271,6 +274,7 @@ git commit -m "feat: add admin overview websocket contract"
 ### Task 4: Scaffold The Minimal Frontend Overview Shell
 
 **Files:**
+
 - Create: `apps/admin-web/package.json`
 - Create: `apps/admin-web/package-lock.json`
 - Create: `apps/admin-web/tsconfig.json`
@@ -343,6 +347,7 @@ git commit -m "feat: scaffold admin web overview shell"
 ### Task 5: Wire The Frontend To The Admin DTO Contract And Stale-State Behavior
 
 **Files:**
+
 - Create: `apps/admin-web/src/shared/types/admin.ts`
 - Create: `apps/admin-web/src/shared/api/admin-client.ts`
 - Create: `apps/admin-web/src/shared/realtime/admin-events.ts`
@@ -411,6 +416,7 @@ git commit -m "feat: wire admin overview dto and stale state handling"
 ### Task 6: Add Frontend Checks To CI And Close The Phase 0 Documentation Loop
 
 **Files:**
+
 - Modify: `.github/workflows/build.yml`
 - Modify: `docs/system-truth/api-contracts.md`
 - Modify: `docs/system-truth/runtime-flows.md`

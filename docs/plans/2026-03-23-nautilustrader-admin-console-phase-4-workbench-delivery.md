@@ -62,6 +62,7 @@
 ### Task 1: Add Backtest And Report Contracts To The Admin Surface
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/backtests.py`
 - Create: `nautilus_trader/admin/services/reports.py`
 - Modify: `nautilus_trader/admin/schemas.py`
@@ -117,6 +118,7 @@ git commit -m "feat: add backtest and report workbench surfaces"
 ### Task 2: Introduce The Unified Workbench Shell And Workspace Model
 
 **Files:**
+
 - Create: `apps/admin-web/src/app/layouts/workbench-shell.tsx`
 - Create: `apps/admin-web/src/shared/workspaces/workspace-store.ts`
 - Modify: `apps/admin-web/src/app/router.tsx`
@@ -164,6 +166,7 @@ git commit -m "feat: add unified admin workbench shell"
 ### Task 3: Lock The Delivery Model, Add E2E Coverage, And Evaluate Desktop Packaging
 
 **Files:**
+
 - Create: `nautilus_trader/admin/static/__init__.py`
 - Modify: `nautilus_trader/admin/app.py`
 - Create: `apps/admin-web/playwright.config.ts`
@@ -222,6 +225,7 @@ git commit -m "feat: harden admin workbench delivery and e2e coverage"
 ### Task 4: Close The Phase 4 Governance Loop
 
 **Files:**
+
 - Modify: `docs/system-truth/architecture.md`
 - Modify: `docs/system-truth/api-contracts.md`
 - Modify: `docs/system-truth/runtime-flows.md`

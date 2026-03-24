@@ -11,8 +11,18 @@ if [[ ! -f "$TOOLCHAIN_FILE" ]]; then
   exit 1
 fi
 
-# Extract toolchain version
-VERSION=$(awk -F'"' '/version[[:space:]]*=/{gsub(/[[:space:]]/,"",$2); print $2; exit}' "$TOOLCHAIN_FILE")
+# Extract toolchain version from the canonical `channel` field.
+# Fall back to the legacy `version` field for backwards compatibility.
+VERSION=$(awk -F'"' '
+  /channel[[:space:]]*=/ { gsub(/[[:space:]]/, "", $2); print $2; exit }
+  /version[[:space:]]*=/ { legacy = $2 }
+  END {
+    if (legacy != "") {
+      gsub(/[[:space:]]/, "", legacy)
+      print legacy
+    }
+  }
+' "$TOOLCHAIN_FILE")
 
 # Validate that we got a version
 if [[ -z "$VERSION" ]]; then

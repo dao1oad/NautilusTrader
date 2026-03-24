@@ -10,9 +10,10 @@
 
 ---
 
-### Task 1: Scaffold the repository template skeleton
+## Task 1: Scaffold the repository template skeleton
 
 **Files:**
+
 - Create: `D:\aduit_tem\README.md`
 - Create: `D:\aduit_tem\PROJECT_INIT.md`
 - Create: `D:\aduit_tem\.gitignore`
@@ -75,9 +76,10 @@ git add README.md PROJECT_INIT.md .gitignore .editorconfig governance memory ops
 git commit -m "feat: scaffold governance template skeleton"
 ```
 
-### Task 2: Create the root AGENTS contract and governance policy set
+## Task 2: Create the root AGENTS contract and governance policy set
 
 **Files:**
+
 - Create: `D:\aduit_tem\AGENTS.md`
 - Create: `D:\aduit_tem\governance\charter.md`
 - Create: `D:\aduit_tem\governance\operating-model.md`
@@ -145,9 +147,10 @@ git add AGENTS.md governance tests/smoke/test-governance-files.ps1
 git commit -m "feat: add governance policies and agent contract"
 ```
 
-### Task 3: Create the memory system templates
+## Task 3: Create the memory system templates
 
 **Files:**
+
 - Create: `D:\aduit_tem\memory\active-context.md`
 - Create: `D:\aduit_tem\memory\product-context.md`
 - Create: `D:\aduit_tem\memory\repo-map.md`
@@ -211,9 +214,10 @@ git add memory tests/smoke/test-memory-files.ps1
 git commit -m "feat: add reusable project memory system"
 ```
 
-### Task 4: Add machine-readable policy files
+## Task 4: Add machine-readable policy files
 
 **Files:**
+
 - Create: `D:\aduit_tem\ops\project-policy.yaml`
 - Create: `D:\aduit_tem\ops\agent-config.yaml`
 - Create: `D:\aduit_tem\ops\issue-board.yaml`
@@ -269,9 +273,10 @@ git add ops tests/smoke/test-ops-config.ps1
 git commit -m "feat: add machine-readable governance policy files"
 ```
 
-### Task 5: Implement bootstrap and governance validation scripts
+## Task 5: Implement bootstrap and governance validation scripts
 
 **Files:**
+
 - Create: `D:\aduit_tem\scripts\init-project.ps1`
 - Create: `D:\aduit_tem\scripts\check-governance.ps1`
 - Test: `D:\aduit_tem\tests\smoke\test-governance-scripts.ps1`
@@ -333,9 +338,10 @@ git add scripts tests/smoke/test-governance-scripts.ps1
 git commit -m "feat: add bootstrap and governance validation scripts"
 ```
 
-### Task 6: Implement issue sync and workset construction
+## Task 6: Implement issue sync and workset construction
 
 **Files:**
+
 - Create: `D:\aduit_tem\scripts\sync-issues.ps1`
 - Create: `D:\aduit_tem\scripts\build-workset.ps1`
 - Create: `D:\aduit_tem\workspace\runbooks\issue-packet-schema.md`
@@ -398,9 +404,10 @@ git add scripts workspace tests/smoke/test-issue-workset-scripts.ps1 memory/issu
 git commit -m "feat: add issue synchronization and workset generation"
 ```
 
-### Task 7: Implement PR preflight and merge close-loop scripts
+## Task 7: Implement PR preflight and merge close-loop scripts
 
 **Files:**
+
 - Create: `D:\aduit_tem\scripts\pre-pr-check.ps1`
 - Create: `D:\aduit_tem\scripts\close-loop.ps1`
 - Create: `D:\aduit_tem\workspace\handoffs\review-resolution-template.md`
@@ -464,9 +471,10 @@ git add scripts workspace tests/smoke/test-pr-close-loop-scripts.ps1 memory
 git commit -m "feat: add pr preflight and merge close-loop automation"
 ```
 
-### Task 8: Add GitHub templates and workflow gates
+## Task 8: Add GitHub templates and workflow gates
 
 **Files:**
+
 - Create: `D:\aduit_tem\.github\PULL_REQUEST_TEMPLATE.md`
 - Create: `D:\aduit_tem\.github\ISSUE_TEMPLATE\feature.yml`
 - Create: `D:\aduit_tem\.github\ISSUE_TEMPLATE\bug.yml`
@@ -523,9 +531,10 @@ git add .github tests/smoke/test-github-templates.ps1
 git commit -m "feat: add github templates and governance gates"
 ```
 
-### Task 9: Add an end-to-end smoke check for the template
+## Task 9: Add an end-to-end smoke check for the template
 
 **Files:**
+
 - Create: `D:\aduit_tem\tests\smoke\run-all.ps1`
 - Modify: `D:\aduit_tem\README.md`
 - Modify: `D:\aduit_tem\PROJECT_INIT.md`
@@ -582,9 +591,10 @@ git add README.md PROJECT_INIT.md tests/smoke
 git commit -m "feat: add end-to-end smoke verification for governance template"
 ```
 
-### Task 10: Verify repository readiness and document handoff
+## Task 10: Verify repository readiness and document handoff
 
 **Files:**
+
 - Modify: `D:\aduit_tem\README.md`
 - Modify: `D:\aduit_tem\PROJECT_INIT.md`
 - Modify: `D:\aduit_tem\docs\plans\2026-03-23-project-governance-design.md`

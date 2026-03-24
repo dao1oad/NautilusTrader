@@ -1,5 +1,7 @@
 $ledgerPath = 'memory\issue-ledger.md'
 $originalLedger = Get-Content $ledgerPath -Raw
+$prePrCheckScript = Join-Path 'scripts' 'pre-pr-check.ps1'
+$reviewResolutionFile = Join-Path 'workspace/handoffs' 'review-resolution-template.md'
 
 function Invoke-ExpectFailure {
   param(
@@ -8,7 +10,7 @@ function Invoke-ExpectFailure {
   )
 
   try {
-    & 'scripts\pre-pr-check.ps1' -IssueNumber 101 -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -SkipRemoteReview -ChangedFilesOverride $ChangedFiles
+    & $prePrCheckScript -IssueNumber 101 -ReviewResolutionFile $reviewResolutionFile -SkipRemoteReview -ChangedFilesOverride $ChangedFiles
     Write-Error $Message
     exit 1
   } catch {
@@ -23,7 +25,7 @@ function Invoke-ExpectSuccess {
   )
 
   try {
-    & 'scripts\pre-pr-check.ps1' -IssueNumber 101 -ReviewResolutionFile 'workspace\handoffs\review-resolution-template.md' -SkipRemoteReview -ChangedFilesOverride $ChangedFiles
+    & $prePrCheckScript -IssueNumber 101 -ReviewResolutionFile $reviewResolutionFile -SkipRemoteReview -ChangedFilesOverride $ChangedFiles
   } catch {
     Write-Error ($Message + ' :: ' + $_.Exception.Message)
     exit 1

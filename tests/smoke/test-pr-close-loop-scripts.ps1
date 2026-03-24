@@ -1,6 +1,7 @@
 $required = @(
   'scripts\pre-pr-check.ps1',
   'scripts\close-loop.ps1',
+  'scripts\close-loop.sh',
   'workspace\handoffs\review-resolution-template.md'
 )
 
@@ -12,6 +13,7 @@ if ($missing.Count -gt 0) {
 
 $pre = Get-Content 'scripts\pre-pr-check.ps1' -Raw
 $close = Get-Content 'scripts\close-loop.ps1' -Raw
+$closeSh = Get-Content 'scripts\close-loop.sh' -Raw
 
 if ($pre -notmatch 'memory' -or $pre -notmatch 'remote Codex review') {
   Write-Error 'pre-pr-check.ps1 must validate memory updates and remote review prerequisites.'
@@ -20,5 +22,10 @@ if ($pre -notmatch 'memory' -or $pre -notmatch 'remote Codex review') {
 
 if ($close -notmatch 'progress-log' -or $close -notmatch 'active-context') {
   Write-Error 'close-loop.ps1 must update memory after merge.'
+  exit 1
+}
+
+if ($closeSh -notmatch 'progress-log' -or $closeSh -notmatch 'active-context') {
+  Write-Error 'close-loop.sh must update memory after merge.'
   exit 1
 }

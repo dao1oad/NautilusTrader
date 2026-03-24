@@ -63,6 +63,7 @@
 ### Task 1: Add Blotter, Fills, And Position Drill-Down Contracts
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/fills.py`
 - Modify: `nautilus_trader/admin/services/orders.py`
 - Modify: `nautilus_trader/admin/services/positions.py`
@@ -119,6 +120,7 @@ git commit -m "feat: add blotter fills and position drill-down surfaces"
 ### Task 2: Add Accounts, Margin, And Risk Center
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/risk.py`
 - Modify: `nautilus_trader/admin/services/accounts.py`
 - Modify: `nautilus_trader/admin/schemas.py`
@@ -173,6 +175,7 @@ git commit -m "feat: add accounts margin and risk center"
 ### Task 3: Add Catalog, History, Event Playback, And Diagnostics
 
 **Files:**
+
 - Create: `nautilus_trader/admin/services/catalog.py`
 - Create: `nautilus_trader/admin/services/diagnostics.py`
 - Modify: `nautilus_trader/admin/schemas.py`
@@ -230,6 +233,7 @@ git commit -m "feat: add catalog playback and diagnostics surfaces"
 ### Task 4: Close The Phase 3 Governance Loop
 
 **Files:**
+
 - Modify: `docs/system-truth/api-contracts.md`
 - Modify: `docs/system-truth/runtime-flows.md`
 - Modify: `docs/system-truth/data-model.md`

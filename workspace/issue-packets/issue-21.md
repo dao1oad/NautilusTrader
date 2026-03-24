@@ -1,15 +1,15 @@
-# Issue Packet: #5
+# Issue Packet: #21
 
 ## Issue
 
-- ID: 5
-- Title: Sync NautilusTrader upstream snapshot and admin console design baseline
+- ID: 21
+- Title: Phase 3C: catalog, history, event playback, and diagnostics
 - Priority: Medium
-- Dependencies: None
+- Dependencies: 11, 19, 20
 
 ## Goal
 
-Resolve GitHub issue #5 according to repository policy.
+Resolve GitHub issue #21 according to repository policy.
 
 ## Constraints
 

@@ -30,3 +30,4 @@
 - `nautilus_trader/admin` 可以包装既有运行时能力，但在 `Phase 0` 只允许 `health`、`overview` 与最小 WS 事件集合，不扩展到命令控制、多页面或最终交付链路。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
 - `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽远端 Codex review 或 PR-only 约束。
+- 本地构建辅助脚本必须在 Linux 开发机和容器内可直接运行，不能隐式要求 Windows-only 路径或在 root 环境下强依赖 `sudo`。

@@ -16,9 +16,18 @@ $smokes = @(
   'tests\smoke\test-startup-prompt.ps1'
 )
 
+$powershellExe = if (Get-Command 'powershell' -ErrorAction SilentlyContinue) {
+  'powershell'
+} elseif (Get-Command 'pwsh' -ErrorAction SilentlyContinue) {
+  'pwsh'
+} else {
+  Write-Error 'Neither powershell nor pwsh is available to run the smoke suite.'
+  exit 1
+}
+
 $failed = @()
 foreach ($test in $smokes) {
-  powershell -ExecutionPolicy Bypass -File $test
+  & $powershellExe -ExecutionPolicy Bypass -File $test
   if ($LASTEXITCODE -ne 0) {
     $failed += $test
   }

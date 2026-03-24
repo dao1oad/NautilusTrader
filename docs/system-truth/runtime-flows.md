@@ -4,6 +4,8 @@
 
 `pyproject/build.py 解析环境变量 -> cargo 编译关键 Rust 库 -> Cython/PyO3 扩展构建 -> 可选复制二进制回源码树 -> Python surface 导入编译产物`
 
+本地与 CI 的 Rust 工具链都必须收敛到 `rust-toolchain.toml` 中同一个 pin；Linux 下 `scripts/install-capnp.sh` 必须能在 root 容器和普通用户环境中完成 Cap'n Proto 安装。
+
 ## Trading Runtime Flow
 
 `数据源/交易所适配器 -> 规范化 market/order/account 事件 -> common/core/model -> backtest/live/execution -> portfolio/risk/system/trading -> persistence/serialization/报告输出`
@@ -29,6 +31,10 @@
 ## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> subagent 执行 -> PR -> 远端 Codex review -> review 闭环 -> merge -> memory/system-truth 回写`
+
+本地治理入口在 Windows 使用 `scripts/*.ps1`，在 Linux/macOS 使用对应的 `scripts/*.sh`。两组脚本都围绕同一仓库根目录、`memory/` 和 `workspace/` 产物工作。
+`scripts/build-workset.ps1` / `scripts/build-workset.sh` 根据最新 issues snapshot 重建依赖状态与 issue packets 时，必须保留 `memory/issue-ledger.md` 中已存在的非默认 PR 跟踪与人工 next 注释，避免活跃执行状态被刷新脚本抹掉。
+仓库的本地化治理文档和计划文档不参与 English-only non-Latin gate；该 lint 主要用于保护共享源码、workflow、脚本和通用工程配置不混入非预期脚本字符。
 
 ## PR Gate Flow
 
