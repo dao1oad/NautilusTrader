@@ -17,6 +17,8 @@ worktrees/
 *.patch
 log/
 logs/
+!apps/admin-web/src/features/logs/
+!apps/admin-web/src/features/logs/logs-page.tsx
 
 # Profiler and database
 *.prof
