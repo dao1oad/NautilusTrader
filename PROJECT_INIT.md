@@ -7,7 +7,7 @@
 3. 运行 `scripts/init-project.ps1`，或在 Linux/macOS 上运行 `scripts/init-project.sh`。
 4. 配置远端 `main only via pull request`。
 5. 配置 required checks：`governance-check`、`pr-gate`。
-6. 配置 `remote Codex review` 为 merge 前门槛。
+6. 配置 `local PR review` 为 merge 前门槛。
 7. 绑定 `ops/doc-truth-registry.yaml` 与 `ops/doc-truth-map.yaml` 到本项目实际文档和代码结构。
 8. 运行 `scripts/check-governance.ps1`，或在 Linux/macOS 上运行 `scripts/check-governance.sh`。
 
@@ -26,7 +26,7 @@
 - 本地文档与 truth-doc 已按当前结构重绑
 - 本地治理检查已通过
 - smoke suite 已通过
-- 远端仓库、`main` 分支保护、required checks 与 remote Codex review 门禁已完成
+- 远端仓库、`main` 分支保护、required checks 与本地 review 门禁已完成
 - Linux/macOS 的 shell 治理入口已补齐并通过验证
 
 ## First Operational Loop
@@ -36,7 +36,7 @@
 3. 由主 agent 编排顺序与并发。
 4. 所有非初始化变更走 PR。
 5. 对大多数生产代码改动，同步对应 system-truth 文档。
-6. merge 前必须完成 `remote Codex review`。
+6. merge 前必须完成 `local PR review`。
 
 ## Recommended Prompt
 

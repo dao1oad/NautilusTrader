@@ -1,10 +1,12 @@
 [CmdletBinding()]
 param(
   [string]$IssueNumber = '',
-  [string]$ReviewResolutionFile = '',
+  [Alias('ReviewResolutionFile')]
+  [string]$LocalReviewFile = '',
   [string[]]$ChangedFilesOverride = @(),
   [switch]$SkipGitDiff,
-  [switch]$SkipRemoteReview
+  [Alias('SkipRemoteReview')]
+  [switch]$SkipLocalReview
 )
 
 $ErrorActionPreference = 'Stop'
@@ -275,103 +277,45 @@ function Resolve-IssueNumber {
   throw 'Linked issue is required for PR validation.'
 }
 
-function Resolve-ReviewResolutionPath {
+function Resolve-LocalReviewPath {
   param(
     [string]$ExplicitPath,
-    [object]$PullRequestContext
+    [string]$ResolvedIssueNumber
   )
 
   if ($ExplicitPath) {
     return $ExplicitPath
   }
 
-  if ($PullRequestContext) {
-    return Join-Path 'workspace/handoffs' ("review-resolution-{0}.md" -f $PullRequestContext.Number)
+  if ($ResolvedIssueNumber) {
+    return Join-Path 'workspace/handoffs' ("local-review-issue-{0}.md" -f $ResolvedIssueNumber)
   }
 
-  throw 'review_resolution_recorded requires a review-resolution-<pr>.md file.'
+  throw 'local_review_recorded requires a local-review-issue-<issue>.md file.'
 }
 
-function Assert-ReviewResolutionRecord {
-  param([string]$Path)
+function Assert-LocalReviewRecord {
+  param(
+    [string]$Path,
+    [string]$ResolvedIssueNumber,
+    [string]$RequiredStatus
+  )
 
   if (-not (Test-Path $Path)) {
-    throw "Missing review resolution record: $Path"
+    throw "Missing local review record: $Path"
   }
 
   $content = Get-Content $Path -Raw
-  if ($content -notmatch 'Status:' -or $content -notmatch 'Resolution:') {
-    throw 'Review resolution record must include Status and Resolution fields.'
-  }
-}
-
-function Assert-RemoteReview {
-  param(
-    [object]$PullRequestContext,
-    [string]$RequiredActor
-  )
-
-  if (-not $PullRequestContext) {
-    throw 'Remote review checks require pull request context.'
-  }
-
-  if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-    throw 'GitHub CLI is required for remote review validation.'
-  }
-
-  $repoParts = $PullRequestContext.RepoSlug.Split('/')
-  $owner = $repoParts[0]
-  $name = $repoParts[1]
-  $prNumber = $PullRequestContext.Number
-
-  $query = @'
-query($owner: String!, $name: String!, $number: Int!) {
-  repository(owner: $owner, name: $name) {
-    pullRequest(number: $number) {
-      reviewDecision
-      reviewThreads(first: 100) {
-        nodes {
-          isResolved
-        }
-      }
-    }
-  }
-}
-'@
-
-  $graphql = gh api graphql -f query="$query" -F owner="$owner" -F name="$name" -F number="$prNumber" | ConvertFrom-Json
-  $pullRequest = $graphql.data.repository.pullRequest
-  if (-not $pullRequest) {
-    throw 'Unable to read pull request review state.'
-  }
-
-  $unresolvedThreads = @($pullRequest.reviewThreads.nodes | Where-Object { -not $_.isResolved })
-  if ($unresolvedThreads.Count -gt 0) {
-    throw 'Remote review contains unresolved threads. Resolve all review comments before merge.'
-  }
-
-  $reviews = gh api "repos/$($PullRequestContext.RepoSlug)/pulls/$prNumber/reviews" | ConvertFrom-Json
-  $acceptedActors = @($RequiredActor)
-  if ($RequiredActor -eq 'codex') {
-    $acceptedActors += @('chatgpt-codex-connector', 'chatgpt-codex-connector[bot]')
-  }
-
-  $acceptedStates = @('COMMENTED', 'APPROVED', 'CHANGES_REQUESTED')
-  $actorReviews = @($reviews | Where-Object {
-      $acceptedStates -contains $_.state -and $acceptedActors -contains $_.user.login
-    })
-
-  if ($actorReviews.Count -gt 0) {
-    return
-  }
-
-  $issueComments = gh api "repos/$($PullRequestContext.RepoSlug)/issues/$prNumber/comments" | ConvertFrom-Json
-  $actorIssueComments = @($issueComments | Where-Object {
-      $acceptedActors -contains $_.user.login -and $_.body -match 'Codex Review'
-    })
-
-  if ($actorIssueComments.Count -eq 0) {
-    throw "No remote Codex review signal found from configured actor '$RequiredActor'. Current reviewDecision is '$($pullRequest.reviewDecision)'."
+  if (
+    $content -notmatch ("Issue:\s*#?{0}\b" -f [regex]::Escape($ResolvedIssueNumber)) -or
+    $content -notmatch 'Review Type:\s*local pre-PR review' -or
+    $content -notmatch 'Reviewer:' -or
+    $content -notmatch 'Findings:' -or
+    $content -notmatch 'Resolution:' -or
+    $content -notmatch 'Evidence:' -or
+    $content -notmatch ("Status:\s*{0}\b" -f [regex]::Escape($RequiredStatus))
+  ) {
+    throw 'Local review record must include Issue, Review Type, Reviewer, Findings, Resolution, Evidence, and the required Status.'
   }
 }
 
@@ -472,8 +416,8 @@ if (-not (Test-Path 'ops/review-gates.yaml')) {
 
 $policyPath = 'ops/project-policy.yaml'
 $policy = Get-Content $policyPath -Raw
-if ($policy -notmatch 'require_remote_codex_review:\s*true') {
-  throw 'Project policy must require remote Codex review.'
+if ($policy -notmatch 'require_local_pr_review:\s*true') {
+  throw 'Project policy must require local PR review.'
 }
 
 $pullRequestContext = Get-PullRequestContext
@@ -517,19 +461,15 @@ if ($requireTruthDocs) {
   Assert-TruthDocumentSync -ChangedFiles $changed -Registry $truthRegistry -Map $truthMap -FailOnUnmapped $failOnUnmapped
 }
 
-if (-not $SkipRemoteReview) {
-  $requiredActor = Get-ConfigValue -Path 'ops/review-gates.yaml' -Key 'required_review_actor'
-  if (-not $requiredActor) {
-    throw 'review-gates.yaml must define required_review_actor.'
+$requiredGates = Get-ConfigList -Path 'ops/review-gates.yaml' -Key 'required_gates'
+if (($requiredGates -contains 'local_review_recorded') -and -not $SkipLocalReview) {
+  $requiredStatus = Get-ConfigValue -Path 'ops/review-gates.yaml' -Key 'required_local_review_status'
+  if (-not $requiredStatus) {
+    throw 'review-gates.yaml must define required_local_review_status.'
   }
 
-  Assert-RemoteReview -PullRequestContext $pullRequestContext -RequiredActor $requiredActor
+  $reviewPath = Resolve-LocalReviewPath -ExplicitPath $LocalReviewFile -ResolvedIssueNumber $resolvedIssueNumber
+  Assert-LocalReviewRecord -Path $reviewPath -ResolvedIssueNumber $resolvedIssueNumber -RequiredStatus $requiredStatus
 }
 
-$requiredGates = Get-ConfigList -Path 'ops/review-gates.yaml' -Key 'required_gates'
-if ($requiredGates -contains 'review_resolution_recorded') {
-  $resolutionPath = Resolve-ReviewResolutionPath -ExplicitPath $ReviewResolutionFile -PullRequestContext $pullRequestContext
-  Assert-ReviewResolutionRecord -Path $resolutionPath
-}
-
-Write-Host 'Pre-PR checks passed. Remote Codex review is still required before merge.'
+Write-Host 'Pre-PR checks passed. Local PR review evidence is present.'

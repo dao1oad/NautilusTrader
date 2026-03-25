@@ -22,8 +22,8 @@
 
 ## Review Gate
 
-- remote Codex review status:
-- Review comment closure summary:
+- local PR review record:
+- Local review findings closure summary:
 
 ## Notes For Reviewer
 

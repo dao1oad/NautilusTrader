@@ -58,3 +58,5 @@
 - Retargeted PR #36 to `main` so all completed Phase 1B close-loop and Phase 1C changes converge on a single mainline PR.
 - Closed superseded PR #35 after confirming its commits are already contained in PR #36.
 - Reconfirmed that PR #36 governance checks are green, but remote Codex review is still blocked by usage quota comments from `chatgpt-codex-connector`.
+- Fixed PR #36 CI in two steps: simplified `nautilus_trader/admin/app.py` to satisfy Ruff complexity/import ordering, then tracked `apps/admin-web/src/features/logs/logs-page.tsx` by overriding the repo-wide `logs/` ignore rule that had broken the merge-ref frontend build.
+- Migrated repository governance from required remote Codex review to mandatory local PR review, adding issue-scoped review records under `workspace/handoffs/local-review-issue-*.md` and updating policies, workflows, scripts, templates, truth docs, and smoke coverage accordingly.

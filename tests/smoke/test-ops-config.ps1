@@ -13,7 +13,7 @@ if ($missing.Count -gt 0) {
 }
 
 $policy = Get-Content 'ops\project-policy.yaml' -Raw
-if ($policy -notmatch 'enforce_pull_request_only:\s*true' -or $policy -notmatch 'require_remote_codex_review:\s*true') {
-  Write-Error 'project-policy.yaml must enforce PR-only merge and remote Codex review.'
+if ($policy -notmatch 'enforce_pull_request_only:\s*true' -or $policy -notmatch 'require_local_pr_review:\s*true') {
+  Write-Error 'project-policy.yaml must enforce PR-only merge and local PR review.'
   exit 1
 }

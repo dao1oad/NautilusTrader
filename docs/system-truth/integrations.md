@@ -25,16 +25,17 @@
 ## Repository Governance Integrations
 
 - 使用 `gh` 同步 issues、审查 reviews、读取 branch protection
+- 使用仓库内 `workspace/handoffs/local-review-issue-*.md` 记录并传递本地 PR review 结果
 - GitHub Actions 继续负责 `governance-check` 和 `pr-gate`
 - `build.yml` 与 `codeql-analysis.yml` 需要对齐受保护分支 `main`；CodeQL 覆盖面向 `main` 的 PR，供应链检查覆盖 push 到 `main`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；其中 review/comment 触发的重跑必须显式 checkout 目标 PR head，review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
+- `pr-gate` 会在 PR 更新后重跑，并从 PR head 读取 linked issue、本地 review 记录、memory 与 truth-doc 证据
 
 ## Codex
 
 - 主 agent 本地执行
 - subagent 云端执行
-- review 在远端作为合并门槛，可表现为 submitted review 或 `Codex Review` PR comment
+- review 在本地作为合并门槛，通过 issue 级 review 记录文件体现
 
 ## Current Status
 

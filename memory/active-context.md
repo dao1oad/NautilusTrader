@@ -6,11 +6,11 @@
 
 ## Current Phase
 
-- Phase 1B 已通过 PR `#34` 合并到 `main`；原本承接 close-loop 的 `#35` 已被 supersede。当前所有已完成变更已收敛到 PR `#36`，直接面向 `main` 等待远端 review 闭环。
+- Phase 1B 已通过 PR `#34` 合并到 `main`；原本承接 close-loop 的 `#35` 已被 supersede。当前所有已完成变更已收敛到 PR `#36`，并在同一 PR 上同步进行治理迁移：从远端 Codex review gate 切换到本地 PR review gate。
 
 ## Blockers
 
-- PR `#36` 仍缺有效远端 Codex review 信号；`chatgpt-codex-connector` 当前返回 usage limit 提示，因此暂时无法满足 merge gate
+- 无新的人工决策阻塞；PR `#36` 当前只等待新治理规则下的 CI/build matrix 收口
 
 ## Confirmed Facts
 
@@ -27,7 +27,7 @@
 - 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
 - 远端 required checks 当前为 `governance-check` 与 `pr-gate`。
 - 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
-- 远端 Codex review 当前可通过 submitted review 或 `Codex Review` PR comment 体现，`pr-gate` 已支持两种信号。
+- 2026-03-25 已决定废弃远端 Codex review 作为 merge gate，改为 issue 级本地 PR review 记录；相关 policy、workflow、脚本、模板、truth-doc 与 smoke tests 正在同步迁移。
 - 当前仓库未保留上游 `nautechsystems/nautilus_trader` 的 Git remote 或提交历史。
 - 2026-03-23 已关闭 GitHub issue `#5`，其规划基线已正式交接给 issue `#8`。
 - 2026-03-23 已创建 GitHub issue `#8`：`Phase 0: admin control plane foundation and read-only overview slice`
@@ -87,11 +87,12 @@
 - 2026-03-25 已本地验证 `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build`、`bash scripts/check-governance.sh --skip-remote-checks` 与 `git diff --check` 全部通过。
 - 2026-03-25 已创建 PR `#36`：`feat: add read-only trading and logs surfaces`；当前已 retarget 到 `main`，并包含 `#35` 的 Phase 1B close-loop commits 与 `#15` 的 Phase 1C 实现。
 - 2026-03-25 已关闭 PR `#35`；原因是其变更已完整包含在 `#36` 中，后者成为唯一面向 `main` 的主线 PR。
-- 2026-03-25 PR `#36` 的两条 `governance-check` 已成功，但 `@codex review` 两次都收到 usage limit comment，远端 review gate 仍未满足。
+- 2026-03-25 PR `#36` 已修复 `nautilus_trader/admin/app.py` 的 Ruff/complexity 失败，并进一步修复 `apps/admin-web/src/features/logs/logs-page.tsx` 被仓库级 `.gitignore` 误忽略导致的远端 `frontend-admin-web` 失败。
+- 2026-03-25 新 policy 下，PR `#36` 已补入 `workspace/handoffs/local-review-issue-15.md` 作为本地 PR review 证据，后续只需等待新的 `pr-gate/build` 基于该规则收口。
 
 ## Next Actions
 
-1. 等待 Codex review quota 恢复后，重新为 PR `#36` 触发远端 review 并继续 merge gate 收口。
+1. 等待 PR `#36` 在新本地-review治理下的 `pr-gate` 与 build matrix 收口，并直接完成合并。
 2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
 3. 在不触碰 `/root/NautilusTrader` 脏工作树的前提下，继续把远端 `main` 作为唯一集成入口。
 

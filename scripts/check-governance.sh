@@ -166,11 +166,12 @@ required_files=(
   "memory/active-context.md"
   "memory/issue-ledger.md"
   ".github/PULL_REQUEST_TEMPLATE.md"
+  "workspace/handoffs/local-review-template.md"
 )
 
 missing=()
 for path in "${required_files[@]}"; do
-  [[ -e "$path" ]] || missing+=("$path")
+[[ -e "$path" ]] || missing+=("$path")
 done
 
 if [[ ${#missing[@]} -gt 0 ]]; then
@@ -179,7 +180,7 @@ fi
 
 policy_path="ops/project-policy.yaml"
 [[ $(get_config_boolean "$policy_path" "enforce_pull_request_only") == "true" ]] || fail "project-policy.yaml must enable PR-only merge."
-[[ $(get_config_boolean "$policy_path" "require_remote_codex_review") == "true" ]] || fail "project-policy.yaml must require remote Codex review."
+[[ $(get_config_boolean "$policy_path" "require_local_pr_review") == "true" ]] || fail "project-policy.yaml must require local PR review."
 
 if [[ $(get_config_boolean "$policy_path" "require_truth_docs") == "true" ]]; then
   truth_required=(

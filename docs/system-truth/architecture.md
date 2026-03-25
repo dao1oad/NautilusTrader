@@ -29,8 +29,8 @@
 - subagent 在云端执行
 - 默认开启 truth-doc 门禁
 - `main` 只通过 PR 合并，初始化阶段除外
-- merge 前必须完成远端 Codex review 与本地 review 闭环记录
-- 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，但不能替代远端 Codex review
+- merge 前必须完成已记录的本地 PR review
+- 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，本地 review 记录而不是远端 connector review 承担额外治理门槛
 - 当前仓库保留自己的 `.git`、`origin` 和治理规则；上游源码仅作为文件快照导入
 - `scripts/build-workset.ps1` 与 `scripts/build-workset.sh` 会根据 issues snapshot 重建 `memory/issue-ledger.md` 和 issue packets，但不应抹掉活跃 issue 已记录的 PR 关联或非默认 next 注释
 - `scripts/build-workset.ps1` 与 `scripts/build-workset.sh` 只把 issue 正文中 `Depends on` 段声明的引用纳入执行依赖图；`Parent`、`Child issues` 与其它说明性引用属于编排元数据，不得反向阻塞具体实施 issue
@@ -40,4 +40,4 @@
 - `Phase 1C` 的 trading/logs 只读 surface 必须继续保持 bounded 查询约束；当前默认窗口为 `limit=100`，后端上限为 `500`，前端 query key 也必须把 `limit` 作为缓存维度的一部分
 - `Phase 0` 的 admin control plane 只承诺开发态双进程：Python admin API + `Vite` dev server；不宣称 wheel 打包、桌面壳或最终静态资源托管模型
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
-- GitHub 中的远端 Codex review 由 Codex connector 在 PR 上留下的 submitted review 或 `Codex Review` 评论体现，而不是仓库协作者手工代替
+- 当前 review 门禁由仓库内提交的本地 review 记录承担；GitHub 原生 review 线程可继续使用，但不再是自动化 merge gate 的必需信号

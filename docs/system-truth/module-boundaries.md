@@ -30,5 +30,5 @@
 - `nautilus_trader/admin` 可以包装既有运行时能力；当前后端 contract 包含 `health`、`overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 与最小 WS 事件集合，但仍未扩展到命令控制或完整 domain surface。
 - `apps/admin-web/src/app/*` 负责 router、layout 和 route-level composition；`apps/admin-web/src/shared/query/*` 负责 query client 与 query key；`apps/admin-web/src/shared/realtime/*` 负责 WebSocket transport 与 invalidation bus；`apps/admin-web/src/shared/ui/*` 负责跨页面复用的 page-state / status UI。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
-- `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽远端 Codex review 或 PR-only 约束。
+- `ops/review-gates.yaml` 中的 review 约束只放宽 GitHub 人工 approving review，不放宽本地 PR review 或 PR-only 约束。
 - 本地构建辅助脚本必须在 Linux 开发机和容器内可直接运行，不能隐式要求 Windows-only 路径或在 root 环境下强依赖 `sudo`。

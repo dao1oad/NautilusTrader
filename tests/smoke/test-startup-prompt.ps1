@@ -16,7 +16,7 @@ $requiredPhrases = @(
   'scripts/check-governance.ps1',
   'scripts/init-project.sh',
   'scripts/check-governance.sh',
-  'remote Codex review',
+  'local PR review',
   'minimal confirmation list',
   'copy the template directory'
 )

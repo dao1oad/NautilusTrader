@@ -11,7 +11,7 @@
 | #18 | Phase 2C: command confirmations, audit timeline, and recovery runbooks | Medium | 16, 17 | blocked | No | TBD | Resolve dependency |
 | #17 | Phase 2B: low-risk strategy, adapter, and subscription controls | Medium | 16 | blocked | No | TBD | Resolve dependency |
 | #16 | Phase 2A: command contract, error codes, and audit sink | Medium | 9 | blocked | No | TBD | Resolve dependency |
-| #15 | Phase 1C: read-only orders, positions, accounts, and logs surfaces | Medium | 13, 14 | in_review | No | #36 | Await remote review on stacked PR |
+| #15 | Phase 1C: read-only orders, positions, accounts, and logs surfaces | Medium | 13, 14 | in_review | No | #36 | Await local-review gate and CI on #36 |
 | #12 | Phase 4: unified workbench and delivery hardening | Medium | 11 | blocked | No | TBD | Resolve dependency |
 | #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10 | blocked | No | TBD | Resolve dependency |
 | #10 | Phase 2: admin control commands and audit loop | Medium | 9 | blocked | No | TBD | Resolve dependency |

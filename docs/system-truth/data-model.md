@@ -66,7 +66,8 @@
 - `memory/issue-ledger.md`: issue 编排账本
 - `workspace/runbooks/issues-snapshot.json`: GitHub open issues 标准化快照
 - `workspace/issue-packets/*.md`: subagent 任务包
-- `workspace/handoffs/review-resolution-*.md`: review 闭环凭据
+- `workspace/handoffs/local-review-issue-*.md`: issue 级本地 PR review 凭据
+- `workspace/handoffs/review-resolution-*.md`: 历史远端 review 闭环记录
 - `ops/*.yaml`: 治理策略、agent 配置、review gate 与编排设置
 
 ## Data Model Rules

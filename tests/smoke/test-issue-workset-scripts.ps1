@@ -278,7 +278,7 @@ try {
   Remove-Item -Path $worksetFixturePath -Force -ErrorAction SilentlyContinue
 
   if ($originalLedger -ne $null) {
-    Set-Content -Path $ledgerPath -Value $originalLedger
+    [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $ledgerPath), $originalLedger, [System.Text.UTF8Encoding]::new($false))
   }
 
   if (Test-Path $packetDir) {

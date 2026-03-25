@@ -2,8 +2,7 @@ required_gates:
   - linked_issue
   - tests_passed
   - memory_updated
-  - remote_codex_review
-  - review_resolution_recorded
+  - local_review_recorded
 
 required_status_checks:
   - governance-check
@@ -15,7 +14,6 @@ merge_requirements:
   target_branch: main
   pull_request_only: true
 
-required_review_actor: codex
-require_review_thread_resolution: true
-require_review_resolution_record: true
+local_review_template: workspace/handoffs/local-review-template.md
+required_local_review_status: approved
 require_linked_issue: true

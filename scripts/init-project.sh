@@ -84,7 +84,7 @@ printf 'Remote hardening checklist:\n'
 printf '%s\n' '- Enable branch protection on main'
 printf '%s\n' '- Require pull request before merge'
 printf '%s\n' '- Require required checks'
-printf '%s\n' '- Require remote Codex review'
+printf '%s\n' '- Require mandatory local PR review before merge'
 printf '%s\n' '- Bind ops/doc-truth-registry.yaml to the project truth documents'
 printf '%s\n' '- Bind ops/doc-truth-map.yaml to the project code layout'
 
