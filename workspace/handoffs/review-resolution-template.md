@@ -1,7 +1,7 @@
 # Review Resolution
 
 - PR:
-- Review Type: remote Codex review
+- Review Type: historical remote review
 - Comment:
 - Resolution:
 - Evidence:

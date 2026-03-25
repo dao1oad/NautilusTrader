@@ -6,11 +6,11 @@
 
 ## Current Phase
 
-- `#14` 已通过 PR `#34` 进入 review；当前分支为 `codex/issue-14-phase1b-read-only-surfaces`，下一步是远端 Codex review、线程闭环与合并收口
+- Phase 1B 已通过 PR `#34` 合并到 `main`；原本承接 close-loop 的 `#35` 已被 supersede。当前所有已完成变更已收敛到 PR `#36`，并在同一 PR 上同步进行治理迁移：从远端 Codex review gate 切换到本地 PR review gate。
 
 ## Blockers
 
-- 无
+- 无新的人工决策阻塞；PR `#36` 当前只等待新治理规则下的 CI/build matrix 收口
 
 ## Confirmed Facts
 
@@ -27,7 +27,7 @@
 - 远端 `main` 已启用分支保护、required checks、PR review 和 conversation resolution。
 - 远端 required checks 当前为 `governance-check` 与 `pr-gate`。
 - 当前仓库只有 1 个 GitHub 账号可用于维护，远端 `required_approving_review_count` 已调整为 `0`。
-- 远端 Codex review 当前可通过 submitted review 或 `Codex Review` PR comment 体现，`pr-gate` 已支持两种信号。
+- 2026-03-25 已决定废弃远端 Codex review 作为 merge gate，改为 issue 级本地 PR review 记录；相关 policy、workflow、脚本、模板、truth-doc 与 smoke tests 正在同步迁移。
 - 当前仓库未保留上游 `nautechsystems/nautilus_trader` 的 Git remote 或提交历史。
 - 2026-03-23 已关闭 GitHub issue `#5`，其规划基线已正式交接给 issue `#8`。
 - 2026-03-23 已创建 GitHub issue `#8`：`Phase 0: admin control plane foundation and read-only overview slice`
@@ -77,12 +77,24 @@
 - 2026-03-24 已在 `nautilus_trader/admin` 上新增 `nodes`、`strategies`、`adapters` 只读 list snapshot endpoint，并在 `apps/admin-web` 上接通对应 query-backed 页面、shared invalidation 和 truth docs 更新。
 - 2026-03-24 已本地验证 `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build` 全部通过。
 - 2026-03-24 已创建 PR `#34`：`feat: add read-only node strategy adapter surfaces`，对应 issue `#14`。
+- 2026-03-25 通过将 PR `#34` 暂时转回 draft 再恢复 ready，成功重新触发远端 Codex review；`chatgpt-codex-connector[bot]` comment `4122614161` 确认未发现 major issues。
+- 2026-03-25 为修复 GitHub 对同名 cancelled required checks 的错误选取，已重跑 `pull_request` 上下文的 `pr-gate` 与 `governance-check`，以及对应的 `push governance-check`。
+- 2026-03-25 PR `#34` 已合并到 `main`，merge commit 为 `c53198d3abd99e6d16fe8fc0601b3835f39686b1`。
+- 2026-03-25 issue `#14` 已手动关闭；原因是 PR 正文使用了 `Linked issue: #14` 而非 closing keyword。
+- 2026-03-25 已重新同步 open issues；本地 `workspace/runbooks/issues-snapshot.json` 当前为 14 个开放 issue，`#15` 已变为 `ready`，`#9` 继续作为 Phase 1 umbrella close-out gate。
+- 2026-03-25 已创建独立 worktree `/root/NautilusTrader-phase1c`，分支 `codex/issue-15-phase1c-read-only-surfaces` 基于 close-loop 分支头 `f0c4200f460cecacc6f9cda307109bae7af7e7ef` 开始实施 `#15`。
+- 2026-03-25 已在 `nautilus_trader/admin` 上新增 bounded read-only `orders`、`positions`、`accounts`、`logs` endpoint，并在 `apps/admin-web` 上把 4 个 placeholder route 接成 query-backed 页面，同时把 invalidation fan-out 扩到全部 8 个只读 route topic。
+- 2026-03-25 已本地验证 `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build`、`bash scripts/check-governance.sh --skip-remote-checks` 与 `git diff --check` 全部通过。
+- 2026-03-25 已创建 PR `#36`：`feat: add read-only trading and logs surfaces`；当前已 retarget 到 `main`，并包含 `#35` 的 Phase 1B close-loop commits 与 `#15` 的 Phase 1C 实现。
+- 2026-03-25 已关闭 PR `#35`；原因是其变更已完整包含在 `#36` 中，后者成为唯一面向 `main` 的主线 PR。
+- 2026-03-25 PR `#36` 已修复 `nautilus_trader/admin/app.py` 的 Ruff/complexity 失败，并进一步修复 `apps/admin-web/src/features/logs/logs-page.tsx` 被仓库级 `.gitignore` 误忽略导致的远端 `frontend-admin-web` 失败。
+- 2026-03-25 新 policy 下，PR `#36` 已补入 `workspace/handoffs/local-review-issue-15.md` 作为本地 PR review 证据，后续只需等待新的 `pr-gate/build` 基于该规则收口。
 
 ## Next Actions
 
-1. 请求远端 Codex review，并在 `workspace/handoffs/review-resolution-34.md` 中记录处理结果。
-2. 处理 PR `#34` 的 review 线程与必要修复，直到 `pr-gate` 全绿。
-3. 合并 `#34` 后刷新 workset，把 `#15` 切到 `ready`，同时保留 `#9` 作为 Phase 1 umbrella close-out gate。
+1. 等待 PR `#36` 在新本地-review治理下的 `pr-gate` 与 build matrix 收口，并直接完成合并。
+2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
+3. 在不触碰 `/root/NautilusTrader` 脏工作树的前提下，继续把远端 `main` 作为唯一集成入口。
 
 ## Repository
 
@@ -90,4 +102,4 @@
 
 ## Last Merge Update
 
-- 2026-03-24: Merged PR #33 to main and moved the next concrete execution target into active issue #14 execution.
+- 2026-03-25: Merged PR #34 to main and moved the next concrete execution target from #14 to #15.

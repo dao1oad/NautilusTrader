@@ -26,6 +26,14 @@ class AdapterSummary(BaseModel):
     status: str
 
 
+class OrderSummary(BaseModel):
+    client_order_id: str
+    instrument_id: str
+    side: Literal["buy", "sell"]
+    quantity: str
+    status: str
+
+
 class AccountSummary(BaseModel):
     account_id: str
     status: str
@@ -35,6 +43,13 @@ class PositionSummary(BaseModel):
     instrument_id: str
     side: Literal["long", "short", "flat"]
     quantity: str
+
+
+class LogSummary(BaseModel):
+    timestamp: datetime
+    level: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+    component: str
+    message: str
 
 
 class SectionError(BaseModel):
@@ -72,4 +87,36 @@ class AdaptersSnapshot(BaseModel):
     generated_at: datetime
     partial: bool = False
     items: list[AdapterSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class OrdersSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[OrderSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class PositionsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[PositionSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class AccountsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[AccountSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class LogsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[LogSummary] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)

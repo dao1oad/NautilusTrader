@@ -1,4 +1,21 @@
-import type { AdaptersSnapshot, NodesSnapshot, OverviewSnapshot, StrategiesSnapshot } from "../types/admin";
+import type {
+  AccountsSnapshot,
+  AdaptersSnapshot,
+  LogsSnapshot,
+  NodesSnapshot,
+  OrdersSnapshot,
+  OverviewSnapshot,
+  PositionsSnapshot,
+  StrategiesSnapshot
+} from "../types/admin";
+
+
+export const READ_ONLY_DEFAULT_LIMIT = 100;
+
+
+function buildLimitedPath(path: string, limit: number): string {
+  return `${path}?limit=${limit}`;
+}
 
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -37,4 +54,28 @@ export async function getStrategiesSnapshot(): Promise<StrategiesSnapshot> {
 export async function getAdaptersSnapshot(): Promise<AdaptersSnapshot> {
   const response = await fetch("/api/admin/adapters");
   return parseJson<AdaptersSnapshot>(response);
+}
+
+
+export async function getOrdersSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<OrdersSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/orders", limit));
+  return parseJson<OrdersSnapshot>(response);
+}
+
+
+export async function getPositionsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<PositionsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/positions", limit));
+  return parseJson<PositionsSnapshot>(response);
+}
+
+
+export async function getAccountsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<AccountsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/accounts", limit));
+  return parseJson<AccountsSnapshot>(response);
+}
+
+
+export async function getLogsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<LogsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/logs", limit));
+  return parseJson<LogsSnapshot>(response);
 }

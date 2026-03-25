@@ -1,6 +1,6 @@
 $requiredPhrases = @(
   'main only via pull request',
-  'remote Codex review',
+  'local PR review',
   'issue-ledger',
   'init-project.ps1',
   'check-governance.ps1',

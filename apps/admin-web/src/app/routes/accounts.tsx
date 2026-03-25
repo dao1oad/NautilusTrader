@@ -1,12 +1,6 @@
-import { PageState } from "../../shared/ui/page-state";
+import { AccountsPage } from "../../features/accounts/accounts-page";
 
 
 export function AccountsRoutePage() {
-  return (
-    <PageState
-      kind="empty"
-      title="Accounts"
-      description="Account balances and venue account snapshots will plug into this route in the next slice."
-    />
-  );
+  return <AccountsPage />;
 }

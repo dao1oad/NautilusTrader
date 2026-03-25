@@ -29,7 +29,7 @@
 
 This repository is an independent derivative workspace for extending NautilusTrader with a management UI.
 It keeps the imported upstream source tree, but its own delivery workflow still requires `main only via pull request`
-and `remote Codex review` before changes reach the protected branch.
+and `local PR review` before changes reach the protected branch.
 
 Operational governance entry points for this repository:
 
@@ -590,7 +590,7 @@ to ensure that your contributions can be included in the project.
 
 > [!NOTE]
 >
-> Pull requests should target the `main` branch in this derivative repository. This is the protected branch where governance checks and remote Codex review are enforced before merge.
+> Pull requests should target the `main` branch in this derivative repository. This is the protected branch where governance checks and mandatory local PR review are enforced before merge.
 
 Thank you again for your interest in NautilusTrader! We look forward to reviewing your contributions and working with you to improve the project.
 

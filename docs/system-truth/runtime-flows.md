@@ -14,14 +14,14 @@
 
 `Browser route -> apps/admin-web routed console shell -> TanStack Query cache + shared page states -> REST/WS -> nautilus_trader/admin -> 既有 live/execution/portfolio/risk/persistence surfaces -> typed admin DTO / connection state -> Browser`
 
-当前后端 contract 已定义 `health`、`overview`、`nodes`、`strategies`、`adapters` 与最小 WS invalidation / connection-state 语义；浏览器侧则通过 routed shell + query key + shared page-state 驱动四个已接通的只读页面，不在此阶段定义最终静态资源托管或桌面交付流。
+当前后端 contract 已定义 `health`、`overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 与最小 WS invalidation / connection-state 语义；其中交易与日志 surface 通过 bounded `limit` query 控制默认窗口，`logs` 允许显式 partial payload。浏览器侧则通过 routed shell + query key + shared page-state 驱动 8 个已接通的只读页面，不在此阶段定义最终静态资源托管或桌面交付流。
 
 ## Admin Development Flow
 
 1. 终端 A：启动 `nautilus_trader/admin` 本机 FastAPI 进程，暴露 `/api/admin/*` 与 `/ws/admin/events`
 2. 终端 B：`cd apps/admin-web && npm run dev`，启动 `Vite` dev server
 3. 浏览器：由 routed console shell 装载当前 route，并通过 query client 访问本机 admin REST / WS contract
-4. `overview.updated` / `snapshot.invalidate` 事件先进入 invalidation bus，再由 query client 触发 `overview`、`nodes`、`strategies`、`adapters` 四组 query 失效与重拉
+4. `overview.updated` / `snapshot.invalidate` 事件先进入 invalidation bus，再由 query client 触发 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八组 query 失效与重拉
 5. 前端 CI 继续复用最小命令面：`npm ci -> npm run lint -> npm run test -- --run -> npm run build`
 6. 当前阶段不把静态资源打进 wheel，不定义桌面壳，不把 `Playwright` 或多用户部署写成既成运行流
 
@@ -31,7 +31,7 @@
 
 ## Repository Operational Flow
 
-`GitHub issue -> 主 agent 编排 -> subagent 执行 -> PR -> 远端 Codex review -> review 闭环 -> merge -> memory/system-truth 回写`
+`GitHub issue -> 主 agent 编排 -> subagent 执行 -> 本地 review 记录 -> PR -> pr-gate/build -> merge -> memory/system-truth 回写`
 
 本地治理入口在 Windows 使用 `scripts/*.ps1`，在 Linux/macOS 使用对应的 `scripts/*.sh`。两组脚本都围绕同一仓库根目录、`memory/` 和 `workspace/` 产物工作。
 `scripts/build-workset.ps1` / `scripts/build-workset.sh` 根据最新 issues snapshot 重建依赖状态与 issue packets 时，必须保留 `memory/issue-ledger.md` 中已存在的非默认 PR 跟踪与人工 next 注释，避免活跃执行状态被刷新脚本抹掉。
@@ -43,8 +43,7 @@
 1. 校验 issue 关联
 2. 校验 memory 更新
 3. 校验 truth-doc 映射与同步
-4. 校验远端 review 与线程已解决
-5. 校验本地 review 闭环记录
+4. 校验本地 review 记录存在且状态满足要求
 
 ## Security Workflow Flow
 
@@ -55,13 +54,10 @@
 ## PR Review Re-evaluation Flow
 
 1. PR 创建或同步时触发 `pr-gate`
-2. 若远端 Codex review 尚未提交，或 review 线程尚未闭环，`pr-gate` 失败并阻止合并
-3. 当 Codex connector 提交 review 时，`pull_request_review` 事件再次触发 `pr-gate`
-4. 当 Codex connector 以 PR comment 形式返回 `Codex Review` 时，`issue_comment` 事件再次触发 `pr-gate`
-5. `pr-gate` 在 `pull_request` 与 `pull_request_review` 重跑时必须 checkout PR head SHA；在 `issue_comment` 重跑时必须 checkout `refs/pull/<number>/head`，避免默认回落到 `main`
-6. `pr-gate` 重新读取 review、PR comments、reviewDecision 与 review threads 状态
-7. 若 review 线程在失败后被手动 resolve，需要后续 PR 活动、Codex comment 或手动 rerun 来刷新 `pr-gate` 结果
-8. 在单维护者模式下，远端 Codex review 已提交或已由 Codex connector comment 明确返回、review 线程已处理且其他门禁满足后，PR 可在无额外人工 Approve 的情况下进入可合并状态
+2. 若 linked issue 缺失、本地 review 记录缺失或状态不满足要求，`pr-gate` 失败并阻止合并
+3. 本地 review 记录通过提交进入 PR 分支后，新的 `pull_request` sync 会再次触发 `pr-gate`
+4. `pr-gate` 使用 PR head SHA 读取最新分支内容，避免把默认分支的旧治理文件误当成当前 gate 依据
+5. 在单维护者模式下，只要本地 review 记录、required checks 与其他门禁满足，PR 可在无额外人工 Approve 的情况下进入可合并状态
 
 ## Truth Rebinding Flow
 

@@ -1,7 +1,7 @@
 project_mode: development_first
 compatible_non_dev_projects: true
 enforce_pull_request_only: true
-require_remote_codex_review: true
+require_local_pr_review: true
 require_memory_updates: true
 require_truth_docs: true
 fail_on_unmapped_production_paths: true

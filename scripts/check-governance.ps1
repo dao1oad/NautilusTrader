@@ -191,7 +191,8 @@ $required = @(
   'ops/review-gates.yaml',
   'memory/active-context.md',
   'memory/issue-ledger.md',
-  '.github/PULL_REQUEST_TEMPLATE.md'
+  '.github/PULL_REQUEST_TEMPLATE.md',
+  'workspace/handoffs/local-review-template.md'
 )
 
 $missing = $required | Where-Object { -not (Test-Path $_) }
@@ -204,8 +205,8 @@ if (-not (Get-ConfigBoolean -Path $policyPath -Key 'enforce_pull_request_only'))
   throw 'project-policy.yaml must enable PR-only merge.'
 }
 
-if (-not (Get-ConfigBoolean -Path $policyPath -Key 'require_remote_codex_review')) {
-  throw 'project-policy.yaml must require remote Codex review.'
+if (-not (Get-ConfigBoolean -Path $policyPath -Key 'require_local_pr_review')) {
+  throw 'project-policy.yaml must require local PR review.'
 }
 
 if (Get-ConfigBoolean -Path $policyPath -Key 'require_truth_docs') {

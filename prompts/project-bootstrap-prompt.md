@@ -18,9 +18,9 @@ English anchors for tooling:
 - 默认开启治理
 - 默认开启 truth-doc 文档真值门禁
 - 默认保持 `main only via pull request`
-- 默认要求 merge 前完成远端 Codex review
-- 默认要求 `remote Codex review`
-- 默认要求 review 闭环记录
+- 默认要求 merge 前完成 `local PR review`
+- 默认要求 `local PR review`
+- 默认要求本地 review 记录闭环
 
 请按下面顺序执行：
 
@@ -61,7 +61,7 @@ English anchors for tooling:
 - 分支保护
 - required checks
 - 仅通过 PR 合并到 `main`
-- 远端 Codex review
+- 本地 PR review 门禁
 
 6. 最终输出必须包含：
 - 已自动完成的初始化项

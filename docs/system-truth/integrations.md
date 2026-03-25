@@ -11,8 +11,10 @@
   - `apps/admin-web` 通过 `Vite` dev server 提供浏览器入口
   - `nautilus_trader/admin` 提供 admin REST / WebSocket contract
 - 浏览器与后端的集成边界固定在 admin DTO 与最小事件契约；前端不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
-- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 `overview`、`nodes`、`strategies`、`adapters` 四组 query 失效语义
-- 当前前后端已接通 `Overview`、`Nodes`、`Strategies`、`Adapters` 四个只读页面；其余 read-only routes 仍可保持占位态，直到后续 phase 补齐
+- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八组 query 失效语义
+- 当前前后端已接通 `Overview`、`Nodes`、`Strategies`、`Adapters`、`Orders`、`Positions`、`Accounts`、`Logs` 八个只读页面
+- `Orders`、`Positions`、`Accounts`、`Logs` 集成当前统一走 bounded read-only 查询：浏览器默认请求 `limit=100`，后端对 `limit` 做 `1..500` 校验，避免无界拉取
+- `Logs` 集成当前保留显式 degraded-state 验证入口；后端可返回 partial snapshot 与 `SectionError`，前端必须把这类状态直接展示，而不是静默吞掉
 - 当前阶段仍只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
 
 ## Toolchain Integrations
@@ -23,16 +25,17 @@
 ## Repository Governance Integrations
 
 - 使用 `gh` 同步 issues、审查 reviews、读取 branch protection
+- 使用仓库内 `workspace/handoffs/local-review-issue-*.md` 记录并传递本地 PR review 结果
 - GitHub Actions 继续负责 `governance-check` 和 `pr-gate`
 - `build.yml` 与 `codeql-analysis.yml` 需要对齐受保护分支 `main`；CodeQL 覆盖面向 `main` 的 PR，供应链检查覆盖 push 到 `main`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 会在 PR 更新、review 提交和 PR issue comment 创建后重跑；其中 review/comment 触发的重跑必须显式 checkout 目标 PR head，review 线程 resolve 后若需刷新 gate，依赖后续 PR 活动、Codex comment 或手动 rerun
+- `pr-gate` 会在 PR 更新后重跑，并从 PR head 读取 linked issue、本地 review 记录、memory 与 truth-doc 证据
 
 ## Codex
 
 - 主 agent 本地执行
 - subagent 云端执行
-- review 在远端作为合并门槛，可表现为 submitted review 或 `Codex Review` PR comment
+- review 在本地作为合并门槛，通过 issue 级 review 记录文件体现
 
 ## Current Status
 

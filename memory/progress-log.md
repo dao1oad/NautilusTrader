@@ -44,3 +44,19 @@
 - Added typed read-only `nodes` / `strategies` / `adapters` admin endpoints plus query-backed frontend pages, shared invalidation fan-out, and synced truth docs for Phase 1B issue `#14`.
 - Verified `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin` plus `apps/admin-web` test/lint/build locally after the Phase 1B implementation.
 - Opened PR #34 (`feat: add read-only node strategy adapter surfaces`) for issue `#14`.
+
+## 2026-03-25
+
+- Retriggered PR #34 remote Codex review by converting the PR to draft and back to ready; `chatgpt-codex-connector[bot]` reported no major issues.
+- Reran `pr-gate` plus both `pull_request` and `push` `governance-check` contexts on PR #34 to clear GitHub's stale cancelled required-check selection.
+- Merged PR #34 to `main` and manually closed issue `#14`, which did not auto-close because the PR body used linked-issue metadata instead of a closing keyword.
+- Refreshed the local issue snapshot and workset after the Phase 1B merge; open issues are now 14 and `#15` is the next concrete implementation target.
+- Created `/root/NautilusTrader-phase1c` on branch `codex/issue-15-phase1c-read-only-surfaces` from the latest Phase 1B close-loop head.
+- Added bounded read-only `orders` / `positions` / `accounts` / `logs` admin endpoints, query-backed frontend pages, and invalidation fan-out for all eight Phase 1 read-only routes.
+- Re-verified the branch with `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `npm run lint`, `npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check`.
+- Opened stacked PR #36 (`feat: add read-only trading and logs surfaces`) against `codex/post-merge-phase1b-close-loop` so `#15` can proceed while `#35` remains externally blocked by remote review quota.
+- Retargeted PR #36 to `main` so all completed Phase 1B close-loop and Phase 1C changes converge on a single mainline PR.
+- Closed superseded PR #35 after confirming its commits are already contained in PR #36.
+- Reconfirmed that PR #36 governance checks are green, but remote Codex review is still blocked by usage quota comments from `chatgpt-codex-connector`.
+- Fixed PR #36 CI in two steps: simplified `nautilus_trader/admin/app.py` to satisfy Ruff complexity/import ordering, then tracked `apps/admin-web/src/features/logs/logs-page.tsx` by overriding the repo-wide `logs/` ignore rule that had broken the merge-ref frontend build.
+- Migrated repository governance from required remote Codex review to mandatory local PR review, adding issue-scoped review records under `workspace/handoffs/local-review-issue-*.md` and updating policies, workflows, scripts, templates, truth docs, and smoke coverage accordingly.

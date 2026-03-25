@@ -25,13 +25,20 @@
   - `GET /api/admin/nodes`
   - `GET /api/admin/strategies`
   - `GET /api/admin/adapters`
+  - `GET /api/admin/orders`
+  - `GET /api/admin/positions`
+  - `GET /api/admin/accounts`
+  - `GET /api/admin/logs`
   - `GET/WS /ws/admin/events`
 - `GET /api/admin/overview` 返回 typed admin DTO，而不是内部 domain object；`Phase 0` 至少包含 `OverviewSnapshot`、`NodeSummary`、`StrategySummary`、`AdapterSummary`、`AccountSummary`、`PositionSummary`、`SectionError`
 - `GET /api/admin/nodes`、`/strategies`、`/adapters` 返回 typed list snapshot，而不是内部 runtime object；当前 payload 统一包含 `generated_at`、`partial`、`items`、`errors`
+- `GET /api/admin/orders`、`/positions`、`/accounts`、`/logs` 返回 bounded typed list snapshot；当前 payload 统一包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `orders`、`positions`、`accounts`、`logs` endpoint 通过 FastAPI query validation 把 `limit` 约束在 `1..500`，默认值为 `100`，避免无界查询
+- `GET /api/admin/logs` 允许通过 `inject_partial_error` 暴露显式 partial payload，用于验证前端 degraded/error 可见性
 - `/ws/admin/events` 在 `Phase 0` 只允许最小事件集合：`subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
 - `apps/admin-web` 当前仍只消费上述 admin REST/WS contract，并以开发态双进程方式运行：浏览器 / `Vite` dev server <-> `nautilus_trader/admin`
-- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；其中 `/nodes`、`/strategies`、`/adapters` 已绑定各自的只读 list endpoint，`/orders`、`/positions`、`/accounts`、`/logs` 仍可保持 shared empty state 占位
-- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview`、`nodes`、`strategies`、`adapters` 四个 query invalidation topic，并由 query client 负责触发对应页面重新拉取
+- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；这 8 个 route 全部绑定到各自的只读 query-backed page
+- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八个 query invalidation topic，并由 query client 负责触发对应页面重新拉取
 - `apps/admin-web/vite.config.ts` 必须把同源 `/api/admin/*` 与 `/ws/admin/*` 请求代理到本地 admin API origin；默认目标为 `http://127.0.0.1:8000`
 - `apps/admin-web/package.json` 当前约定的前端命令面：
   - `npm run dev`：启动 `Vite` dev server
@@ -43,8 +50,8 @@
 - `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API
 - GitHub branch protection 通过 `gh api` 读取与校验
 - GitHub Actions 暴露 `governance-check` 与 `pr-gate` 两个 required check
-- `pr-gate` workflow 在 `pull_request`、`pull_request_review` 和 PR `issue_comment` 事件上运行，以便 PR 变更、review 提交或 Codex comment 到达后重新计算 merge gate；其中 `pull_request`/`pull_request_review` 使用 PR head SHA，`issue_comment` 使用 `refs/pull/<number>/head`
-- `scripts/pre-pr-check.ps1` 读取 `pulls/{number}/reviews` 与 `issues/{number}/comments`，并接受 Codex connector 的 submitted review 或 `Codex Review` comment 作为远端 review 信号
+- `pr-gate` workflow 当前只在 `pull_request` 事件上运行，并使用 PR head SHA 重算 merge gate
+- `scripts/pre-pr-check.ps1` 从 PR body 解析 linked issue，并验证 `workspace/handoffs/local-review-issue-<issue>.md` 是否存在且字段完整
 - PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
 
 ## Repository Operational Interfaces
@@ -55,7 +62,7 @@
 - `codeql-analysis.yml` 的 `pull_request` 分支过滤必须包含 `main`，否则面向 `main` 的 PR 不会运行 CodeQL
 - `scripts/init-project.ps1` / `scripts/init-project.sh` 和 `scripts/check-governance.ps1` / `scripts/check-governance.sh` 是本仓库 bootstrap 与治理校验入口
 - `scripts/sync-issues.ps1` / `scripts/sync-issues.sh`、`scripts/build-workset.ps1` / `scripts/build-workset.sh`、`scripts/close-loop.ps1` / `scripts/close-loop.sh` 负责 issue 同步、编排产物生成和 merge 后 memory 回写
-- `scripts/pre-pr-check.ps1` 仍是当前本地 PR gate 预检查入口
+- `scripts/pre-pr-check.ps1` 仍是当前本地 PR gate 预检查入口，也是本地 review 工件校验入口
 - `scripts/rust-toolchain.sh` 负责把 Rust pin 暴露给 CI；`scripts/install-capnp.sh` 负责在 Linux/macOS 本地安装仓库要求的 Cap'n Proto 版本，并兼容 root 与非 root 环境
 
 ## Non-Contracts

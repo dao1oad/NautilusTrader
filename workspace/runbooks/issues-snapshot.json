@@ -90,15 +90,6 @@
     "body": "## Goal\n\n\u4ea4\u4ed8 `Orders / Positions / Accounts / Logs` \u53ea\u8bfb endpoints \u548c\u9875\u9762\uff0c\u5305\u542b\u6709\u754c\u67e5\u8be2\u548c\u663e\u5f0f degraded states\u3002\n\n## Parent\n\n- #9\n\n## Depends on\n\n- #13\n- #14\n\n## Deliverables\n\n- `orders` read-only DTO / API / page\n- `positions` read-only DTO / API / page\n- `accounts` read-only DTO / API / page\n- `logs` read-only DTO / API / page\n- \u57fa\u672c\u5206\u9875\u6216 limit \u7ea6\u675f\n\n## Acceptance\n\n- `Orders / Positions / Accounts / Logs` \u9875\u9762\u90fd\u80fd\u72ec\u7acb\u52a0\u8f7d\n- \u5927\u7ed3\u679c\u96c6\u9ed8\u8ba4\u6709\u8fb9\u754c\uff0c\u4e0d\u5141\u8bb8\u65e0\u754c\u67e5\u8be2\n- degraded / partial / error \u72b6\u6001\u53ef\u89c1\uff0c\u4e0d\u9759\u9ed8\u5931\u8d25\n\n## Verification\n\n- `pytest tests/unit_tests/admin/test_orders_api.py tests/unit_tests/admin/test_positions_api.py tests/unit_tests/admin/test_accounts_api.py tests/unit_tests/admin/test_logs_api.py -v`\n- `cd apps/admin-web && npm test -- --run`\n- `cd apps/admin-web && npm run build`\n\n## Not In Scope\n\n- \u63a7\u5236\u547d\u4ee4\n- AG Grid / Lightweight Charts\n- Playwright\n\n## Plan\n\n- See `docs/plans/2026-03-23-nautilustrader-admin-console-phase-1-read-only-operations.md`\r\n"
   },
   {
-    "number": 14,
-    "title": "Phase 1B: read-only nodes, strategies, and adapters surfaces",
-    "url": "https://github.com/dao1oad/NautilusTrader/issues/14",
-    "labels": [],
-    "assignees": [],
-    "milestone": "",
-    "body": "## Goal\n\n\u5728 Phase 1 shell \u4e4b\u4e0a\uff0c\u4ea4\u4ed8 `Nodes / Strategies / Adapters` \u53ea\u8bfb endpoints \u548c\u9875\u9762\u3002\n\n## Parent\n\n- #9\n\n## Depends on\n\n- #13\n\n## Deliverables\n\n- `nodes` read-only DTO / API / page\n- `strategies` read-only DTO / API / page\n- `adapters` read-only DTO / API / page\n- \u660e\u786e\u7684 `items / generated_at / partial / errors` payload shape\n\n## Acceptance\n\n- `Nodes / Strategies / Adapters` \u9875\u9762\u90fd\u80fd\u72ec\u7acb\u52a0\u8f7d\n- payload \u5951\u7ea6\u4e0e shared page states \u5bf9\u9f50\n- \u4e0d\u5f15\u5165\u63a7\u5236\u547d\u4ee4\u6216\u6279\u91cf\u64cd\u4f5c\n\n## Verification\n\n- `pytest tests/unit_tests/admin/test_nodes_api.py tests/unit_tests/admin/test_strategies_api.py tests/unit_tests/admin/test_adapters_api.py -v`\n- `cd apps/admin-web && npm test -- --run`\n- `cd apps/admin-web && npm run build`\n\n## Not In Scope\n\n- orders / positions / accounts / logs \u9875\u9762\n- \u547d\u4ee4\u786e\u8ba4\u4e0e\u5ba1\u8ba1\n\n## Plan\n\n- See `docs/plans/2026-03-23-nautilustrader-admin-console-phase-1-read-only-operations.md`\r\n"
-  },
-  {
     "number": 12,
     "title": "Phase 4: unified workbench and delivery hardening",
     "url": "https://github.com/dao1oad/NautilusTrader/issues/12",

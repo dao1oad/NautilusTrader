@@ -1,0 +1,23 @@
+# Local PR Review
+
+- Issue: #15
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 1C read-only trading and logs surfaces plus the governance gate migration from remote Codex review to mandatory local PR review.
+- Findings:
+  - `nautilus_trader/admin/app.py` originally failed Ruff in CI due to import ordering and `create_admin_app()` complexity.
+  - `apps/admin-web/src/features/logs/logs-page.tsx` existed only in the working tree because the repository-level `.gitignore` rule `logs/` unintentionally ignored the source path.
+  - Remote Codex review can no longer be treated as a required merge gate because the connector is quota-blocked and returns only usage-limit comments.
+- Resolution:
+  - Split route registration helpers in `nautilus_trader/admin/app.py` and re-verified Ruff, admin tests, and full local `pre-commit`.
+  - Added a precise `.gitignore` exception and committed `apps/admin-web/src/features/logs/logs-page.tsx` so the merge ref and CI use the same frontend source tree as local builds.
+  - Replaced the remote-review gate with a tracked local review record keyed by linked issue, and updated workflows, scripts, docs, and smoke tests to enforce that policy.
+- Evidence:
+  - `source .venv/bin/activate && python -m ruff check nautilus_trader/admin/app.py`
+  - `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`
+  - `source .venv/bin/activate && pre-commit run --all-files`
+  - `cd apps/admin-web && npm run lint`
+  - `cd apps/admin-web && npm test -- --run`
+  - `cd apps/admin-web && npm run build`
+  - `bash scripts/check-governance.sh --skip-remote-checks`
+- Status: approved

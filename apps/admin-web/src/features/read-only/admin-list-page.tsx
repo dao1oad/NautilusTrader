@@ -22,7 +22,11 @@ type Props<T> = {
   getRowKey: (item: T, index: number) => string;
 };
 
-export function AdminListPage<T>({
+type SnapshotProps<T, TSnapshot extends AdminListSnapshot<T>> = Omit<Props<T>, "query"> & {
+  query: UseQueryResult<TSnapshot, Error>;
+};
+
+export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   title,
   query,
   emptyDescription,
@@ -30,7 +34,7 @@ export function AdminListPage<T>({
   tableLabel,
   columns,
   getRowKey
-}: Props<T>) {
+}: SnapshotProps<T, TSnapshot>) {
   const { connectionState, error: runtimeError } = useAdminRuntime();
   const snapshot = query.data ?? null;
   const error = query.error instanceof Error ? query.error.message : runtimeError;
