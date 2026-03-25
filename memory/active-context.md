@@ -86,10 +86,11 @@
 - 2026-03-25 `#35` 仍为 open；`governance-check` 已成功，但 `pr-gate` 因缺失有效远端 Codex review 信号而失败，当前 comment 证据为 usage limit 提示。
 - 2026-03-25 已在 `nautilus_trader/admin` 上新增 bounded read-only `orders`、`positions`、`accounts`、`logs` endpoint，并在 `apps/admin-web` 上把 4 个 placeholder route 接成 query-backed 页面，同时把 invalidation fan-out 扩到全部 8 个只读 route topic。
 - 2026-03-25 已本地验证 `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build`、`bash scripts/check-governance.sh --skip-remote-checks` 与 `git diff --check` 全部通过。
+- 2026-03-25 已创建 stacked PR `#36`：`feat: add read-only trading and logs surfaces`，base 为 `codex/post-merge-phase1b-close-loop`，用于在 `#35` 之上推进 `#15`。
 
 ## Next Actions
 
-1. 为 `#15` 分支提交当前实现、推送远端并创建面向 `main` 的 PR。
+1. 为 PR `#36` 触发并等待远端 Codex review，按 comment/review 结果继续收口。
 2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
 3. 在 Codex review quota 恢复后重新触发并合并 `#35`，保持 post-merge close-loop 与主实施线最终一致。
 

@@ -54,3 +54,4 @@
 - Created `/root/NautilusTrader-phase1c` on branch `codex/issue-15-phase1c-read-only-surfaces` from the latest Phase 1B close-loop head.
 - Added bounded read-only `orders` / `positions` / `accounts` / `logs` admin endpoints, query-backed frontend pages, and invalidation fan-out for all eight Phase 1 read-only routes.
 - Re-verified the branch with `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `npm run lint`, `npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check`.
+- Opened stacked PR #36 (`feat: add read-only trading and logs surfaces`) against `codex/post-merge-phase1b-close-loop` so `#15` can proceed while `#35` remains externally blocked by remote review quota.
