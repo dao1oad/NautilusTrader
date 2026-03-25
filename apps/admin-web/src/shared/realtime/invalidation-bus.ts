@@ -1,7 +1,15 @@
 import type { AdminEvent } from "../types/admin";
 
 
-export type InvalidationTopic = "overview" | "nodes" | "strategies" | "adapters";
+export type InvalidationTopic =
+  | "overview"
+  | "nodes"
+  | "strategies"
+  | "adapters"
+  | "orders"
+  | "positions"
+  | "accounts"
+  | "logs";
 
 type InvalidationListener = (topic: InvalidationTopic, event: AdminEvent) => void;
 
@@ -9,7 +17,7 @@ const listeners = new Set<InvalidationListener>();
 
 function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
   if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
-    return ["overview", "nodes", "strategies", "adapters"];
+    return ["overview", "nodes", "strategies", "adapters", "orders", "positions", "accounts", "logs"];
   }
 
   return [];

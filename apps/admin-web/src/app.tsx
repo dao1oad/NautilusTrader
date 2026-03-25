@@ -4,6 +4,7 @@ import { RouterProvider } from "@tanstack/react-router";
 
 import { AdminRuntimeProvider } from "./app/admin-runtime";
 import { router } from "./app/router";
+import { READ_ONLY_DEFAULT_LIMIT } from "./shared/api/admin-client";
 import { subscribeToAdminEvents } from "./shared/realtime/admin-events";
 import { adminQueryKeys, queryClient } from "./shared/query/query-client";
 import { subscribeToInvalidations } from "./shared/realtime/invalidation-bus";
@@ -58,6 +59,26 @@ export function App() {
 
       if (topic === "adapters") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.adapters() });
+        return;
+      }
+
+      if (topic === "orders") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.orders(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
+      if (topic === "positions") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.positions(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
+      if (topic === "accounts") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.accounts(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
+      if (topic === "logs") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.logs(READ_ONLY_DEFAULT_LIMIT) });
       }
     });
   }, []);
@@ -78,7 +99,11 @@ export function App() {
         (resource !== "overview" &&
           resource !== "nodes" &&
           resource !== "strategies" &&
-          resource !== "adapters")
+          resource !== "adapters" &&
+          resource !== "orders" &&
+          resource !== "positions" &&
+          resource !== "accounts" &&
+          resource !== "logs")
       ) {
         return;
       }

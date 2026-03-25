@@ -1,12 +1,6 @@
-import { PageState } from "../../shared/ui/page-state";
+import { OrdersPage } from "../../features/orders/orders-page";
 
 
 export function OrdersRoutePage() {
-  return (
-    <PageState
-      kind="empty"
-      title="Orders"
-      description="Orders remain read-only and will be connected once the trading surface DTOs arrive."
-    />
-  );
+  return <OrdersPage />;
 }

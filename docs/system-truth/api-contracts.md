@@ -25,13 +25,20 @@
   - `GET /api/admin/nodes`
   - `GET /api/admin/strategies`
   - `GET /api/admin/adapters`
+  - `GET /api/admin/orders`
+  - `GET /api/admin/positions`
+  - `GET /api/admin/accounts`
+  - `GET /api/admin/logs`
   - `GET/WS /ws/admin/events`
 - `GET /api/admin/overview` 返回 typed admin DTO，而不是内部 domain object；`Phase 0` 至少包含 `OverviewSnapshot`、`NodeSummary`、`StrategySummary`、`AdapterSummary`、`AccountSummary`、`PositionSummary`、`SectionError`
 - `GET /api/admin/nodes`、`/strategies`、`/adapters` 返回 typed list snapshot，而不是内部 runtime object；当前 payload 统一包含 `generated_at`、`partial`、`items`、`errors`
+- `GET /api/admin/orders`、`/positions`、`/accounts`、`/logs` 返回 bounded typed list snapshot；当前 payload 统一包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `orders`、`positions`、`accounts`、`logs` endpoint 通过 FastAPI query validation 把 `limit` 约束在 `1..500`，默认值为 `100`，避免无界查询
+- `GET /api/admin/logs` 允许通过 `inject_partial_error` 暴露显式 partial payload，用于验证前端 degraded/error 可见性
 - `/ws/admin/events` 在 `Phase 0` 只允许最小事件集合：`subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
 - `apps/admin-web` 当前仍只消费上述 admin REST/WS contract，并以开发态双进程方式运行：浏览器 / `Vite` dev server <-> `nautilus_trader/admin`
-- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；其中 `/nodes`、`/strategies`、`/adapters` 已绑定各自的只读 list endpoint，`/orders`、`/positions`、`/accounts`、`/logs` 仍可保持 shared empty state 占位
-- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview`、`nodes`、`strategies`、`adapters` 四个 query invalidation topic，并由 query client 负责触发对应页面重新拉取
+- 浏览器路由 contract 当前固定为 `/`、`/nodes`、`/strategies`、`/adapters`、`/orders`、`/positions`、`/accounts`、`/logs`；这 8 个 route 全部绑定到各自的只读 query-backed page
+- 浏览器侧 invalidation contract 当前把 `overview.updated` 与 `snapshot.invalidate` 统一投影为 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八个 query invalidation topic，并由 query client 负责触发对应页面重新拉取
 - `apps/admin-web/vite.config.ts` 必须把同源 `/api/admin/*` 与 `/ws/admin/*` 请求代理到本地 admin API origin；默认目标为 `http://127.0.0.1:8000`
 - `apps/admin-web/package.json` 当前约定的前端命令面：
   - `npm run dev`：启动 `Vite` dev server

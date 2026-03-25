@@ -27,7 +27,7 @@
 - 新的 venue adapter 应进入 `crates/adapters/<venue>`，并在 Python surface、文档与测试层保持同名或同职责映射。
 - 性能关键逻辑优先进入 Rust crates；Python/Cython 层负责用户接口、组合装配和编译后暴露。
 - `apps/admin-web` 不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象；浏览器边界必须固定在 `nautilus_trader/admin` 的 DTO contract。
-- `nautilus_trader/admin` 可以包装既有运行时能力；当前后端 contract 包含 `health`、`overview`、`nodes`、`strategies`、`adapters` 与最小 WS 事件集合，但仍未扩展到命令控制或完整 domain surface。
+- `nautilus_trader/admin` 可以包装既有运行时能力；当前后端 contract 包含 `health`、`overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 与最小 WS 事件集合，但仍未扩展到命令控制或完整 domain surface。
 - `apps/admin-web/src/app/*` 负责 router、layout 和 route-level composition；`apps/admin-web/src/shared/query/*` 负责 query client 与 query key；`apps/admin-web/src/shared/realtime/*` 负责 WebSocket transport 与 invalidation bus；`apps/admin-web/src/shared/ui/*` 负责跨页面复用的 page-state / status UI。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
 - `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽远端 Codex review 或 PR-only 约束。

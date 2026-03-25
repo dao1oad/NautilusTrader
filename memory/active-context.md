@@ -6,11 +6,11 @@
 
 ## Current Phase
 
-- Phase 1B 已通过 PR `#34` 合并到 `main`；当前执行的是 merge 后 close-loop 账本同步，下一具体实施入口为 `#15`（read-only orders / positions / accounts / logs surfaces）
+- Phase 1B 已通过 PR `#34` 合并到 `main`；`#35` 正在承接 Phase 1B post-merge close-loop，但远端 Codex review 受 usage quota 阻塞。当前主执行线已切到 `#15`，在独立 worktree 上实现 read-only orders / positions / accounts / logs surfaces。
 
 ## Blockers
 
-- 无
+- PR `#35` 仍缺有效远端 Codex review 信号；`chatgpt-codex-connector` 当前返回 usage limit 提示，导致 `pr-gate` 失败
 
 ## Confirmed Facts
 
@@ -82,12 +82,16 @@
 - 2026-03-25 PR `#34` 已合并到 `main`，merge commit 为 `c53198d3abd99e6d16fe8fc0601b3835f39686b1`。
 - 2026-03-25 issue `#14` 已手动关闭；原因是 PR 正文使用了 `Linked issue: #14` 而非 closing keyword。
 - 2026-03-25 已重新同步 open issues；本地 `workspace/runbooks/issues-snapshot.json` 当前为 14 个开放 issue，`#15` 已变为 `ready`，`#9` 继续作为 Phase 1 umbrella close-out gate。
+- 2026-03-25 已创建独立 worktree `/root/NautilusTrader-phase1c`，分支 `codex/issue-15-phase1c-read-only-surfaces` 基于 close-loop 分支头 `f0c4200f460cecacc6f9cda307109bae7af7e7ef` 开始实施 `#15`。
+- 2026-03-25 `#35` 仍为 open；`governance-check` 已成功，但 `pr-gate` 因缺失有效远端 Codex review 信号而失败，当前 comment 证据为 usage limit 提示。
+- 2026-03-25 已在 `nautilus_trader/admin` 上新增 bounded read-only `orders`、`positions`、`accounts`、`logs` endpoint，并在 `apps/admin-web` 上把 4 个 placeholder route 接成 query-backed 页面，同时把 invalidation fan-out 扩到全部 8 个只读 route topic。
+- 2026-03-25 已本地验证 `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build`、`bash scripts/check-governance.sh --skip-remote-checks` 与 `git diff --check` 全部通过。
 
 ## Next Actions
 
-1. 合并当前 Phase 1B post-merge close-loop PR，同步 memory/workset 到 `#14` 已关闭、`#15` 已 ready 的状态。
-2. 将 issue `#9` 保持为 Phase 1 umbrella close-out gate，而不是直接承载功能实现。
-3. 在 close-loop 合并后启动 `#15`，继续 Phase 1C read-only operations surfaces。
+1. 为 `#15` 分支提交当前实现、推送远端并创建面向 `main` 的 PR。
+2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
+3. 在 Codex review quota 恢复后重新触发并合并 `#35`，保持 post-merge close-loop 与主实施线最终一致。
 
 ## Repository
 

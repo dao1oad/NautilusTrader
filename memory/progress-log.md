@@ -51,3 +51,6 @@
 - Reran `pr-gate` plus both `pull_request` and `push` `governance-check` contexts on PR #34 to clear GitHub's stale cancelled required-check selection.
 - Merged PR #34 to `main` and manually closed issue `#14`, which did not auto-close because the PR body used linked-issue metadata instead of a closing keyword.
 - Refreshed the local issue snapshot and workset after the Phase 1B merge; open issues are now 14 and `#15` is the next concrete implementation target.
+- Created `/root/NautilusTrader-phase1c` on branch `codex/issue-15-phase1c-read-only-surfaces` from the latest Phase 1B close-loop head.
+- Added bounded read-only `orders` / `positions` / `accounts` / `logs` admin endpoints, query-backed frontend pages, and invalidation fan-out for all eight Phase 1 read-only routes.
+- Re-verified the branch with `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `npm run lint`, `npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check`.

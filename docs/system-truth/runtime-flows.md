@@ -14,14 +14,14 @@
 
 `Browser route -> apps/admin-web routed console shell -> TanStack Query cache + shared page states -> REST/WS -> nautilus_trader/admin -> 既有 live/execution/portfolio/risk/persistence surfaces -> typed admin DTO / connection state -> Browser`
 
-当前后端 contract 已定义 `health`、`overview`、`nodes`、`strategies`、`adapters` 与最小 WS invalidation / connection-state 语义；浏览器侧则通过 routed shell + query key + shared page-state 驱动四个已接通的只读页面，不在此阶段定义最终静态资源托管或桌面交付流。
+当前后端 contract 已定义 `health`、`overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 与最小 WS invalidation / connection-state 语义；其中交易与日志 surface 通过 bounded `limit` query 控制默认窗口，`logs` 允许显式 partial payload。浏览器侧则通过 routed shell + query key + shared page-state 驱动 8 个已接通的只读页面，不在此阶段定义最终静态资源托管或桌面交付流。
 
 ## Admin Development Flow
 
 1. 终端 A：启动 `nautilus_trader/admin` 本机 FastAPI 进程，暴露 `/api/admin/*` 与 `/ws/admin/events`
 2. 终端 B：`cd apps/admin-web && npm run dev`，启动 `Vite` dev server
 3. 浏览器：由 routed console shell 装载当前 route，并通过 query client 访问本机 admin REST / WS contract
-4. `overview.updated` / `snapshot.invalidate` 事件先进入 invalidation bus，再由 query client 触发 `overview`、`nodes`、`strategies`、`adapters` 四组 query 失效与重拉
+4. `overview.updated` / `snapshot.invalidate` 事件先进入 invalidation bus，再由 query client 触发 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八组 query 失效与重拉
 5. 前端 CI 继续复用最小命令面：`npm ci -> npm run lint -> npm run test -- --run -> npm run build`
 6. 当前阶段不把静态资源打进 wheel，不定义桌面壳，不把 `Playwright` 或多用户部署写成既成运行流
 
