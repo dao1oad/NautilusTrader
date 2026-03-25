@@ -25,16 +25,28 @@
   - 数据职责：`Strategies` 只读列表快照；包含 `generated_at`、`partial`、`items`、`errors`
 - `AdaptersSnapshot`
   - 数据职责：`Adapters` 只读列表快照；包含 `generated_at`、`partial`、`items`、`errors`
+- `OrdersSnapshot`
+  - 数据职责：`Orders` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `PositionsSnapshot`
+  - 数据职责：`Positions` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `AccountsSnapshot`
+  - 数据职责：`Accounts` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `LogsSnapshot`
+  - 数据职责：`Logs` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
 - `NodeSummary`
   - 数据职责：node 级摘要；在 `Phase 0` 至少表达 node 状态与可选 `node_id`
 - `StrategySummary`
   - 数据职责：策略摘要；表达浏览器可见的 strategy 标识与状态
 - `AdapterSummary`
   - 数据职责：适配器摘要；表达浏览器可见的 adapter 标识与状态
+- `OrderSummary`
+  - 数据职责：订单摘要；表达浏览器可见的 `client_order_id`、`instrument_id`、`side`、`quantity` 与 `status`
 - `AccountSummary`
   - 数据职责：账户摘要；表达浏览器可见的 account 标识与状态
 - `PositionSummary`
   - 数据职责：持仓摘要；表达浏览器可见的 instrument、方向与数量
+- `LogSummary`
+  - 数据职责：日志摘要；表达浏览器可见的 `timestamp`、`level`、`component` 与 `message`
 - `SectionError`
   - 数据职责：局部失败投影；用于把后端子区域失败以 `section + message` 的形式暴露给浏览器，而不是泄露内部异常对象
 
@@ -43,9 +55,9 @@
 - `apps/admin-web/src/shared/ui/page-state.tsx`
   - 数据职责：统一浏览器侧 page-state view model；当前固定状态集合为 `loading`、`empty`、`error`、`stale`
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
-  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters` 四个 topic，并把最小 WS 事件集合映射到对应 query invalidation
+  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八个 topic，并把最小 WS 事件集合映射到对应 query invalidation
 - `apps/admin-web/src/shared/query/query-client.ts`
-  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters` 四组 `["admin", <resource>]` query key
+  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters` 四组 `["admin", <resource>]` query key，并为 `orders`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
 
 ## Governance Data
 

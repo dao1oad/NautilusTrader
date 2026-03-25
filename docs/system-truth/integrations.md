@@ -11,8 +11,10 @@
   - `apps/admin-web` 通过 `Vite` dev server 提供浏览器入口
   - `nautilus_trader/admin` 提供 admin REST / WebSocket contract
 - 浏览器与后端的集成边界固定在 admin DTO 与最小事件契约；前端不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
-- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 `overview`、`nodes`、`strategies`、`adapters` 四组 query 失效语义
-- 当前前后端已接通 `Overview`、`Nodes`、`Strategies`、`Adapters` 四个只读页面；其余 read-only routes 仍可保持占位态，直到后续 phase 补齐
+- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八组 query 失效语义
+- 当前前后端已接通 `Overview`、`Nodes`、`Strategies`、`Adapters`、`Orders`、`Positions`、`Accounts`、`Logs` 八个只读页面
+- `Orders`、`Positions`、`Accounts`、`Logs` 集成当前统一走 bounded read-only 查询：浏览器默认请求 `limit=100`，后端对 `limit` 做 `1..500` 校验，避免无界拉取
+- `Logs` 集成当前保留显式 degraded-state 验证入口；后端可返回 partial snapshot 与 `SectionError`，前端必须把这类状态直接展示，而不是静默吞掉
 - 当前阶段仍只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
 
 ## Toolchain Integrations
