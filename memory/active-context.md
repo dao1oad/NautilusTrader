@@ -6,11 +6,11 @@
 
 ## Current Phase
 
-- Phase 1B 已通过 PR `#34` 合并到 `main`；`#35` 正在承接 Phase 1B post-merge close-loop，但远端 Codex review 受 usage quota 阻塞。当前主执行线已切到 `#15`，在独立 worktree 上实现 read-only orders / positions / accounts / logs surfaces。
+- Phase 1B 已通过 PR `#34` 合并到 `main`；原本承接 close-loop 的 `#35` 已被 supersede。当前所有已完成变更已收敛到 PR `#36`，直接面向 `main` 等待远端 review 闭环。
 
 ## Blockers
 
-- PR `#35` 仍缺有效远端 Codex review 信号；`chatgpt-codex-connector` 当前返回 usage limit 提示，导致 `pr-gate` 失败
+- PR `#36` 仍缺有效远端 Codex review 信号；`chatgpt-codex-connector` 当前返回 usage limit 提示，因此暂时无法满足 merge gate
 
 ## Confirmed Facts
 
@@ -83,16 +83,17 @@
 - 2026-03-25 issue `#14` 已手动关闭；原因是 PR 正文使用了 `Linked issue: #14` 而非 closing keyword。
 - 2026-03-25 已重新同步 open issues；本地 `workspace/runbooks/issues-snapshot.json` 当前为 14 个开放 issue，`#15` 已变为 `ready`，`#9` 继续作为 Phase 1 umbrella close-out gate。
 - 2026-03-25 已创建独立 worktree `/root/NautilusTrader-phase1c`，分支 `codex/issue-15-phase1c-read-only-surfaces` 基于 close-loop 分支头 `f0c4200f460cecacc6f9cda307109bae7af7e7ef` 开始实施 `#15`。
-- 2026-03-25 `#35` 仍为 open；`governance-check` 已成功，但 `pr-gate` 因缺失有效远端 Codex review 信号而失败，当前 comment 证据为 usage limit 提示。
 - 2026-03-25 已在 `nautilus_trader/admin` 上新增 bounded read-only `orders`、`positions`、`accounts`、`logs` endpoint，并在 `apps/admin-web` 上把 4 个 placeholder route 接成 query-backed 页面，同时把 invalidation fan-out 扩到全部 8 个只读 route topic。
 - 2026-03-25 已本地验证 `source .venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build`、`bash scripts/check-governance.sh --skip-remote-checks` 与 `git diff --check` 全部通过。
-- 2026-03-25 已创建 stacked PR `#36`：`feat: add read-only trading and logs surfaces`，base 为 `codex/post-merge-phase1b-close-loop`，用于在 `#35` 之上推进 `#15`。
+- 2026-03-25 已创建 PR `#36`：`feat: add read-only trading and logs surfaces`；当前已 retarget 到 `main`，并包含 `#35` 的 Phase 1B close-loop commits 与 `#15` 的 Phase 1C 实现。
+- 2026-03-25 已关闭 PR `#35`；原因是其变更已完整包含在 `#36` 中，后者成为唯一面向 `main` 的主线 PR。
+- 2026-03-25 PR `#36` 的两条 `governance-check` 已成功，但 `@codex review` 两次都收到 usage limit comment，远端 review gate 仍未满足。
 
 ## Next Actions
 
-1. 为 PR `#36` 触发并等待远端 Codex review，按 comment/review 结果继续收口。
+1. 等待 Codex review quota 恢复后，重新为 PR `#36` 触发远端 review 并继续 merge gate 收口。
 2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
-3. 在 Codex review quota 恢复后重新触发并合并 `#35`，保持 post-merge close-loop 与主实施线最终一致。
+3. 在不触碰 `/root/NautilusTrader` 脏工作树的前提下，继续把远端 `main` 作为唯一集成入口。
 
 ## Repository
 

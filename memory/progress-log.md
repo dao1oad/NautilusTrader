@@ -55,3 +55,6 @@
 - Added bounded read-only `orders` / `positions` / `accounts` / `logs` admin endpoints, query-backed frontend pages, and invalidation fan-out for all eight Phase 1 read-only routes.
 - Re-verified the branch with `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `npm run lint`, `npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check`.
 - Opened stacked PR #36 (`feat: add read-only trading and logs surfaces`) against `codex/post-merge-phase1b-close-loop` so `#15` can proceed while `#35` remains externally blocked by remote review quota.
+- Retargeted PR #36 to `main` so all completed Phase 1B close-loop and Phase 1C changes converge on a single mainline PR.
+- Closed superseded PR #35 after confirming its commits are already contained in PR #36.
+- Reconfirmed that PR #36 governance checks are green, but remote Codex review is still blocked by usage quota comments from `chatgpt-codex-connector`.
