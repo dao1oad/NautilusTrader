@@ -33,6 +33,17 @@ export type SectionError = {
   message: string;
 };
 
+export type AdminListSnapshot<T> = {
+  generated_at: string;
+  partial: boolean;
+  items: T[];
+  errors: SectionError[];
+};
+
+export type NodesSnapshot = AdminListSnapshot<NodeSummary>;
+export type StrategiesSnapshot = AdminListSnapshot<StrategySummary>;
+export type AdaptersSnapshot = AdminListSnapshot<AdapterSummary>;
+
 export type OverviewSnapshot = {
   generated_at: string;
   stale: boolean;

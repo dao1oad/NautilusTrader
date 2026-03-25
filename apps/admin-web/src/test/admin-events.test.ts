@@ -85,7 +85,7 @@ test("publishes overview invalidations to the shared bus", () => {
     data: JSON.stringify({ type: "overview.updated" })
   });
 
-  expect(publishedTopics).toEqual(["overview"]);
+  expect(publishedTopics).toEqual(["overview", "nodes", "strategies", "adapters"]);
 
   unsubscribeInvalidations();
 });

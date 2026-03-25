@@ -52,3 +52,24 @@ class OverviewSnapshot(BaseModel):
     accounts: list[AccountSummary] = Field(default_factory=list)
     positions: list[PositionSummary] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)
+
+
+class NodesSnapshot(BaseModel):
+    generated_at: datetime
+    partial: bool = False
+    items: list[NodeSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class StrategiesSnapshot(BaseModel):
+    generated_at: datetime
+    partial: bool = False
+    items: list[StrategySummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class AdaptersSnapshot(BaseModel):
+    generated_at: datetime
+    partial: bool = False
+    items: list[AdapterSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)

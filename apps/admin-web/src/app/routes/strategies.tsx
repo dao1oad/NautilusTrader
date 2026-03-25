@@ -1,12 +1,6 @@
-import { PageState } from "../../shared/ui/page-state";
+import { StrategiesPage } from "../../features/strategies/strategies-page";
 
 
 export function StrategiesRoutePage() {
-  return (
-    <PageState
-      kind="empty"
-      title="Strategies"
-      description="Strategy status and runtime metadata will be attached when the Phase 1 data surfaces are added."
-    />
-  );
+  return <StrategiesPage />;
 }

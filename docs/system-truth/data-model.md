@@ -16,9 +16,15 @@
 ## Admin Control Plane Data
 
 - `nautilus_trader/admin/schemas.py`
-  - 数据职责：为浏览器提供 `Phase 0` 管理控制面 DTO，而不是暴露内部 `live`、`execution`、`portfolio`、`risk`、`persistence` domain object
+  - 数据职责：为浏览器提供 `Phase 1` 管理控制面 DTO，而不是暴露内部 `live`、`execution`、`portfolio`、`risk`、`persistence` domain object
 - `OverviewSnapshot`
   - 数据职责：单次概览快照根对象；包含 `generated_at`、`stale`、`partial`、`node`、`strategies`、`adapters`、`accounts`、`positions`、`errors`
+- `NodesSnapshot`
+  - 数据职责：`Nodes` 只读列表快照；包含 `generated_at`、`partial`、`items`、`errors`
+- `StrategiesSnapshot`
+  - 数据职责：`Strategies` 只读列表快照；包含 `generated_at`、`partial`、`items`、`errors`
+- `AdaptersSnapshot`
+  - 数据职责：`Adapters` 只读列表快照；包含 `generated_at`、`partial`、`items`、`errors`
 - `NodeSummary`
   - 数据职责：node 级摘要；在 `Phase 0` 至少表达 node 状态与可选 `node_id`
 - `StrategySummary`
@@ -32,14 +38,14 @@
 - `SectionError`
   - 数据职责：局部失败投影；用于把后端子区域失败以 `section + message` 的形式暴露给浏览器，而不是泄露内部异常对象
 
-`Phase 0` 下浏览器唯一可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
+当前浏览器可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
 
 - `apps/admin-web/src/shared/ui/page-state.tsx`
   - 数据职责：统一浏览器侧 page-state view model；当前固定状态集合为 `loading`、`empty`、`error`、`stale`
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
-  - 数据职责：浏览器侧 invalidation topic 投影；当前只定义 `overview` topic，并把最小 WS 事件集合映射到 query invalidation
+  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters` 四个 topic，并把最小 WS 事件集合映射到对应 query invalidation
 - `apps/admin-web/src/shared/query/query-client.ts`
-  - 数据职责：浏览器侧 query key 与缓存入口；当前 `overview` query key 固定为 `["admin", "overview"]`
+  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters` 四组 `["admin", <resource>]` query key
 
 ## Governance Data
 
