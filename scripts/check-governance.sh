@@ -171,7 +171,7 @@ required_files=(
 
 missing=()
 for path in "${required_files[@]}"; do
-[[ -e "$path" ]] || missing+=("$path")
+  [[ -e "$path" ]] || missing+=("$path")
 done
 
 if [[ ${#missing[@]} -gt 0 ]]; then
