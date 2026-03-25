@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-- `#14` 已通过 PR `#34` 进入 review；当前分支为 `codex/issue-14-phase1b-read-only-surfaces`，下一步是远端 Codex review、线程闭环与合并收口
+- Phase 1B 已通过 PR `#34` 合并到 `main`；当前执行的是 merge 后 close-loop 账本同步，下一具体实施入口为 `#15`（read-only orders / positions / accounts / logs surfaces）
 
 ## Blockers
 
@@ -77,12 +77,17 @@
 - 2026-03-24 已在 `nautilus_trader/admin` 上新增 `nodes`、`strategies`、`adapters` 只读 list snapshot endpoint，并在 `apps/admin-web` 上接通对应 query-backed 页面、shared invalidation 和 truth docs 更新。
 - 2026-03-24 已本地验证 `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run lint`、`npm run build` 全部通过。
 - 2026-03-24 已创建 PR `#34`：`feat: add read-only node strategy adapter surfaces`，对应 issue `#14`。
+- 2026-03-25 通过将 PR `#34` 暂时转回 draft 再恢复 ready，成功重新触发远端 Codex review；`chatgpt-codex-connector[bot]` comment `4122614161` 确认未发现 major issues。
+- 2026-03-25 为修复 GitHub 对同名 cancelled required checks 的错误选取，已重跑 `pull_request` 上下文的 `pr-gate` 与 `governance-check`，以及对应的 `push governance-check`。
+- 2026-03-25 PR `#34` 已合并到 `main`，merge commit 为 `c53198d3abd99e6d16fe8fc0601b3835f39686b1`。
+- 2026-03-25 issue `#14` 已手动关闭；原因是 PR 正文使用了 `Linked issue: #14` 而非 closing keyword。
+- 2026-03-25 已重新同步 open issues；本地 `workspace/runbooks/issues-snapshot.json` 当前为 14 个开放 issue，`#15` 已变为 `ready`，`#9` 继续作为 Phase 1 umbrella close-out gate。
 
 ## Next Actions
 
-1. 请求远端 Codex review，并在 `workspace/handoffs/review-resolution-34.md` 中记录处理结果。
-2. 处理 PR `#34` 的 review 线程与必要修复，直到 `pr-gate` 全绿。
-3. 合并 `#34` 后刷新 workset，把 `#15` 切到 `ready`，同时保留 `#9` 作为 Phase 1 umbrella close-out gate。
+1. 合并当前 Phase 1B post-merge close-loop PR，同步 memory/workset 到 `#14` 已关闭、`#15` 已 ready 的状态。
+2. 将 issue `#9` 保持为 Phase 1 umbrella close-out gate，而不是直接承载功能实现。
+3. 在 close-loop 合并后启动 `#15`，继续 Phase 1C read-only operations surfaces。
 
 ## Repository
 
@@ -90,4 +95,4 @@
 
 ## Last Merge Update
 
-- 2026-03-24: Merged PR #33 to main and moved the next concrete execution target into active issue #14 execution.
+- 2026-03-25: Merged PR #34 to main and moved the next concrete execution target from #14 to #15.

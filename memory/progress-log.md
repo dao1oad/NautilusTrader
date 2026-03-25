@@ -44,3 +44,10 @@
 - Added typed read-only `nodes` / `strategies` / `adapters` admin endpoints plus query-backed frontend pages, shared invalidation fan-out, and synced truth docs for Phase 1B issue `#14`.
 - Verified `pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin` plus `apps/admin-web` test/lint/build locally after the Phase 1B implementation.
 - Opened PR #34 (`feat: add read-only node strategy adapter surfaces`) for issue `#14`.
+
+## 2026-03-25
+
+- Retriggered PR #34 remote Codex review by converting the PR to draft and back to ready; `chatgpt-codex-connector[bot]` reported no major issues.
+- Reran `pr-gate` plus both `pull_request` and `push` `governance-check` contexts on PR #34 to clear GitHub's stale cancelled required-check selection.
+- Merged PR #34 to `main` and manually closed issue `#14`, which did not auto-close because the PR body used linked-issue metadata instead of a closing keyword.
+- Refreshed the local issue snapshot and workset after the Phase 1B merge; open issues are now 14 and `#15` is the next concrete implementation target.
