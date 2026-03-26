@@ -1,0 +1,56 @@
+# Issue #18 Local Execution Output
+
+- Issue: #18
+- Worker: localhost
+- Branch: `codex/issue-18-phase-2c-command-confirmations-audit-timeline-and-recovery`
+- Job Id: `2026-03-27T00-47-05-issue-18-manual`
+- Summary: Added explicit frontend command confirmations, latest receipt cards, audit timeline and config diff recovery pages, and backend audit/config projection routes for the Phase 2C control-loop slice.
+- Notes:
+  - The worktree was created directly from `origin/main` at `b6ee47b` after PR `#39` merged, so the Phase 2C branch starts from the latest remote mainline.
+  - The fresh worktree did not contain `apps/admin-web/node_modules`; `npm ci` hydrated the existing frontend package before running the new Vitest and build checks.
+- Files:
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/schemas.py`
+  - `nautilus_trader/admin/services/audit.py`
+  - `nautilus_trader/admin/services/commands.py`
+  - `nautilus_trader/admin/services/config.py`
+  - `tests/unit_tests/admin/test_audit_routes.py`
+  - `tests/unit_tests/admin/test_config_routes.py`
+  - `apps/admin-web/src/app.tsx`
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/router.tsx`
+  - `apps/admin-web/src/app/routes/audit.tsx`
+  - `apps/admin-web/src/app/routes/config.tsx`
+  - `apps/admin-web/src/features/adapters/adapters-page.tsx`
+  - `apps/admin-web/src/features/strategies/strategies-page.tsx`
+  - `apps/admin-web/src/features/audit/audit-timeline.tsx`
+  - `apps/admin-web/src/features/commands/command-receipt-card.tsx`
+  - `apps/admin-web/src/features/commands/confirm-command-dialog.tsx`
+  - `apps/admin-web/src/features/commands/use-command-action.ts`
+  - `apps/admin-web/src/features/config/config-diff-page.tsx`
+  - `apps/admin-web/src/shared/api/admin-client.ts`
+  - `apps/admin-web/src/shared/query/query-client.ts`
+  - `apps/admin-web/src/shared/realtime/admin-events.ts`
+  - `apps/admin-web/src/shared/realtime/command-receipt-bus.ts`
+  - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - `apps/admin-web/src/shared/types/admin.ts`
+  - `apps/admin-web/src/styles.css`
+  - `apps/admin-web/src/test/admin-events.test.ts`
+  - `apps/admin-web/src/test/audit-timeline.test.tsx`
+  - `apps/admin-web/src/test/confirm-command-dialog.test.tsx`
+  - `apps/admin-web/src/test/console-shell.test.tsx`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/active-context.md`
+  - `memory/issue-ledger.md`
+- Verification:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm ci`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-18 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-18 diff --check`

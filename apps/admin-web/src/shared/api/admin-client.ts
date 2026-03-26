@@ -1,6 +1,9 @@
 import type {
   AccountsSnapshot,
   AdaptersSnapshot,
+  AuditSnapshot,
+  CommandReceipt,
+  ConfigDiffSnapshot,
   LogsSnapshot,
   NodesSnapshot,
   OrdersSnapshot,
@@ -78,4 +81,44 @@ export async function getAccountsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMI
 export async function getLogsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<LogsSnapshot> {
   const response = await fetch(buildLimitedPath("/api/admin/logs", limit));
   return parseJson<LogsSnapshot>(response);
+}
+
+
+async function postCommand(path: string): Promise<CommandReceipt> {
+  const response = await fetch(path, {
+    method: "POST"
+  });
+  return parseJson<CommandReceipt>(response);
+}
+
+
+export async function startStrategyCommand(strategyId: string): Promise<CommandReceipt> {
+  return postCommand(`/api/admin/commands/strategies/${strategyId}/start`);
+}
+
+
+export async function stopStrategyCommand(strategyId: string): Promise<CommandReceipt> {
+  return postCommand(`/api/admin/commands/strategies/${strategyId}/stop`);
+}
+
+
+export async function connectAdapterCommand(adapterId: string): Promise<CommandReceipt> {
+  return postCommand(`/api/admin/commands/adapters/${adapterId}/connect`);
+}
+
+
+export async function disconnectAdapterCommand(adapterId: string): Promise<CommandReceipt> {
+  return postCommand(`/api/admin/commands/adapters/${adapterId}/disconnect`);
+}
+
+
+export async function getAuditSnapshot(): Promise<AuditSnapshot> {
+  const response = await fetch("/api/admin/audit");
+  return parseJson<AuditSnapshot>(response);
+}
+
+
+export async function getConfigDiffSnapshot(): Promise<ConfigDiffSnapshot> {
+  const response = await fetch("/api/admin/config/diff");
+  return parseJson<ConfigDiffSnapshot>(response);
 }

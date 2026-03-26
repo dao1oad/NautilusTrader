@@ -1,3 +1,4 @@
+import { publishCommandReceipt } from "./command-receipt-bus";
 import { publishInvalidation } from "./invalidation-bus";
 import type { AdminEvent, ConnectionState } from "../types/admin";
 
@@ -25,7 +26,7 @@ export function subscribeToAdminEvents({ onEvent, onStateChange }: Options): () 
 
   socket.addEventListener("open", () => {
     onStateChange("connected");
-    socket.send(JSON.stringify({ type: "subscribe", channels: ["overview"] }));
+    socket.send(JSON.stringify({ type: "subscribe", channels: ["overview", "commands"] }));
   });
 
   socket.addEventListener("message", (message) => {
@@ -33,6 +34,14 @@ export function subscribeToAdminEvents({ onEvent, onStateChange }: Options): () 
 
     if (event.type === "connection.state") {
       onStateChange(event.state);
+    }
+
+    if (
+      event.type === "command.accepted" ||
+      event.type === "command.completed" ||
+      event.type === "command.failed"
+    ) {
+      publishCommandReceipt(event);
     }
 
     publishInvalidation(event);

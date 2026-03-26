@@ -12,13 +12,13 @@
 
 ## Admin Command Contract Flow
 
-`操作意图 -> CommandRequest(command/target/payload/requested_by) -> command service 组装 typed receipt -> audit sink 追加 AuditRecord(sequence_id/status/payload) -> 后续 phase 再把 receipt/audit 暴露到 HTTP/WS/UI`
+`操作意图 -> CommandRequest(command/target/payload/requested_by) -> command service 组装 typed receipt -> audit sink 追加 AuditRecord(sequence_id/status/payload) -> GET /api/admin/audit + /api/admin/config/diff / WS command.* -> admin-web receipt/audit/config 恢复面`
 
-`Phase 2A` 当前只建立命令契约、错误码和 append-only 审计边界，不直接引入高风险交易执行流。
+`Phase 2A` 的命令契约与审计边界当前已被 `Phase 2C` 绑定到浏览器恢复面，但仍不引入任何高风险交易执行流。
 
 ## Low-Risk Command Runtime Flow
 
-`POST /api/admin/commands/* -> submit_command(CommandRequest) -> HTTP 202 CommandReceipt(accepted) -> command event buffer -> /ws/admin/events(commands) 推送 command.accepted + command.completed`
+`操作按钮 -> ConfirmCommandDialog 显式确认 -> POST /api/admin/commands/* -> submit_command(CommandRequest) -> HTTP 202 CommandReceipt(accepted) -> audit sink 追加 accepted/completed -> command event buffer -> /ws/admin/events(commands) 推送 command.accepted + command.completed -> command receipt bus 更新页面 receipt 卡片`
 
 当前 command flow 仍是本机 stub mode：它验证和广播低风险控制意图，但不提前引入交易类命令或多用户权限流。
 
@@ -34,13 +34,13 @@
 
 ## Admin Realtime Refresh Flow
 
-`/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> page state clears transient runtime error on successful fresh snapshot`
+`/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts / command-receipt-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> 页面清理 transient runtime error 并刷新 receipt/audit/config surface`
 
-当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部 Phase 1 read-only surfaces。
+当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`positions`、`accounts`、`logs` 十类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部只读 surfaces，`command.*` 会触发 `audit` / `config` 刷新并同步当前页面 receipt。
 
 ## Admin Command Guardrail Flow
 
-`Phase 1` 没有浏览器到后端的 mutating command flow；admin web 只允许读取 REST snapshot 与订阅只读 WS 事件，任何控制命令都必须留到 `Phase 2` 再引入。
+`Phase 2C` 的浏览器 mutating command flow 只能通过显式确认对话发起低风险控制；高风险交易命令、批量动作与多用户审批流仍被 guardrail 阻断。
 
 ## Repository Operational Flow
 

@@ -31,12 +31,20 @@
   - 契约：当前稳定错误码集合为 `invalid_request`、`not_found`、`conflict`、`not_supported`、`unavailable`、`internal_error`
 - `nautilus_trader.admin.schemas.AuditRecord`
   - 契约：审计记录是 append-only 的浏览器/运维投影，固定包含单调递增 `sequence_id`、`command_id`、`status`、`payload`、`recorded_at` 与可选失败信息
+- `nautilus_trader.admin.schemas.AuditSnapshot`
+  - 契约：浏览器审计时间线读取模型；保留 `generated_at`、`partial`、`items`、`errors`，其中 `items` 按最新记录优先返回
+- `nautilus_trader.admin.schemas.ConfigDiffEntry` / `RecoveryRunbook` / `ConfigDiffSnapshot`
+  - 契约：浏览器配置恢复面读取模型；`ConfigDiffEntry` 表达 guardrail key、期望值、当前值与状态，`RecoveryRunbook` 提供可执行恢复步骤，`ConfigDiffSnapshot` 负责把二者打包为单次只读投影
 - `POST /api/admin/commands/strategies/{strategy_id}/start|stop`
   - 契约：仅暴露策略启停这类低风险控制动作，返回 `202 Accepted` + `CommandReceipt`
 - `POST /api/admin/commands/adapters/{adapter_id}/connect|disconnect`
   - 契约：仅暴露适配器连接控制，返回 `202 Accepted` + `CommandReceipt`
 - `POST /api/admin/commands/subscriptions/{instrument_id}/subscribe|unsubscribe`
   - 契约：仅暴露行情订阅控制，返回 `202 Accepted` + `CommandReceipt`
+- `GET /api/admin/audit`
+  - 契约：返回浏览器可见的 append-only 审计时间线，HTTP body 为 `AuditSnapshot`
+- `GET /api/admin/config/diff`
+  - 契约：返回本机 control-plane guardrail / runbook 只读投影，HTTP body 为 `ConfigDiffSnapshot`
 - `/ws/admin/events`
   - 契约：当前支持 `overview` 与 `commands` 两个订阅 channel
   - `commands` channel 事件类型固定为 `command.accepted`、`command.completed`、`command.failed`，并通过 `receipt` 字段携带 `CommandReceipt`
@@ -52,21 +60,22 @@
 ## Admin Read-Only Control Plane Contracts
 
 - `nautilus_trader/admin/app.py`
-  - 暴露只读 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/logs`
+  - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/logs`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
   - `orders`、`positions`、`accounts`、`logs` 四个列表 endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
-  - 当前只暴露 `GET` 与 `WebSocket /ws/admin/events`；`Phase 1` 不包含任何 mutating command endpoint
+  - 低风险 mutating command endpoint 仍限定为策略/适配器/订阅控制；高风险交易命令不在当前 surface 中
 - `nautilus_trader/admin/schemas.py`
-  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`LogsSnapshot`
+  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`LogsSnapshot`、`AuditSnapshot`、`ConfigDiffSnapshot`
   - 所有列表 snapshot 都保留 `generated_at`、`partial`、`items`、`errors`；bounded list snapshot 额外保留 `limit`
 - `apps/admin-web/src/shared/types/admin.ts`
-  - 是前端对上述 DTO 的 TypeScript 镜像；前端只消费 admin DTO，不直接序列化内部 runtime object
+  - 是前端对上述 DTO、command receipt event 与 config/audit 恢复模型的 TypeScript 镜像；前端只消费 admin DTO，不直接序列化内部 runtime object
 - `apps/admin-web/src/shared/api/admin-client.ts`
-  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters` 走无参 `GET`；`orders`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`
+  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff` 走无参 `GET`；`orders`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`
+  - 固定浏览器到后端的低风险 command 契约：策略与适配器控制通过 `POST /api/admin/commands/*` 返回 typed `CommandReceipt`
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
-  - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
-  - 连接建立后只订阅 `overview` channel，并把读到的事件交给 invalidation bus 与运行态状态管理
+  - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`
+  - 连接建立后同时订阅 `overview` 与 `commands` channel，并把读到的事件交给 invalidation bus、command receipt bus 与运行态状态管理
 
 ## Repository Operational Interfaces
 

@@ -9,6 +9,7 @@ from nautilus_trader.admin.schemas import CommandErrorCode
 from nautilus_trader.admin.schemas import CommandFailure
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
+from nautilus_trader.admin.services.audit import record_command_event
 
 
 _RETRYABLE_ERROR_CODES = {
@@ -120,6 +121,16 @@ def submit_command(request: CommandRequest) -> CommandReceipt:
             code=CommandErrorCode.NOT_SUPPORTED,
             message=f"Command '{request.command}' is not supported.",
         )
+        record_command_event(
+            request.command,
+            request.payload,
+            failed.status,
+            command_id=request.command_id,
+            target=request.target,
+            error_code=CommandErrorCode.NOT_SUPPORTED,
+            message=failed.message,
+            recorded_at=failed.recorded_at,
+        )
         _publish_command_receipt(failed)
         return failed
 
@@ -132,6 +143,24 @@ def submit_command(request: CommandRequest) -> CommandReceipt:
         message=f"Command completed for local {request.command}.",
     )
 
+    record_command_event(
+        request.command,
+        request.payload,
+        accepted.status,
+        command_id=request.command_id,
+        target=request.target,
+        message=accepted.message,
+        recorded_at=accepted.recorded_at,
+    )
+    record_command_event(
+        request.command,
+        request.payload,
+        completed.status,
+        command_id=request.command_id,
+        target=request.target,
+        message=completed.message,
+        recorded_at=completed.recorded_at,
+    )
     _publish_command_receipt(accepted)
     _publish_command_receipt(completed)
 

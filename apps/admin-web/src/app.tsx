@@ -62,6 +62,16 @@ export function App() {
         return;
       }
 
+      if (topic === "audit") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.audit() });
+        return;
+      }
+
+      if (topic === "config") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.config() });
+        return;
+      }
+
       if (topic === "orders") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.orders(READ_ONLY_DEFAULT_LIMIT) });
         return;
@@ -100,6 +110,8 @@ export function App() {
           resource !== "nodes" &&
           resource !== "strategies" &&
           resource !== "adapters" &&
+          resource !== "audit" &&
+          resource !== "config" &&
           resource !== "orders" &&
           resource !== "positions" &&
           resource !== "accounts" &&

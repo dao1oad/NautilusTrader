@@ -103,6 +103,35 @@ class AuditRecord(BaseModel):
     failure: CommandFailure | None = None
 
 
+class AuditSnapshot(BaseModel):
+    generated_at: datetime
+    partial: bool = False
+    items: list[AuditRecord] = Field(default_factory=list)
+    errors: list["SectionError"] = Field(default_factory=list)
+
+
+class ConfigDiffEntry(BaseModel):
+    key: str
+    summary: str
+    desired: str
+    actual: str
+    status: Literal["in_sync", "drifted"]
+    runbook_id: str | None = None
+
+
+class RecoveryRunbook(BaseModel):
+    runbook_id: str
+    title: str
+    summary: str
+    steps: list[str] = Field(default_factory=list)
+
+
+class ConfigDiffSnapshot(BaseModel):
+    generated_at: datetime
+    items: list[ConfigDiffEntry] = Field(default_factory=list)
+    runbooks: list[RecoveryRunbook] = Field(default_factory=list)
+
+
 class SectionError(BaseModel):
     section: str
     message: str

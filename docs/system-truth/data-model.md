@@ -59,6 +59,14 @@
   - 数据职责：Phase 2 管理命令的稳定错误码枚举，供 HTTP/WS 回执与审计流复用
 - `AuditRecord`
   - 数据职责：append-only 管理命令审计事件；以 `sequence_id` 表达时间序列顺序，并保留原始 payload 与失败上下文
+- `AuditSnapshot`
+  - 数据职责：浏览器审计时间线根对象；包含 `generated_at`、`partial`、`items`、`errors`，其中 `items` 以最近 command 事件优先排序
+- `ConfigDiffEntry`
+  - 数据职责：本机 control-plane guardrail 对比项；表达配置键、摘要、期望值、当前值、状态与可选恢复 runbook 绑定
+- `RecoveryRunbook`
+  - 数据职责：浏览器恢复说明；表达 runbook 标识、标题、摘要与具体步骤
+- `ConfigDiffSnapshot`
+  - 数据职责：浏览器配置 diff / 恢复根对象；把 `ConfigDiffEntry[]` 与 `RecoveryRunbook[]` 打包为单次只读快照
 - `command.*` WS event envelope
   - 数据职责：把 `CommandReceipt` 包装成浏览器可消费的实时事件；当前 envelope 结构为 `{type, receipt}`
 - `CommandRequest.target`
@@ -69,9 +77,11 @@
 - `apps/admin-web/src/shared/ui/page-state.tsx`
   - 数据职责：统一浏览器侧 page-state view model；当前固定状态集合为 `loading`、`empty`、`error`、`stale`
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
-  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八个 topic，并把最小 WS 事件集合映射到对应 query invalidation
+  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`positions`、`accounts`、`logs` 十个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
+- `apps/admin-web/src/shared/realtime/command-receipt-bus.ts`
+  - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
-  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters` 四组 `["admin", <resource>]` query key，并为 `orders`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
+  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config` 六组 `["admin", <resource>]` query key，并为 `orders`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
 
 ## Governance Data
 

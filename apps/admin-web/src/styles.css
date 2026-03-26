@@ -187,6 +187,50 @@ body {
   background: linear-gradient(180deg, rgba(250, 252, 255, 0.95), #ffffff);
 }
 
+.command-receipt-card {
+  margin-top: 20px;
+  border: 1px solid rgba(17, 32, 51, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.95), #ffffff);
+}
+
+.command-receipt-copy {
+  margin: 0;
+  color: #42566d;
+}
+
+.command-receipt-status,
+.audit-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.command-receipt-status[data-status="accepted"],
+.audit-status[data-status="accepted"] {
+  background: #e6f0ff;
+  color: #1c4da6;
+}
+
+.command-receipt-status[data-status="completed"],
+.audit-status[data-status="completed"] {
+  background: #daf5e8;
+  color: #11663e;
+}
+
+.command-receipt-status[data-status="failed"],
+.audit-status[data-status="failed"] {
+  background: #fde6e4;
+  color: #9b2c2c;
+}
+
 .resource-header {
   display: flex;
   justify-content: space-between;
@@ -228,6 +272,134 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #36506c;
+}
+
+.command-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.command-button {
+  border: 0;
+  border-radius: 12px;
+  background: #153b63;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+.command-button:hover {
+  background: #1b4a7b;
+}
+
+.command-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.command-button-secondary {
+  background: #dfe8f1;
+  color: #112033;
+}
+
+.command-button-secondary:hover {
+  background: #cfdae6;
+}
+
+.confirm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 32, 51, 0.48);
+}
+
+.confirm-dialog {
+  width: min(100%, 480px);
+  border: 1px solid rgba(17, 32, 51, 0.08);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(17, 32, 51, 0.16);
+  padding: 28px;
+}
+
+.confirm-dialog h2 {
+  margin-top: 0;
+}
+
+.confirm-dialog-field {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.confirm-dialog-input {
+  width: 100%;
+  border: 1px solid rgba(17, 32, 51, 0.14);
+  border-radius: 12px;
+  font: inherit;
+  padding: 12px 14px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.audit-timeline,
+.config-runbook-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.audit-item,
+.config-runbook-item {
+  border: 1px solid rgba(17, 32, 51, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.audit-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.audit-item-command {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.audit-runbook-link {
+  display: inline-flex;
+  margin-top: 10px;
+  color: #1c4da6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.config-runbooks {
+  margin-top: 24px;
+}
+
+.config-runbooks h3 {
+  margin-top: 0;
+}
+
+.config-runbook-steps {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: #42566d;
 }
 
 .page-state {
@@ -292,6 +464,11 @@ body {
   }
 
   .resource-header {
+    flex-direction: column;
+  }
+
+  .audit-item-header,
+  .confirm-dialog-actions {
     flex-direction: column;
   }
 }
