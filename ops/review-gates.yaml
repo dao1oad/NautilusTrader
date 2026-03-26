@@ -2,18 +2,27 @@ required_gates:
   - linked_issue
   - tests_passed
   - memory_updated
-  - local_review_recorded
+  - local_pre_pr_review
+  - review_resolution_recorded
 
+required_status_check_binding: check_runs
 required_status_checks:
   - governance-check
   - pr-gate
 
-required_approving_review_count: 0
+required_approving_review_count: 1
+single_maintainer_mode_enabled: true
+single_maintainer_required_approving_review_count: 0
 
 merge_requirements:
   target_branch: main
   pull_request_only: true
 
-local_review_template: workspace/handoffs/local-review-template.md
-required_local_review_status: approved
+accepted_local_review_types:
+  - local pre-PR review
+accepted_local_review_statuses:
+  - accepted
+  - completed
+require_pr_conversation_resolution: true
+require_review_resolution_record: true
 require_linked_issue: true

@@ -8,9 +8,7 @@ curating test-fixture datasets.
 For repository governance tooling, PowerShell and POSIX shell entry points are
 kept side-by-side where the workflow is expected to run on both Windows and
 Linux/macOS. The paired scripts operate on the same repository files and should
-remain behaviorally aligned. This includes `build-workset`, which should rebuild
-dependency state and issue packets without erasing manually tracked PR links or
-non-default next-step notes already recorded in `memory/issue-ledger.md`.
+remain behaviorally aligned.
 
 ---
 

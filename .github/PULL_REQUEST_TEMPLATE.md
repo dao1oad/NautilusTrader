@@ -22,8 +22,9 @@
 
 ## Review Gate
 
-- local PR review record:
-- Local review findings closure summary:
+- local pre-PR review record:
+- Local review summary:
+- PR comment closure summary:
 
 ## Notes For Reviewer
 

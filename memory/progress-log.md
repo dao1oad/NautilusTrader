@@ -60,3 +60,10 @@
 - Reconfirmed that PR #36 governance checks are green, but remote Codex review is still blocked by usage quota comments from `chatgpt-codex-connector`.
 - Fixed PR #36 CI in two steps: simplified `nautilus_trader/admin/app.py` to satisfy Ruff complexity/import ordering, then tracked `apps/admin-web/src/features/logs/logs-page.tsx` by overriding the repo-wide `logs/` ignore rule that had broken the merge-ref frontend build.
 - Migrated repository governance from required remote Codex review to mandatory local PR review, adding issue-scoped review records under `workspace/handoffs/local-review-issue-*.md` and updating policies, workflows, scripts, templates, truth docs, and smoke coverage accordingly.
+
+## 2026-03-26
+
+- Switched the governance runtime from remote-worker dispatch to a pure-local execution model aligned with `/root/fqorder_V3`: the main agent runs in the local `codex` session, issue dispatch targets local `.worktrees/`, and `agentboard` provides the local observation surface on `127.0.0.1:8088`.
+- Added the local-runtime stack files and startup path, including `ops/remote-execution.yaml`, `scripts/start-main-agent.ps1`, `scripts/start-local-agentboard.ps1`, `scripts/dispatch-issue.ps1`, `scripts/sync-remote-execution.ps1`, `prompts/main-agent-startup-prompt.md`, and the matching smoke coverage.
+- Updated `AGENTS.md`, policy/truth docs, and dispatch include-file syncing so local worktrees receive the memory/policy/runtime context required for Codex-orchestrated subagent execution.
+- Verified the pure-local runtime before rebasing by running `pwsh -NoProfile -File tests/smoke/run-all.ps1`, starting `agentboard`, and successfully dispatching issue `#9` into a local worktree-backed run.

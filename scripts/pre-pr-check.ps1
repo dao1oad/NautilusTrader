@@ -1,12 +1,15 @@
 [CmdletBinding()]
 param(
   [string]$IssueNumber = '',
-  [Alias('ReviewResolutionFile')]
-  [string]$LocalReviewFile = '',
+  [string]$ReviewResolutionFile = '',
   [string[]]$ChangedFilesOverride = @(),
-  [switch]$SkipGitDiff,
-  [Alias('SkipRemoteReview')]
-  [switch]$SkipLocalReview
+  [string]$ProjectPolicyPath = 'ops/project-policy.yaml',
+  [string]$ReviewGatesPath = 'ops/review-gates.yaml',
+  [string]$DocTruthRegistryPath = 'ops/doc-truth-registry.yaml',
+  [string]$DocTruthMapPath = 'ops/doc-truth-map.yaml',
+  [string]$RemoteJobsPath = 'workspace\runbooks\remote-jobs.json',
+  [string]$EventPayloadPath = '',
+  [switch]$SkipGitDiff
 )
 
 $ErrorActionPreference = 'Stop'
@@ -206,7 +209,8 @@ function Test-PathMatches {
 function Get-ChangedFiles {
   param(
     [string[]]$Override,
-    [switch]$SkipGitInspection
+    [switch]$SkipGitInspection,
+    [object]$PullRequestContext
   )
 
   if ($Override.Count -gt 0) {
@@ -217,9 +221,9 @@ function Get-ChangedFiles {
     return @()
   }
 
-  if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_BASE_REF) {
-    git fetch origin $env:GITHUB_BASE_REF --depth=1 | Out-Null
-    $changed = git diff --name-only "origin/$env:GITHUB_BASE_REF...HEAD"
+  if ($env:GITHUB_ACTIONS -eq 'true' -and $PullRequestContext -and $PullRequestContext.BaseRef) {
+    git fetch origin $PullRequestContext.BaseRef --depth=1 | Out-Null
+    $changed = git diff --name-only "origin/$($PullRequestContext.BaseRef)...HEAD"
   } else {
     $changed = git diff --name-only
   }
@@ -231,23 +235,37 @@ function Get-ChangedFiles {
   return @($changed | Where-Object { $_ } | ForEach-Object { Normalize-RepoPath -PathText $_ } | Select-Object -Unique)
 }
 
-function Get-PullRequestContext {
-  if ($env:GITHUB_EVENT_PATH -and (Test-Path $env:GITHUB_EVENT_PATH)) {
-    $event = Get-Content $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
-    if ($event.pull_request) {
-      return [pscustomobject]@{
-        Number = [int]$event.pull_request.number
-        Body = [string]$event.pull_request.body
-        RepoSlug = [string]$event.repository.full_name
-      }
+function Get-EventPayload {
+  if ($EventPayloadPath) {
+    if (-not (Test-Path $EventPayloadPath)) {
+      throw "EventPayloadPath not found: $EventPayloadPath"
     }
 
-    if ($event.issue -and $event.issue.pull_request) {
-      return [pscustomobject]@{
-        Number = [int]$event.issue.number
-        Body = [string]$event.issue.body
-        RepoSlug = [string]$event.repository.full_name
-      }
+    return Get-Content $EventPayloadPath -Raw | ConvertFrom-Json
+  }
+
+  if ($env:GITHUB_EVENT_PATH -and (Test-Path $env:GITHUB_EVENT_PATH)) {
+    return Get-Content $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
+  }
+
+  return $null
+}
+
+# Supports pull_request event payloads.
+function Get-PullRequestContext {
+  $event = Get-EventPayload
+  if (-not $event) {
+    return $null
+  }
+
+  $repoSlug = [string]$event.repository.full_name
+
+  if ($event.pull_request) {
+    return [pscustomobject]@{
+      Number = [int]$event.pull_request.number
+      Body = [string]$event.pull_request.body
+      RepoSlug = $repoSlug
+      BaseRef = [string]$event.pull_request.base.ref
     }
   }
 
@@ -255,13 +273,10 @@ function Get-PullRequestContext {
 }
 
 function Resolve-IssueNumber {
-  param(
-    [string]$ExplicitIssueNumber,
-    [object]$PullRequestContext
-  )
+  param([object]$PullRequestContext)
 
-  if ($ExplicitIssueNumber) {
-    return $ExplicitIssueNumber.TrimStart('#')
+  if ($IssueNumber) {
+    return $IssueNumber.TrimStart('#')
   }
 
   if ($PullRequestContext -and $PullRequestContext.Body) {
@@ -274,48 +289,151 @@ function Resolve-IssueNumber {
     }
   }
 
-  throw 'Linked issue is required for PR validation.'
+  throw 'Linked issue is required for PR validation. Declare `Linked issue: #<number>` in the PR body or pass -IssueNumber explicitly for local verification.'
 }
 
-function Resolve-LocalReviewPath {
+function Resolve-ReviewResolutionPath {
   param(
-    [string]$ExplicitPath,
+    [object]$PullRequestContext,
     [string]$ResolvedIssueNumber
   )
 
-  if ($ExplicitPath) {
-    return $ExplicitPath
+  if ($ReviewResolutionFile) {
+    return $ReviewResolutionFile
   }
 
+  $candidates = @()
   if ($ResolvedIssueNumber) {
-    return Join-Path 'workspace/handoffs' ("local-review-issue-{0}.md" -f $ResolvedIssueNumber)
+    $candidates += Join-Path 'workspace/handoffs' ("review-resolution-issue-{0}.md" -f $ResolvedIssueNumber)
   }
 
-  throw 'local_review_recorded requires a local-review-issue-<issue>.md file.'
+  if ($PullRequestContext) {
+    $candidates += Join-Path 'workspace/handoffs' ("review-resolution-{0}.md" -f $PullRequestContext.Number)
+  }
+
+  foreach ($candidate in ($candidates | Select-Object -Unique)) {
+    if (Test-Path $candidate) {
+      return $candidate
+    }
+  }
+
+  throw 'local_pre_pr_review requires a checked-in review record. Use workspace/handoffs/review-resolution-issue-<issue>.md or pass -ReviewResolutionFile explicitly.'
 }
 
-function Assert-LocalReviewRecord {
+function Get-ReviewRecordField {
+  param(
+    [string]$Content,
+    [string]$Field
+  )
+
+  $pattern = "(?im)^\s*-\s*{0}:\s*(.+?)\s*$" -f [regex]::Escape($Field)
+  $match = [regex]::Match($Content, $pattern)
+  if ($match.Success) {
+    return $match.Groups[1].Value.Trim()
+  }
+
+  return ''
+}
+
+function Assert-ReviewResolutionRecord {
   param(
     [string]$Path,
-    [string]$ResolvedIssueNumber,
-    [string]$RequiredStatus
+    [string]$ExpectedIssueNumber
   )
 
   if (-not (Test-Path $Path)) {
-    throw "Missing local review record: $Path"
+    throw "Missing review resolution record: $Path"
   }
 
   $content = Get-Content $Path -Raw
-  if (
-    $content -notmatch ("Issue:\s*#?{0}\b" -f [regex]::Escape($ResolvedIssueNumber)) -or
-    $content -notmatch 'Review Type:\s*local pre-PR review' -or
-    $content -notmatch 'Reviewer:' -or
-    $content -notmatch 'Findings:' -or
-    $content -notmatch 'Resolution:' -or
-    $content -notmatch 'Evidence:' -or
-    $content -notmatch ("Status:\s*{0}\b" -f [regex]::Escape($RequiredStatus))
-  ) {
-    throw 'Local review record must include Issue, Review Type, Reviewer, Findings, Resolution, Evidence, and the required Status.'
+  $issueField = Get-ReviewRecordField -Content $content -Field 'Issue'
+  $reviewType = Get-ReviewRecordField -Content $content -Field 'Review Type'
+  $resolution = Get-ReviewRecordField -Content $content -Field 'Resolution'
+  $evidence = Get-ReviewRecordField -Content $content -Field 'Evidence'
+  $status = Get-ReviewRecordField -Content $content -Field 'Status'
+
+  if (-not $issueField -or -not $reviewType -or -not $resolution -or -not $evidence -or -not $status) {
+    throw 'Review resolution record must include Issue, Review Type, Resolution, Evidence, and Status fields.'
+  }
+
+  if ($ExpectedIssueNumber) {
+    if ($issueField -notmatch '#?(\d+)') {
+      throw 'Review resolution record Issue field must contain an issue number.'
+    }
+
+    if ($Matches[1] -ne $ExpectedIssueNumber) {
+      throw "Review resolution record Issue field must match linked issue #$ExpectedIssueNumber."
+    }
+  }
+
+  $acceptedReviewTypes = Get-ConfigList -Path $ReviewGatesPath -Key 'accepted_local_review_types'
+  if (($acceptedReviewTypes | ForEach-Object { $_.ToLowerInvariant() }) -notcontains $reviewType.ToLowerInvariant()) {
+    throw "Review resolution record Review Type '$reviewType' is not accepted."
+  }
+
+  $acceptedStatuses = Get-ConfigList -Path $ReviewGatesPath -Key 'accepted_local_review_statuses'
+  if (($acceptedStatuses | ForEach-Object { $_.ToLowerInvariant() }) -notcontains $status.ToLowerInvariant()) {
+    throw "Review resolution record Status '$status' is not accepted."
+  }
+}
+
+function Get-RemoteJobRecord {
+  param(
+    [string]$Path,
+    [string]$ResolvedIssueNumber
+  )
+
+  if (-not (Test-Path $Path)) {
+    return $null
+  }
+
+  $raw = Get-Content $Path -Raw
+  if (-not $raw.Trim()) {
+    return $null
+  }
+
+  try {
+    $payload = $raw | ConvertFrom-Json
+  } catch {
+    throw 'remote-jobs.json must contain valid JSON.'
+  }
+
+  foreach ($job in @($payload.jobs)) {
+    if ([string]$job.issue_number -eq [string]$ResolvedIssueNumber) {
+      return $job
+    }
+  }
+
+  return $null
+}
+
+function Assert-RemoteExecutionEvidence {
+  param(
+    [string]$Path,
+    [string]$ExpectedIssueNumber,
+    [object]$RemoteJob
+  )
+
+  $content = Get-Content $Path -Raw
+  $worker = Get-ReviewRecordField -Content $content -Field 'Worker'
+  $branch = Get-ReviewRecordField -Content $content -Field 'Branch'
+  $jobId = Get-ReviewRecordField -Content $content -Field 'Job Id'
+  $outputSummary = Get-ReviewRecordField -Content $content -Field 'Agent Output Summary'
+
+  if (-not $worker -or -not $branch -or -not $jobId -or -not $outputSummary) {
+    throw "Issue #$ExpectedIssueNumber has remote execution state and requires Worker, Branch, Job Id, and Agent Output Summary in the local review record."
+  }
+
+  if ($RemoteJob.worker_host -and $worker -ne [string]$RemoteJob.worker_host) {
+    throw "Review resolution record Worker field must match the execution worker for issue #$ExpectedIssueNumber."
+  }
+
+  if ($RemoteJob.branch -and $branch -ne [string]$RemoteJob.branch) {
+    throw "Review resolution record Branch field must match the remote execution branch for issue #$ExpectedIssueNumber."
+  }
+
+  if ($RemoteJob.job_id -and $jobId -ne [string]$RemoteJob.job_id) {
+    throw "Review resolution record Job Id field must match the remote execution job for issue #$ExpectedIssueNumber."
   }
 }
 
@@ -410,41 +528,39 @@ if (-not (Test-Path 'memory/active-context.md') -or -not (Test-Path 'memory/issu
   throw 'Required memory files are missing.'
 }
 
-if (-not (Test-Path 'ops/review-gates.yaml')) {
+if (-not (Test-Path $ReviewGatesPath)) {
   throw 'Missing review gate configuration.'
 }
 
-$policyPath = 'ops/project-policy.yaml'
-$policy = Get-Content $policyPath -Raw
-if ($policy -notmatch 'require_local_pr_review:\s*true') {
-  throw 'Project policy must require local PR review.'
+if (-not (Get-ConfigBoolean -Path $ProjectPolicyPath -Key 'require_local_pre_pr_review')) {
+  throw 'Project policy must require local pre-PR review.'
 }
 
 $pullRequestContext = Get-PullRequestContext
-$resolvedIssueNumber = Resolve-IssueNumber -ExplicitIssueNumber $IssueNumber -PullRequestContext $pullRequestContext
+$resolvedIssueNumber = Resolve-IssueNumber -PullRequestContext $pullRequestContext
 
 $ledger = Get-Content 'memory/issue-ledger.md' -Raw
 if ($ledger -notmatch "#$resolvedIssueNumber\b") {
   throw "Linked issue #$resolvedIssueNumber is not present in memory/issue-ledger.md."
 }
 
-$requireTruthDocs = Get-ConfigBoolean -Path $policyPath -Key 'require_truth_docs'
-$failOnUnmapped = Get-ConfigBoolean -Path $policyPath -Key 'fail_on_unmapped_production_paths'
+$requireTruthDocs = Get-ConfigBoolean -Path $ProjectPolicyPath -Key 'require_truth_docs'
+$failOnUnmapped = Get-ConfigBoolean -Path $ProjectPolicyPath -Key 'fail_on_unmapped_production_paths'
 
 $truthRegistry = @()
 $truthMap = $null
 if ($requireTruthDocs) {
-  if (-not (Test-Path 'ops/doc-truth-registry.yaml') -or -not (Test-Path 'ops/doc-truth-map.yaml')) {
+  if (-not (Test-Path $DocTruthRegistryPath) -or -not (Test-Path $DocTruthMapPath)) {
     throw 'Truth-doc enforcement is enabled but registry or map is missing.'
   }
 
-  $truthRegistry = Get-DocTruthRegistry -Path 'ops/doc-truth-registry.yaml'
-  $truthMap = Get-DocTruthMap -Path 'ops/doc-truth-map.yaml'
+  $truthRegistry = Get-DocTruthRegistry -Path $DocTruthRegistryPath
+  $truthMap = Get-DocTruthMap -Path $DocTruthMapPath
 }
 
-$changed = Get-ChangedFiles -Override $ChangedFilesOverride -SkipGitInspection:$SkipGitDiff
+$changed = Get-ChangedFiles -Override $ChangedFilesOverride -SkipGitInspection:$SkipGitDiff -PullRequestContext $pullRequestContext
 
-if (Get-ConfigBoolean -Path $policyPath -Key 'require_memory_updates') {
+if (Get-ConfigBoolean -Path $ProjectPolicyPath -Key 'require_memory_updates') {
   $relevantForMemory = if ($requireTruthDocs -and $truthMap) {
     (Get-ChangedContext -ChangedFiles $changed -Registry $truthRegistry -Map $truthMap).production_changed
   } else {
@@ -461,15 +577,15 @@ if ($requireTruthDocs) {
   Assert-TruthDocumentSync -ChangedFiles $changed -Registry $truthRegistry -Map $truthMap -FailOnUnmapped $failOnUnmapped
 }
 
-$requiredGates = Get-ConfigList -Path 'ops/review-gates.yaml' -Key 'required_gates'
-if (($requiredGates -contains 'local_review_recorded') -and -not $SkipLocalReview) {
-  $requiredStatus = Get-ConfigValue -Path 'ops/review-gates.yaml' -Key 'required_local_review_status'
-  if (-not $requiredStatus) {
-    throw 'review-gates.yaml must define required_local_review_status.'
-  }
+$requiredGates = Get-ConfigList -Path $ReviewGatesPath -Key 'required_gates'
+if ($requiredGates -contains 'local_pre_pr_review' -or $requiredGates -contains 'review_resolution_recorded') {
+  $resolutionPath = Resolve-ReviewResolutionPath -PullRequestContext $pullRequestContext -ResolvedIssueNumber $resolvedIssueNumber
+  Assert-ReviewResolutionRecord -Path $resolutionPath -ExpectedIssueNumber $resolvedIssueNumber
 
-  $reviewPath = Resolve-LocalReviewPath -ExplicitPath $LocalReviewFile -ResolvedIssueNumber $resolvedIssueNumber
-  Assert-LocalReviewRecord -Path $reviewPath -ResolvedIssueNumber $resolvedIssueNumber -RequiredStatus $requiredStatus
+  $remoteJob = Get-RemoteJobRecord -Path $RemoteJobsPath -ResolvedIssueNumber $resolvedIssueNumber
+  if ($remoteJob) {
+    Assert-RemoteExecutionEvidence -Path $resolutionPath -ExpectedIssueNumber $resolvedIssueNumber -RemoteJob $remoteJob
+  }
 }
 
-Write-Host 'Pre-PR checks passed. Local PR review evidence is present.'
+Write-Host 'Pre-PR checks passed. Local pre-PR review evidence is recorded.'

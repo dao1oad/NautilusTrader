@@ -16,7 +16,7 @@ $requiredPhrases = @(
   'scripts/check-governance.ps1',
   'scripts/init-project.sh',
   'scripts/check-governance.sh',
-  'local PR review',
+  'local pre-PR review',
   'minimal confirmation list',
   'copy the template directory'
 )
@@ -26,12 +26,4 @@ foreach ($phrase in $requiredPhrases) {
     Write-Error ("Startup prompt is missing phrase: " + $phrase)
     exit 1
   }
-}
-
-$readme = Get-Content 'README.md' -Raw
-$projectInit = Get-Content 'PROJECT_INIT.md' -Raw
-
-if ($readme -notmatch 'project-bootstrap-prompt.md' -or $projectInit -notmatch 'project-bootstrap-prompt.md') {
-  Write-Error 'README.md and PROJECT_INIT.md must explain how to use the startup prompt.'
-  exit 1
 }

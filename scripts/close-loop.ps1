@@ -16,19 +16,12 @@ if ($IssueNumber) {
   $lines = Get-Content 'memory\issue-ledger.md'
   $matchPrefix = "| #$IssueNumber |"
   $found = $false
-  $prCell = if ($PrNumber) { "#$PrNumber" } else { 'TBD' }
   $updatedLines = foreach ($line in $lines) {
     if ($line.StartsWith($matchPrefix)) {
       $found = $true
       $cells = $line.Trim('|').Split('|') | ForEach-Object { $_.Trim() }
-      if ($cells.Count -ge 8) {
-        if ($PrNumber) {
-          $prCell = "#$PrNumber"
-        } elseif ($cells[6]) {
-          $prCell = $cells[6]
-        }
-
-        "| {0} | {1} | {2} | {3} | merged | {4} | {5} | Archived |" -f $cells[0], $cells[1], $cells[2], $cells[3], $cells[5], $prCell
+      if ($cells.Count -ge 12) {
+        "| {0} | {1} | {2} | {3} | merged | {4} | merged | {5} | {6} | {7} | #{8} | Archived |" -f $cells[0], $cells[1], $cells[2], $cells[3], $cells[5], $cells[7], $cells[8], $cells[9], $PrNumber
       } else {
         $line
       }
@@ -40,7 +33,7 @@ if ($IssueNumber) {
   if ($found) {
     Set-Content -Path 'memory\issue-ledger.md' -Value $updatedLines
   } else {
-    Add-Content -Path 'memory\issue-ledger.md' -Value ("`n| #{0} | Closed issue | Medium | None | merged | No | {1} | Archived |" -f $IssueNumber, $prCell)
+    Add-Content -Path 'memory\issue-ledger.md' -Value ("`n| #{0} | Closed issue | Medium | None | merged | No | merged | local | n/a | n/a | #{1} | Archived |" -f $IssueNumber, $PrNumber)
   }
 }
 

@@ -8,12 +8,15 @@ $smokes = @(
   'tests\smoke\test-pr-close-loop-scripts.ps1',
   'tests\smoke\test-github-templates.ps1',
   'tests\smoke\test-template-docs.ps1',
-  'tests\smoke\test-pr-review-enforcement.ps1',
+  'tests\smoke\test-pre-pr-review-signals.ps1',
   'tests\smoke\test-branch-protection-enforcement.ps1',
   'tests\smoke\test-issue-dependency-planning.ps1',
   'tests\smoke\test-truth-doc-governance.ps1',
   'tests\smoke\test-truth-doc-enforcement.ps1',
-  'tests\smoke\test-startup-prompt.ps1'
+  'tests\smoke\test-startup-prompt.ps1',
+  'tests\smoke\test-main-agent-startup-prompt.ps1',
+  'tests\smoke\test-remote-execution-integration.ps1',
+  'tests\smoke\test-remote-execution-runtime.ps1'
 )
 
 $powershellExe = if (Get-Command 'powershell' -ErrorAction SilentlyContinue) {

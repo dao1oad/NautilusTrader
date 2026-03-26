@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "issue_number": 9,
+      "title": "Phase 1: admin console read-only operations surfaces",
+      "packet_path": "workspace/issue-packets/issue-9.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-9",
+      "branch": "codex/issue-9-phase-1-admin-console-read-only-operations-surfaces",
+      "task_id": "issue-9-phase-1-admin-console-read-only-operations-surfaces",
+      "job_id": "2026-03-26T08-12-14-898Z-29873ca7",
+      "tmux_session": "codex-orchestrator-issue-9-20260326161214",
+      "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-9.prompt.md",
+      "manifest_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/manifest.json",
+      "artifact_root": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7",
+      "log_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/runner.ndjson",
+      "execution_status": "running",
+      "summary": "Using packaged fallback codex.orchestrator.json (compatibility path). Run `codex-orchestrator init codex` to pin repo-local config.",
+      "files_modified": [],
+      "last_synced_at": "2026-03-26T16:12:31.8046192+08:00",
+      "remote_status": "in_progress"
+    }
+  ]
+}
+

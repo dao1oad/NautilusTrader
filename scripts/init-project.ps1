@@ -40,7 +40,7 @@ Write-Host 'Remote hardening checklist:'
 Write-Host '- Enable branch protection on main'
 Write-Host '- Require pull request before merge'
 Write-Host '- Require required checks'
-Write-Host '- Require mandatory local PR review before merge'
+Write-Host '- Require local pre-PR review before opening pull requests'
 Write-Host '- Bind ops/doc-truth-registry.yaml to the project truth documents'
 Write-Host '- Bind ops/doc-truth-map.yaml to the project code layout'
 

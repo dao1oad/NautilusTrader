@@ -5,11 +5,13 @@ main_agent:
   responsibility: orchestration
 
 subagent:
-  execution: codex_cloud
+  execution: local
   model: gpt-5.4
   reasoning: xhigh
   responsibility: bounded_issue_execution
 
 review_agent:
-  execution: local_pre_pr_review
+  execution: local
   gate_required: true
+  stage: pre_pr
+  responsibility: mandatory_local_review

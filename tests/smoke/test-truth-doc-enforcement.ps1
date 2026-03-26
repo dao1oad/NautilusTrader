@@ -1,8 +1,7 @@
 $ledgerPath = 'memory\issue-ledger.md'
 $originalLedger = Get-Content $ledgerPath -Raw
 $prePrCheckScript = Join-Path 'scripts' 'pre-pr-check.ps1'
-$localReviewFile = Join-Path 'workspace\handoffs' 'local-review-issue-101.md'
-$originalLocalReview = if (Test-Path $localReviewFile) { Get-Content $localReviewFile -Raw } else { $null }
+$reviewResolutionFile = Join-Path 'workspace/handoffs' 'review-resolution-test-101.md'
 
 function Invoke-ExpectFailure {
   param(
@@ -11,7 +10,7 @@ function Invoke-ExpectFailure {
   )
 
   try {
-    & $prePrCheckScript -IssueNumber 101 -LocalReviewFile $localReviewFile -ChangedFilesOverride $ChangedFiles
+    & $prePrCheckScript -IssueNumber 101 -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride $ChangedFiles
     Write-Error $Message
     exit 1
   } catch {
@@ -26,7 +25,7 @@ function Invoke-ExpectSuccess {
   )
 
   try {
-    & $prePrCheckScript -IssueNumber 101 -LocalReviewFile $localReviewFile -ChangedFilesOverride $ChangedFiles
+    & $prePrCheckScript -IssueNumber 101 -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride $ChangedFiles
   } catch {
     Write-Error ($Message + ' :: ' + $_.Exception.Message)
     exit 1
@@ -34,25 +33,24 @@ function Invoke-ExpectSuccess {
 }
 
 try {
+  Set-Content -Path $reviewResolutionFile -Value @'
+# Review Resolution
+
+- Issue: #101
+- PR: N/A before PR creation
+- Review Type: local pre-PR review
+- Reviewer: local-maintainer
+- Resolution: Truth-doc coverage verified.
+- Evidence: Smoke validation.
+- Status: accepted
+'@
+
   Set-Content -Path $ledgerPath -Value @'
 # Issue Ledger
 
-| Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| #101 | Truth doc validation | High | None | ready | No | TBD | Dispatch subagent |
-'@
-
-  Set-Content -Path $localReviewFile -Value @'
-# Local PR Review
-
-- Issue: #101
-- Review Type: local pre-PR review
-- Reviewer: smoke test
-- Scope: truth-doc enforcement
-- Findings: none
-- Resolution: accepted
-- Evidence: smoke
-- Status: approved
+| Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #101 | Truth doc validation | High | None | ready | No | idle | TBD | TBD | TBD | TBD | Dispatch subagent |
 '@
 
   Invoke-ExpectFailure -ChangedFiles @('scripts\build-workset.ps1', 'memory\active-context.md') -Message 'Production code change without truth-doc update must fail.'
@@ -62,11 +60,6 @@ try {
   Invoke-ExpectSuccess -ChangedFiles @('memory\progress-log.md') -Message 'Memory-only change should pass without truth-doc update.'
   Invoke-ExpectFailure -ChangedFiles @('engine\main.ts', 'memory\active-context.md', 'docs\system-truth\runtime-flows.md') -Message 'Unmapped production path must fail by default.'
 } finally {
-  [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $ledgerPath), $originalLedger, [System.Text.UTF8Encoding]::new($false))
-
-  if ($originalLocalReview -ne $null) {
-    [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $localReviewFile), $originalLocalReview, [System.Text.UTF8Encoding]::new($false))
-  } elseif (Test-Path $localReviewFile) {
-    Remove-Item $localReviewFile -Force
-  }
+  Set-Content -Path $ledgerPath -Value $originalLedger
+  Remove-Item -Path $reviewResolutionFile -Force -ErrorAction SilentlyContinue
 }

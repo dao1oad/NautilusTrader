@@ -13,8 +13,8 @@ if ($missing.Count -gt 0) {
 }
 
 $pr = Get-Content '.github\PULL_REQUEST_TEMPLATE.md' -Raw
-if ($pr -notmatch 'local PR review' -or $pr -notmatch 'memory') {
-  Write-Error 'The PR template must require local PR review and memory update disclosure.'
+if ($pr -notmatch 'local pre-PR review' -or $pr -notmatch 'memory') {
+  Write-Error 'The PR template must require local pre-PR review and memory update disclosure.'
   exit 1
 }
 

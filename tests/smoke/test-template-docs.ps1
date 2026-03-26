@@ -1,11 +1,10 @@
 $requiredPhrases = @(
   'main only via pull request',
-  'local PR review',
+  'local pre-PR review',
   'issue-ledger',
   'init-project.ps1',
   'check-governance.ps1',
-  'init-project.sh',
-  'check-governance.sh'
+  'start-main-agent.ps1'
 )
 
 $docs = @(

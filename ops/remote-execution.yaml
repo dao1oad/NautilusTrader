@@ -1,0 +1,41 @@
+enabled: true
+
+worker:
+  transport: local_process
+  host: localhost
+  repo_path: /root/NautilusTrader
+  worktree_root: /root/NautilusTrader/.worktrees
+  dispatch_root: /root/NautilusTrader/.dispatch
+  branch_prefix: codex
+  codex_orchestrator_bin: codex-orchestrator
+  runner: rlm
+
+dispatch:
+  max_parallel_jobs: 1
+  model: gpt-5.4
+  reasoning: xhigh
+  sandbox: workspace-write
+  include_files:
+    - AGENTS.md
+    - memory/active-context.md
+    - memory/product-context.md
+    - memory/repo-map.md
+    - memory/issue-ledger.md
+    - docs/system-truth/index.md
+    - ops/project-policy.yaml
+    - ops/agent-config.yaml
+    - ops/remote-execution.yaml
+    - ops/doc-truth-registry.yaml
+    - ops/doc-truth-map.yaml
+    - workspace/runbooks/issues-snapshot.json
+
+observability:
+  mode: local_agentboard
+  access: local_http
+  control: full
+  bind_host: 127.0.0.1
+  bind_port: 8088
+  url: http://127.0.0.1:8088
+  agentboard_bin: agentboard
+  log_path: workspace/runbooks/agentboard.log
+  pid_path: workspace/runbooks/agentboard.pid

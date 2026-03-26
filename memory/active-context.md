@@ -6,11 +6,11 @@
 
 ## Current Phase
 
-- Phase 1B 已通过 PR `#34` 合并到 `main`；原本承接 close-loop 的 `#35` 已被 supersede。当前所有已完成变更已收敛到 PR `#36`，并在同一 PR 上同步进行治理迁移：从远端 Codex review gate 切换到本地 PR review gate。
+- PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
 
 ## Blockers
 
-- 无新的人工决策阻塞；PR `#36` 当前只等待新治理规则下的 CI/build matrix 收口
+- 无新的人工决策阻塞；当前阻塞仅限于把纯本机运行态变更 rebase 到最新 `origin/main` 并完成一次全量验证
 
 ## Confirmed Facts
 
@@ -89,12 +89,14 @@
 - 2026-03-25 已关闭 PR `#35`；原因是其变更已完整包含在 `#36` 中，后者成为唯一面向 `main` 的主线 PR。
 - 2026-03-25 PR `#36` 已修复 `nautilus_trader/admin/app.py` 的 Ruff/complexity 失败，并进一步修复 `apps/admin-web/src/features/logs/logs-page.tsx` 被仓库级 `.gitignore` 误忽略导致的远端 `frontend-admin-web` 失败。
 - 2026-03-25 新 policy 下，PR `#36` 已补入 `workspace/handoffs/local-review-issue-15.md` 作为本地 PR review 证据，后续只需等待新的 `pr-gate/build` 基于该规则收口。
+- 2026-03-26 已将仓库治理运行态切换为纯本机模式：`codex-orchestrator` 由本地主 agent 会话驱动，issue 派发默认落到本机 `.worktrees/`，`agentboard` 运行在本机 `127.0.0.1:8088`，不再依赖远程 worker SSH/DNS 解析。
+- 2026-03-26 纯本机运行态新增 `ops/remote-execution.yaml`、`scripts/start-main-agent.ps1`、`scripts/start-local-agentboard.ps1`、`scripts/dispatch-issue.ps1`、`scripts/sync-remote-execution.ps1` 与对应 smoke 覆盖；`AGENTS.md` 也已切换到本机启动路径。
 
 ## Next Actions
 
-1. 等待 PR `#36` 在新本地-review治理下的 `pr-gate` 与 build matrix 收口，并直接完成合并。
+1. 完成纯本机运行态相对最新 `origin/main` 的 rebase、运行态重建与 smoke 验证。
 2. 将 issue `#9` 继续保持为 Phase 1 umbrella close-out gate，不直接承载功能实现。
-3. 在不触碰 `/root/NautilusTrader` 脏工作树的前提下，继续把远端 `main` 作为唯一集成入口。
+3. 以本机 `codex` 会话作为唯一主编排入口，后续只从当前仓库目录启动并继续派发本机 subagent worktree。
 
 ## Repository
 
@@ -102,4 +104,4 @@
 
 ## Last Merge Update
 
-- 2026-03-25: Merged PR #34 to main and moved the next concrete execution target from #14 to #15.
+- 2026-03-26: Rebasing the pure-local runtime migration onto the latest `main` so the local-only governance stack remains the default operating model.

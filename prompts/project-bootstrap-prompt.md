@@ -3,7 +3,6 @@
 将下面整段内容粘贴给 Codex 或其他兼容 agent，用于在**复制当前模板目录**后的新项目中完成治理框架搭建和初始化。
 
 English anchors for tooling:
-
 - `copy the template directory`
 - `minimal confirmation list`
 
@@ -18,9 +17,9 @@ English anchors for tooling:
 - 默认开启治理
 - 默认开启 truth-doc 文档真值门禁
 - 默认保持 `main only via pull request`
-- 默认要求 merge 前完成 `local PR review`
-- 默认要求 `local PR review`
-- 默认要求本地 review 记录闭环
+- 默认要求开 PR 前完成 `local pre-PR review`
+- 默认启用本机 `codex-orchestrator + agentboard`
+- 默认要求 review 闭环记录
 
 请按下面顺序执行：
 
@@ -61,7 +60,7 @@ English anchors for tooling:
 - 分支保护
 - required checks
 - 仅通过 PR 合并到 `main`
-- 本地 PR review 门禁
+- conversation resolution
 
 6. 最终输出必须包含：
 - 已自动完成的初始化项
@@ -69,6 +68,7 @@ English anchors for tooling:
 - minimal confirmation list
 - 当前 truth-doc 绑定结果
 - 当前 issue 编排入口是否可用
+- 当前本机执行入口是否可用
 - 下一步建议命令或动作
 
 额外约束：

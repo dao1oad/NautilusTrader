@@ -5,18 +5,6 @@
 - 当前代码树已包含以下 adapter 集成边界：`architect_ax`、`betfair`、`binance`、`bitmex`、`blockchain`、`bybit`、`databento`、`deribit`、`dydx`、`hyperliquid`、`kraken`、`okx`、`polymarket`、`sandbox`、`tardis`
 - 集成说明位于 `docs/integrations/`，对应行为验证主要位于 `tests/integration_tests/adapters/`
 
-## Admin Control Plane Integration
-
-- `Phase 0` 的前后端集成是本机 `localhost` 开发态双进程：
-  - `apps/admin-web` 通过 `Vite` dev server 提供浏览器入口
-  - `nautilus_trader/admin` 提供 admin REST / WebSocket contract
-- 浏览器与后端的集成边界固定在 admin DTO 与最小事件契约；前端不得直接读取 `live`、`execution`、`portfolio`、`risk`、`persistence` 内部对象
-- 当前浏览器侧实现通过 `TanStack Router` 组织多页面 shell，通过 `TanStack Query` 管理只读查询缓存，并通过 invalidation bus 把最小 WS 事件契约桥接到 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八组 query 失效语义
-- 当前前后端已接通 `Overview`、`Nodes`、`Strategies`、`Adapters`、`Orders`、`Positions`、`Accounts`、`Logs` 八个只读页面
-- `Orders`、`Positions`、`Accounts`、`Logs` 集成当前统一走 bounded read-only 查询：浏览器默认请求 `limit=100`，后端对 `limit` 做 `1..500` 校验，避免无界拉取
-- `Logs` 集成当前保留显式 degraded-state 验证入口；后端可返回 partial snapshot 与 `SectionError`，前端必须把这类状态直接展示，而不是静默吞掉
-- 当前阶段仍只承诺开发态集成，不把静态资源托管、wheel 打包、桌面壳、Playwright、多用户或远程部署视为已进入当前集成范围
-
 ## Toolchain Integrations
 
 - Rust/Cargo workspace、Cython、PyO3、Poetry build backend、uv lockfile、Docker、Codecov、Codspeed 与 GitHub Actions 共同组成工程工具链
@@ -24,18 +12,17 @@
 
 ## Repository Governance Integrations
 
-- 使用 `gh` 同步 issues、审查 reviews、读取 branch protection
-- 使用仓库内 `workspace/handoffs/local-review-issue-*.md` 记录并传递本地 PR review 结果
+- 使用 `gh` 同步 issues、读取 branch protection
 - GitHub Actions 继续负责 `governance-check` 和 `pr-gate`
 - `build.yml` 与 `codeql-analysis.yml` 需要对齐受保护分支 `main`；CodeQL 覆盖面向 `main` 的 PR，供应链检查覆盖 push 到 `main`
 - 远端 `main` 保护需启用 PR review、required checks、conversation resolution 和 admin enforcement
-- `pr-gate` 会在 PR 更新后重跑，并从 PR head 读取 linked issue、本地 review 记录、memory 与 truth-doc 证据
+- `codex-orchestrator` 在本机 worktree 执行 bounded issue packet，`agentboard` 通过 `http://127.0.0.1:8088` 提供会话观测
 
 ## Codex
 
 - 主 agent 本地执行
-- subagent 云端执行
-- review 在本地作为合并门槛，通过 issue 级 review 记录文件体现
+- bounded issue 执行在本机 `codex-orchestrator`
+- review 在本地 pre-PR 阶段完成，并通过 review record 落盘
 
 ## Current Status
 

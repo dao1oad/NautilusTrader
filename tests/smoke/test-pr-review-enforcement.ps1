@@ -3,8 +3,7 @@ $script = Get-Content 'scripts\pre-pr-check.ps1' -Raw
 $ledgerPath = 'memory\issue-ledger.md'
 $originalLedger = Get-Content $ledgerPath -Raw
 $prePrCheckScript = Join-Path 'scripts' 'pre-pr-check.ps1'
-$localReviewFile = Join-Path 'workspace\handoffs' 'local-review-issue-1.md'
-$originalLocalReview = if (Test-Path $localReviewFile) { Get-Content $localReviewFile -Raw } else { $null }
+$reviewResolutionFile = Join-Path 'workspace/handoffs' 'review-resolution-template.md'
 $tempRoot = [System.IO.Path]::GetTempPath()
 
 if ($workflow -match '-SkipGitDiff') {
@@ -12,38 +11,48 @@ if ($workflow -match '-SkipGitDiff') {
   exit 1
 }
 
-if ($workflow -match 'GH_TOKEN') {
-  Write-Error 'pr-gate.yml must not require GH_TOKEN for local review validation.'
+if ($workflow -notmatch 'GH_TOKEN') {
+  Write-Error 'pr-gate.yml must provide GH_TOKEN for remote review checks.'
   exit 1
 }
 
-if ($workflow -notmatch 'pull_request') {
-  Write-Error 'pr-gate.yml must continue to validate pull_request events.'
+if ($workflow -notmatch 'pull_request_review') {
+  Write-Error 'pr-gate.yml must rerun on pull_request_review events so submitted remote review can unblock the gate.'
   exit 1
 }
 
-if ($workflow -match 'pull_request_review') {
-  Write-Error 'pr-gate.yml must not depend on pull_request_review events after removing remote review.'
+if ($workflow -notmatch 'submitted') {
+  Write-Error 'pr-gate.yml must listen for submitted review events so remote review re-evaluates the PR gate.'
   exit 1
 }
 
-if ($workflow -match 'issue_comment') {
-  Write-Error 'pr-gate.yml must not depend on issue_comment events after removing remote review.'
+if ($workflow -notmatch 'issue_comment') {
+  Write-Error 'pr-gate.yml must rerun on PR issue_comment events so Codex comment-only reviews can unblock the gate.'
   exit 1
 }
 
-if ($workflow -notmatch 'github\.event\.pull_request\.head\.sha') {
-  Write-Error 'pr-gate.yml must checkout the PR head SHA during pull_request validation.'
+if ($workflow -notmatch 'created') {
+  Write-Error 'pr-gate.yml must listen for created issue_comment events so new Codex comments refresh the PR gate.'
   exit 1
 }
 
-if ($script -notmatch 'Linked issue' -or $script -notmatch 'local-review-issue-') {
-  Write-Error 'pre-pr-check.ps1 must enforce issue linkage and issue-scoped local review evidence.'
+if ($workflow -notmatch 'refs/pull/' -or $workflow -notmatch 'github\.event\.issue\.number') {
+  Write-Error 'pr-gate.yml must checkout the commented PR head for issue_comment events instead of defaulting to main.'
   exit 1
 }
 
-if ($script -notmatch 'local_review_recorded' -or $script -notmatch 'required_local_review_status') {
-  Write-Error 'pre-pr-check.ps1 must enforce configured local review record evidence.'
+if ($script -notmatch 'reviewDecision' -or $script -notmatch 'isResolved') {
+  Write-Error 'pre-pr-check.ps1 must validate remote review state and thread resolution.'
+  exit 1
+}
+
+if ($script -notmatch 'Linked issue' -or $script -notmatch 'required_review_actor') {
+  Write-Error 'pre-pr-check.ps1 must enforce issue linkage and a configured review actor.'
+  exit 1
+}
+
+if ($script -notmatch 'review-resolution-' -or $script -notmatch 'review_resolution_recorded') {
+  Write-Error 'pre-pr-check.ps1 must enforce review resolution record evidence.'
   exit 1
 }
 
@@ -68,7 +77,17 @@ function gh {
     [string[]]$Args
   )
 
-  throw ("gh should not be invoked during local review validation: " + ($Args -join ' '))
+  $joined = $Args -join ' '
+
+  if ($joined -like 'api graphql*') {
+    return '{"data":{"repository":{"pullRequest":{"reviewDecision":"REVIEW_REQUIRED","reviewThreads":{"nodes":[]}}}}}'
+  }
+
+  if ($joined -eq 'api repos/dao1oad/NautilusTrader/pulls/2/reviews') {
+    return '[{"state":"COMMENTED","user":{"login":"chatgpt-codex-connector[bot]"}}]'
+  }
+
+  throw ("Unexpected gh invocation: " + $joined)
 }
 
 try {
@@ -78,71 +97,87 @@ try {
 | Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | #1 | Review gate smoke validation | High | None | ready | No | TBD | Dispatch subagent |
-'@
-
-  Set-Content -Path $localReviewFile -Value @'
-# Local PR Review
-
-- Issue: #1
-- Review Type: local pre-PR review
-- Reviewer: smoke test
-- Scope: PR gate validation
-- Findings: none
-- Resolution: accepted
-- Evidence: smoke
-- Status: approved
+| #3 | Comment-only review smoke validation | High | None | ready | No | TBD | Dispatch subagent |
 '@
 
   try {
     $env:GITHUB_EVENT_PATH = $tempEventPath
-    & $prePrCheckScript -ChangedFilesOverride @('memory\active-context.md')
+    & $prePrCheckScript -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride @('memory\active-context.md')
   } catch {
-    Write-Error ('pre-pr-check.ps1 must accept a valid linked-issue local review record. :: ' + $_.Exception.Message)
+    Write-Error 'pre-pr-check.ps1 must accept a submitted remote Codex review from the GitHub Codex connector bot.'
     exit 1
   } finally {
     $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+
+    if (Test-Path $tempEventPath) {
+      Remove-Item $tempEventPath -Force
+    }
+
+    if (Test-Path Function:\gh) {
+      Remove-Item Function:\gh
+    }
   }
 
-  Set-Content -Path $localReviewFile -Value @'
-# Local PR Review
+  $tempIssueCommentEventPath = Join-Path $tempRoot 'nautilus-pr-issue-comment-event.json'
 
-- Issue: #1
-- Review Type: local pre-PR review
-- Reviewer: smoke test
-- Scope: PR gate validation
-- Findings: none
-- Resolution: accepted
-- Evidence: smoke
-- Status: pending
+  Set-Content -Path $tempIssueCommentEventPath -Value @'
+{
+  "issue": {
+    "number": 4,
+    "body": "Linked issue: #3",
+    "pull_request": {
+      "url": "https://api.github.com/repos/dao1oad/NautilusTrader/pulls/4"
+    }
+  },
+  "repository": {
+    "full_name": "dao1oad/NautilusTrader"
+  },
+  "comment": {
+    "body": "Codex Review: Didn't find any major issues. Breezy!"
+  }
+}
 '@
 
+function gh {
+  param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$Args
+  )
+
+  $joined = $Args -join ' '
+
+  if ($joined -like 'api graphql*') {
+    return '{"data":{"repository":{"pullRequest":{"reviewDecision":"REVIEW_REQUIRED","reviewThreads":{"nodes":[]}}}}}'
+  }
+
+  if ($joined -eq 'api repos/dao1oad/NautilusTrader/pulls/4/reviews') {
+    return '[]'
+  }
+
+  if ($joined -eq 'api repos/dao1oad/NautilusTrader/issues/4/comments') {
+    return '[{"body":"Codex Review: Didn''t find any major issues. Breezy!","user":{"login":"chatgpt-codex-connector"}}]'
+  }
+
+  throw ("Unexpected gh invocation: " + $joined)
+}
+
   try {
-    $env:GITHUB_EVENT_PATH = $tempEventPath
-    & $prePrCheckScript -ChangedFilesOverride @('memory\active-context.md')
-    Write-Error 'pre-pr-check.ps1 must reject local review records whose status is not approved.'
-    exit 1
+    $env:GITHUB_EVENT_PATH = $tempIssueCommentEventPath
+    & $prePrCheckScript -ReviewResolutionFile $reviewResolutionFile -ChangedFilesOverride @('memory\active-context.md')
   } catch {
-    if ($_.Exception.Message -notmatch 'required Status') {
-      Write-Error ('pre-pr-check.ps1 failed for the wrong reason when local review status is invalid. :: ' + $_.Exception.Message)
-      exit 1
-    }
+    Write-Error 'pre-pr-check.ps1 must accept a Codex connector PR comment when no submitted review exists.'
+    exit 1
   } finally {
     $env:GITHUB_EVENT_PATH = $originalGitHubEventPath
+
+    if (Test-Path $tempIssueCommentEventPath) {
+      Remove-Item $tempIssueCommentEventPath -Force
+    }
+
+    if (Test-Path Function:\gh) {
+      Remove-Item Function:\gh
+    }
   }
 } finally {
-  if (Test-Path $tempEventPath) {
-    Remove-Item $tempEventPath -Force
-  }
-
-  if (Test-Path Function:\gh) {
-    Remove-Item Function:\gh
-  }
-
-  [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $ledgerPath), $originalLedger, [System.Text.UTF8Encoding]::new($false))
-
-  if ($originalLocalReview -ne $null) {
-    [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $localReviewFile), $originalLocalReview, [System.Text.UTF8Encoding]::new($false))
-  } elseif (Test-Path $localReviewFile) {
-    Remove-Item $localReviewFile -Force
-  }
+  Set-Content -Path $ledgerPath -Value $originalLedger
 }

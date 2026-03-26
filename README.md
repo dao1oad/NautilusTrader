@@ -29,7 +29,7 @@
 
 This repository is an independent derivative workspace for extending NautilusTrader with a management UI.
 It keeps the imported upstream source tree, but its own delivery workflow still requires `main only via pull request`
-and `local PR review` before changes reach the protected branch.
+and `local pre-PR review` before changes reach the protected branch.
 
 Operational governance entry points for this repository:
 
@@ -37,14 +37,34 @@ Operational governance entry points for this repository:
 - `scripts/init-project.ps1` and `scripts/init-project.sh` are the local bootstrap entry points.
 - `scripts/check-governance.ps1` and `scripts/check-governance.sh` are the local governance validation entry points.
 - `scripts/sync-issues.ps1` / `scripts/sync-issues.sh` and `scripts/build-workset.ps1` / `scripts/build-workset.sh` are the issue sync and workset refresh entry points.
-- `prompts/project-bootstrap-prompt.md` explains how to start from the governance template and how to use the startup prompt in this repository.
+- `scripts/start-main-agent.ps1` is the one-shot startup entry for the local main agent loop.
+- `ops/remote-execution.yaml` defines the same-machine `codex-orchestrator` worker and `agentboard` observability endpoint.
+- `prompts/main-agent-startup-prompt.md` contains the ready-to-paste current-project startup prompt.
 
 If you are operating this derivative repository rather than contributing back upstream, read:
 
 - `PROJECT_INIT.md`
-- `prompts/project-bootstrap-prompt.md`
+- `prompts/main-agent-startup-prompt.md`
 - `memory/issue-ledger.md`
 - `docs/system-truth/`
+
+## Simplified Local Startup
+
+The recommended path is intentionally short:
+
+```bash
+cd /root/NautilusTrader
+codex
+```
+
+Then input `继续`, or paste the full startup prompt from `prompts/main-agent-startup-prompt.md`.
+
+That startup path boots the current repository governance stack in place:
+
+- main agent orchestration in the local repository
+- local `codex-orchestrator` for bounded issue execution
+- local `agentboard` at `http://127.0.0.1:8088`
+- local pre-PR review records before PR creation
 
 ## Introduction
 
@@ -590,7 +610,7 @@ to ensure that your contributions can be included in the project.
 
 > [!NOTE]
 >
-> Pull requests should target the `main` branch in this derivative repository. This is the protected branch where governance checks and mandatory local PR review are enforced before merge.
+> Pull requests should target the `main` branch in this derivative repository. This is the protected branch where governance checks and local pre-PR review policy are enforced before merge.
 
 Thank you again for your interest in NautilusTrader! We look forward to reviewing your contributions and working with you to improve the project.
 

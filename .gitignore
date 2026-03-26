@@ -1,6 +1,7 @@
 Thumbs.db
 .worktrees/
 worktrees/
+.dispatch/
 *.c
 *.exp
 *.lib
@@ -96,6 +97,8 @@ env/
 .null-ls*
 PERF.JSON
 output.json
+workspace/runbooks/agentboard.log
+workspace/runbooks/agentboard.pid
 
 # AI assistants and tools
 .cursorignore

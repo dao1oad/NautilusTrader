@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-  [string]$InputPath = 'workspace\runbooks\issues-snapshot.json'
+  [string]$InputPath = 'workspace\runbooks\issues-snapshot.json',
+  [string]$RemoteJobsPath = 'workspace\runbooks\remote-jobs.json'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,105 +51,62 @@ function Get-Dependencies {
     return @()
   }
 
-  $dependencies = New-Object System.Collections.Generic.List[string]
-  $lines = $Body -split "\r?\n"
-  $inDependsSection = $false
-
-  foreach ($line in $lines) {
-    $trimmed = $line.Trim()
-
-    if (-not $inDependsSection) {
-      if ($trimmed -match '^(#+\s*)?Depends on\b') {
-        $inDependsSection = $true
-      } else {
-        continue
-      }
-    } elseif ($trimmed -match '^#+\s+\S+') {
-      break
-    }
-
-    if (-not $trimmed) {
-      continue
-    }
-
-    foreach ($match in [regex]::Matches($trimmed, '#(\d+)')) {
-      $dependencies.Add($match.Groups[1].Value)
-    }
-  }
-
-  return @($dependencies | Select-Object -Unique)
+  $matches = [regex]::Matches($Body, '#(\d+)')
+  return @($matches | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
 }
 
-function Get-ExistingLedgerMetadata {
-  param([string]$LedgerPath)
+function Get-RemoteJobsRegistry {
+  param([string]$Path)
 
-  $metadata = @{}
-  if (-not (Test-Path $LedgerPath)) {
-    return $metadata
+  if (-not (Test-Path $Path)) {
+    $registry = [pscustomobject]@{
+      version = 1
+      jobs = @()
+    }
+    $registry | ConvertTo-Json -Depth 6 | Set-Content -Path $Path
+    return $registry
   }
 
-  foreach ($line in Get-Content $LedgerPath) {
-    if ($line -notmatch '^\|\s*#(?<number>\d+)\s*\|') {
-      continue
+  $raw = Get-Content $Path -Raw
+  if (-not $raw.Trim()) {
+    $registry = [pscustomobject]@{
+      version = 1
+      jobs = @()
     }
-
-    $cells = @($line.Trim('|').Split('|') | ForEach-Object { $_.Trim() })
-    if ($cells.Count -lt 8) {
-      continue
-    }
-
-    $metadata[$Matches.number] = @{
-      pr = $cells[6]
-      next = $cells[7]
-    }
+    $registry | ConvertTo-Json -Depth 6 | Set-Content -Path $Path
+    return $registry
   }
 
-  return $metadata
+  return $raw | ConvertFrom-Json
 }
 
 $issues = Get-Content $InputPath -Raw | ConvertFrom-Json
+$remoteRegistry = Get-RemoteJobsRegistry -Path $RemoteJobsPath
+$remoteJobLookup = @{}
+foreach ($job in @($remoteRegistry.jobs)) {
+  if ($null -eq $job.issue_number) {
+    continue
+  }
+
+  $remoteJobLookup[[string]$job.issue_number] = $job
+}
+
 $openIssueNumbers = @{}
 foreach ($issue in $issues) {
   $openIssueNumbers[[string]$issue.number] = $true
 }
-
-$defaultNextValues = @(
-  'Resolve dependency',
-  'Clarify scope',
-  'Dispatch subagent'
-)
-$existingLedgerMetadata = Get-ExistingLedgerMetadata -LedgerPath 'memory\issue-ledger.md'
 
 $rows = foreach ($issue in $issues) {
   $labels = @($issue.labels)
   $dependencies = Get-Dependencies -Body $issue.body
   $state = Get-IssueState -Labels $labels -Dependencies $dependencies -OpenIssueNumbers $openIssueNumbers
   $parallel = if ($state -eq 'parallel-ready') { 'Yes' } else { 'No' }
-  $defaultNext = if ($state -eq 'blocked') {
-    'Resolve dependency'
-  } elseif ($state -eq 'needs-clarification') {
-    'Clarify scope'
-  } else {
-    'Dispatch subagent'
-  }
-
-  $existing = if ($existingLedgerMetadata.ContainsKey([string]$issue.number)) {
-    $existingLedgerMetadata[[string]$issue.number]
-  } else {
-    $null
-  }
-
-  $pr = if ($existing -and $existing.pr -and $existing.pr -ne 'TBD') {
-    $existing.pr
-  } else {
-    'TBD'
-  }
-
-  $next = if (($state -eq 'ready' -or $state -eq 'parallel-ready') -and $existing -and $existing.next -and $defaultNextValues -notcontains $existing.next) {
-    $existing.next
-  } else {
-    $defaultNext
-  }
+  $remoteJob = $remoteJobLookup[[string]$issue.number]
+  $execution = if ($remoteJob -and $remoteJob.execution_status) { [string]$remoteJob.execution_status } else { 'idle' }
+  $worker = if ($remoteJob -and $remoteJob.worker_host) { [string]$remoteJob.worker_host } else { 'TBD' }
+  $jobId = if ($remoteJob -and $remoteJob.job_id) { [string]$remoteJob.job_id } else { 'TBD' }
+  $branch = if ($remoteJob -and $remoteJob.branch) { [string]$remoteJob.branch } else { 'TBD' }
+  $pr = if ($remoteJob -and $remoteJob.pr_number) { "#$($remoteJob.pr_number)" } else { 'TBD' }
 
   [pscustomobject]@{
     number = $issue.number
@@ -157,20 +115,36 @@ $rows = foreach ($issue in $issues) {
     dependencies = if ($dependencies.Count -gt 0) { ($dependencies -join ', ') } else { 'None' }
     state = $state
     parallel = $parallel
+    execution = $execution
+    worker = $worker
+    job = $jobId
+    branch = $branch
     pr = $pr
-    next = $next
+    next = if ($execution -eq 'running') {
+      'Wait for local execution'
+    } elseif ($execution -eq 'awaiting-local-review') {
+      'Complete local pre-PR review'
+    } elseif ($execution -eq 'failed') {
+      'Inspect local job'
+    } elseif ($state -eq 'blocked') {
+      'Resolve dependency'
+    } elseif ($state -eq 'needs-clarification') {
+      'Clarify scope'
+    } else {
+      'Dispatch subagent'
+    }
   }
 }
 
 $ledger = @(
   '# Issue Ledger',
   '',
-  '| Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |',
-  '| --- | --- | --- | --- | --- | --- | --- | --- |'
+  '| Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
 )
 
 foreach ($row in $rows) {
-  $ledger += "| #$($row.number) | $($row.title) | $($row.priority) | $($row.dependencies) | $($row.state) | $($row.parallel) | $($row.pr) | $($row.next) |"
+  $ledger += "| #$($row.number) | $($row.title) | $($row.priority) | $($row.dependencies) | $($row.state) | $($row.parallel) | $($row.execution) | $($row.worker) | $($row.job) | $($row.branch) | $($row.pr) | $($row.next) |"
 }
 
 $ledger | Set-Content -Path 'memory\issue-ledger.md'
@@ -205,7 +179,7 @@ Resolve GitHub issue #$($row.number) according to repository policy.
 
 ## Forbidden Scope
 
-- Remote main branch
+- Protected main branch
 - Shared governance files unless explicitly assigned
 
 ## Verification
@@ -215,7 +189,7 @@ Resolve GitHub issue #$($row.number) according to repository policy.
 
 ## Review Notes
 
-- Remote Codex review required before merge
+- Local pre-PR review record required before opening PR
 "@
 
   $path = Join-Path 'workspace\issue-packets' ("issue-{0}.md" -f $row.number)

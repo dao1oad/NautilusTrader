@@ -71,7 +71,7 @@ try {
   }
 
   $ledger = Get-Content $ledgerPath -Raw
-  if ($ledger -notmatch '\| #102 \| Dependent issue \| .* \| 101 \| blocked \|') {
+  if ($ledger -notmatch '\| #102 \| Dependent issue \| .* \| 101 \| blocked \| .* \| idle \| TBD \| TBD \| TBD \| TBD \| Resolve dependency \|') {
     Write-Error 'Dependent issue must be blocked when it references an open dependency.'
     exit 1
   }

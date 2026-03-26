@@ -10,7 +10,7 @@ pr_number=""
 summary="Merge completed."
 
 usage() {
-  cat << 'EOF'
+  cat <<'EOF'
 Usage: scripts/close-loop.sh [--issue-number N] [--pr-number N] [--summary TEXT]
 EOF
 }
@@ -37,7 +37,7 @@ while [[ $# -gt 0 ]]; do
       summary=$2
       shift 2
       ;;
-    -h | --help)
+    -h|--help)
       usage
       exit 0
       ;;
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-python3 - "$repo_root" "$issue_number" "$pr_number" "$summary" << 'PY'
+python3 - "$repo_root" "$issue_number" "$pr_number" "$summary" <<'PY'
 import datetime as dt
 import sys
 from pathlib import Path
@@ -74,20 +74,14 @@ if issue_number:
     match_prefix = f"| #{issue_number} |"
     found = False
     updated_lines: list[str] = []
-    pr_cell = f"#{pr_number}" if pr_number else "TBD"
 
     for line in lines:
         if line.startswith(match_prefix):
             found = True
             cells = [cell.strip() for cell in line.strip("|").split("|")]
-            if len(cells) >= 8:
-                if pr_number:
-                    pr_cell = f"#{pr_number}"
-                elif cells[6]:
-                    pr_cell = cells[6]
-
+            if len(cells) >= 12:
                 updated_lines.append(
-                    f"| {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | merged | {cells[5]} | {pr_cell} | Archived |",
+                    f"| {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | merged | {cells[5]} | merged | {cells[7]} | {cells[8]} | {cells[9]} | #{pr_number} | Archived |",
                 )
             else:
                 updated_lines.append(line)
@@ -98,7 +92,7 @@ if issue_number:
         issue_ledger.write_text("\n".join(updated_lines) + "\n", encoding="utf-8")
     else:
         with issue_ledger.open("a", encoding="utf-8") as fh:
-            fh.write(f"\n| #{issue_number} | Closed issue | Medium | None | merged | No | {pr_cell} | Archived |\n")
+            fh.write(f"\n| #{issue_number} | Closed issue | Medium | None | merged | No | merged | local | n/a | n/a | #{pr_number} | Archived |\n")
 
 print("Updated progress-log, active-context, and issue-ledger.")
 PY

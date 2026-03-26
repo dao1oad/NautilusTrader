@@ -6,9 +6,10 @@ repo_root=$(cd -- "$script_dir/.." && pwd)
 cd "$repo_root"
 
 input_path="workspace/runbooks/issues-snapshot.json"
+remote_jobs_path="workspace/runbooks/remote-jobs.json"
 
 usage() {
-  cat << 'EOF'
+  cat <<'EOF'
 Usage: scripts/build-workset.sh [--input-path PATH]
 EOF
 }
@@ -34,7 +35,12 @@ while [[ $# -gt 0 ]]; do
       input_path=$2
       shift 2
       ;;
-    -h | --help)
+    --remote-jobs-path)
+      [[ $# -ge 2 ]] || fail "Missing value for --remote-jobs-path"
+      remote_jobs_path=$2
+      shift 2
+      ;;
+    -h|--help)
       usage
       exit 0
       ;;
@@ -46,78 +52,41 @@ while [[ $# -gt 0 ]]; do
 done
 
 resolved_input_path=$(resolve_repo_path "$input_path")
+resolved_remote_jobs_path=$(resolve_repo_path "$remote_jobs_path")
 [[ -f "$resolved_input_path" ]] || fail "Issue snapshot not found: $resolved_input_path"
 
-python3 - "$resolved_input_path" "$repo_root" << 'PY'
+python3 - "$resolved_input_path" "$resolved_remote_jobs_path" "$repo_root" <<'PY'
 import json
 import re
 import sys
 from pathlib import Path
 
 input_path = Path(sys.argv[1])
-repo_root = Path(sys.argv[2])
+remote_jobs_path = Path(sys.argv[2])
+repo_root = Path(sys.argv[3])
 
 issues = json.loads(input_path.read_text(encoding="utf-8"))
 if isinstance(issues, dict):
     issues = [issues]
 
 open_issue_numbers = {str(issue["number"]): True for issue in issues}
-default_next_values = {
-    "Resolve dependency",
-    "Clarify scope",
-    "Dispatch subagent",
-}
 
+if not remote_jobs_path.exists() or not remote_jobs_path.read_text(encoding="utf-8").strip():
+    remote_jobs_path.parent.mkdir(parents=True, exist_ok=True)
+    remote_jobs_path.write_text('{\n  "version": 1,\n  "jobs": []\n}\n', encoding="utf-8")
 
-def load_existing_issue_metadata(ledger_path: Path) -> dict[str, dict[str, str]]:
-    if not ledger_path.exists():
-        return {}
-
-    metadata: dict[str, dict[str, str]] = {}
-    for line in ledger_path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("| #"):
-            continue
-
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
-        if len(cells) < 8:
-            continue
-
-        match = re.fullmatch(r"#(\d+)", cells[0])
-        if not match:
-            continue
-
-        metadata[match.group(1)] = {
-            "pr": cells[6],
-            "next": cells[7],
-        }
-
-    return metadata
+remote_registry = json.loads(remote_jobs_path.read_text(encoding="utf-8"))
+remote_job_lookup = {}
+for job in remote_registry.get("jobs", []):
+    issue_number = job.get("issue_number")
+    if issue_number is not None:
+        remote_job_lookup[str(issue_number)] = job
 
 
 def get_dependencies(body: str) -> list[str]:
     if not body:
         return []
-
-    dependencies: list[str] = []
-    in_depends_section = False
-
-    for raw_line in body.splitlines():
-        line = raw_line.strip()
-
-        if not in_depends_section:
-            if re.match(r"^(?:#+\s*)?Depends on\b", line, flags=re.IGNORECASE):
-                in_depends_section = True
-            else:
-                continue
-        elif re.match(r"^#+\s+\S+", line):
-            break
-
-        if not line:
-            continue
-
-        dependencies.extend(re.findall(r"#(\d+)", line))
-
-    return list(dict.fromkeys(dependencies))
+    return sorted(set(re.findall(r"#(\d+)", body)))
 
 
 def get_issue_state(labels: list[str], dependencies: list[str]) -> str:
@@ -132,13 +101,17 @@ def get_issue_state(labels: list[str], dependencies: list[str]) -> str:
     return "ready"
 
 
-existing_issue_metadata = load_existing_issue_metadata(repo_root / "memory/issue-ledger.md")
-
 rows = []
 for issue in issues:
     labels = list(issue.get("labels", []))
     dependencies = get_dependencies(issue.get("body", ""))
     state = get_issue_state(labels, dependencies)
+    remote_job = remote_job_lookup.get(str(issue["number"]), {})
+    execution = remote_job.get("execution_status", "idle")
+    worker = remote_job.get("worker_host", "TBD")
+    job_id = remote_job.get("job_id", "TBD")
+    branch = remote_job.get("branch", "TBD")
+    pr = f"#{remote_job['pr_number']}" if remote_job.get("pr_number") else "TBD"
     priority = "Medium"
     if "critical" in labels:
         priority = "Critical"
@@ -146,27 +119,6 @@ for issue in issues:
         priority = "High"
     elif "low" in labels:
         priority = "Low"
-
-    default_next = (
-        "Resolve dependency"
-        if state == "blocked"
-        else "Clarify scope"
-        if state == "needs-clarification"
-        else "Dispatch subagent"
-    )
-    existing = existing_issue_metadata.get(str(issue["number"]), {})
-    pr = existing.get("pr", "TBD")
-    if not pr:
-        pr = "TBD"
-
-    next_value = default_next
-    existing_next = existing.get("next", "")
-    if (
-        state in {"ready", "parallel-ready"}
-        and existing_next
-        and existing_next not in default_next_values
-    ):
-        next_value = existing_next
 
     rows.append(
         {
@@ -176,21 +128,37 @@ for issue in issues:
             "dependencies": ", ".join(dependencies) if dependencies else "None",
             "state": state,
             "parallel": "Yes" if state == "parallel-ready" else "No",
-            "pr": pr if pr != "TBD" else "TBD",
-            "next": next_value,
+            "execution": execution,
+            "worker": worker,
+            "job": job_id,
+            "branch": branch,
+            "pr": pr,
+            "next": (
+                "Wait for local execution"
+                if execution == "running"
+                else "Complete local pre-PR review"
+                if execution == "awaiting-local-review"
+                else "Inspect local job"
+                if execution == "failed"
+                else "Resolve dependency"
+                if state == "blocked"
+                else "Clarify scope"
+                if state == "needs-clarification"
+                else "Dispatch subagent"
+            ),
         },
     )
 
 ledger_lines = [
     "# Issue Ledger",
     "",
-    "| Issue | Title | Priority | Dependencies | State | Parallel | PR | Next |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
 ]
 
 for row in rows:
     ledger_lines.append(
-        f"| #{row['number']} | {row['title']} | {row['priority']} | {row['dependencies']} | {row['state']} | {row['parallel']} | {row['pr']} | {row['next']} |",
+        f"| #{row['number']} | {row['title']} | {row['priority']} | {row['dependencies']} | {row['state']} | {row['parallel']} | {row['execution']} | {row['worker']} | {row['job']} | {row['branch']} | {row['pr']} | {row['next']} |",
     )
 
 ledger_path = repo_root / "memory/issue-ledger.md"
@@ -227,7 +195,7 @@ Resolve GitHub issue #{row['number']} according to repository policy.
 
 ## Forbidden Scope
 
-- Remote main branch
+- Protected main branch
 - Shared governance files unless explicitly assigned
 
 ## Verification
@@ -237,7 +205,7 @@ Resolve GitHub issue #{row['number']} according to repository policy.
 
 ## Review Notes
 
-- Remote Codex review required before merge
+- Local pre-PR review record required before opening PR
 """
     (issue_packets_dir / f"issue-{row['number']}.md").write_text(packet, encoding="utf-8")
 
