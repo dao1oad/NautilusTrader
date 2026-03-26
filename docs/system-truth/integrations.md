@@ -10,6 +10,12 @@
 - Rust/Cargo workspace、Cython、PyO3、Poetry build backend、uv lockfile、Docker、Codecov、Codspeed 与 GitHub Actions 共同组成工程工具链
 - `.github/workflows/` 已包含构建、覆盖率、Docker、性能、安全审计、文档与 CLI 发布相关自动化
 
+## Admin Control Plane Integrations
+
+- `apps/admin-web` 通过浏览器 `fetch` 代理到本机 FastAPI admin surface：低风险 command flow 当前消费 `POST /api/admin/commands/strategies/*`、`POST /api/admin/commands/adapters/*`，恢复面消费 `GET /api/admin/audit` 与 `GET /api/admin/config/diff`
+- `apps/admin-web/src/shared/realtime/admin-events.ts` 通过 `/ws/admin/events` 同时订阅 `overview` 与 `commands` channel，并把 `command.*` 事件桥接到 shared invalidation / receipt bus
+- `nautilus_trader/admin/services/config.py` 当前把本机 control-plane guardrail 与 recovery runbook 作为浏览器只读 projection 暴露，不直接接入交易 venue 或远端配置中心
+
 ## Repository Governance Integrations
 
 - 使用 `gh` 同步 issues、读取 branch protection

@@ -1,3 +1,4 @@
+import type { CommandEvent } from "../types/admin";
 import type { AdminEvent } from "../types/admin";
 
 
@@ -6,6 +7,8 @@ export type InvalidationTopic =
   | "nodes"
   | "strategies"
   | "adapters"
+  | "audit"
+  | "config"
   | "orders"
   | "positions"
   | "accounts"
@@ -16,6 +19,14 @@ type InvalidationListener = (topic: InvalidationTopic, event: AdminEvent) => voi
 const listeners = new Set<InvalidationListener>();
 
 function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
+  if (
+    event.type === "command.accepted" ||
+    event.type === "command.completed" ||
+    event.type === "command.failed"
+  ) {
+    return ["audit", "config"];
+  }
+
   if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
     return ["overview", "nodes", "strategies", "adapters", "orders", "positions", "accounts", "logs"];
   }

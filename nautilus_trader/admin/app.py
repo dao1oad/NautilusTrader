@@ -4,8 +4,10 @@ from fastapi import WebSocket
 
 from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
+from nautilus_trader.admin.schemas import AuditSnapshot
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
+from nautilus_trader.admin.schemas import ConfigDiffSnapshot
 from nautilus_trader.admin.schemas import HealthStatus
 from nautilus_trader.admin.schemas import LogsSnapshot
 from nautilus_trader.admin.schemas import NodesSnapshot
@@ -15,8 +17,11 @@ from nautilus_trader.admin.schemas import PositionsSnapshot
 from nautilus_trader.admin.schemas import StrategiesSnapshot
 from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
+from nautilus_trader.admin.services.audit import build_audit_snapshot
+from nautilus_trader.admin.services.audit import reset_audit_sink
 from nautilus_trader.admin.services.commands import reset_command_event_stream
 from nautilus_trader.admin.services.commands import submit_command
+from nautilus_trader.admin.services.config import build_config_diff_snapshot
 from nautilus_trader.admin.services.logs import build_logs_snapshot
 from nautilus_trader.admin.services.nodes import build_nodes_snapshot
 from nautilus_trader.admin.services.orders import build_orders_snapshot
@@ -77,6 +82,14 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
         inject_partial_error: bool = False,
     ) -> LogsSnapshot:
         return build_logs_snapshot(limit=limit, inject_partial_error=inject_partial_error)
+
+    @app.get("/api/admin/audit", response_model=AuditSnapshot)
+    def audit() -> AuditSnapshot:
+        return build_audit_snapshot()
+
+    @app.get("/api/admin/config/diff", response_model=ConfigDiffSnapshot)
+    def config_diff() -> ConfigDiffSnapshot:
+        return build_config_diff_snapshot()
 
 
 def _register_event_routes(app: FastAPI) -> None:
@@ -175,6 +188,7 @@ def create_admin_app() -> FastAPI:
     app = FastAPI(title="NautilusTrader Admin API")
 
     reset_command_event_stream()
+    reset_audit_sink()
     _register_core_routes(app)
     _register_read_only_surface_routes(app)
     _register_command_routes(app)

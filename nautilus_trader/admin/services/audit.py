@@ -4,10 +4,16 @@ from datetime import UTC
 from datetime import datetime
 from typing import Any
 
+from nautilus_trader.admin.schemas import AuditSnapshot
 from nautilus_trader.admin.schemas import AuditRecord
 from nautilus_trader.admin.schemas import CommandErrorCode
 from nautilus_trader.admin.schemas import CommandFailure
-from nautilus_trader.admin.services.commands import build_command_failure
+
+
+_RETRYABLE_ERROR_CODES = {
+    CommandErrorCode.UNAVAILABLE,
+    CommandErrorCode.INTERNAL_ERROR,
+}
 
 
 class InMemoryAuditSink:
@@ -45,6 +51,10 @@ class InMemoryAuditSink:
     def read_records(self) -> tuple[AuditRecord, ...]:
         return tuple(self._records)
 
+    def reset(self) -> None:
+        self._records.clear()
+        self._next_sequence_id = 1
+
 
 _DEFAULT_AUDIT_SINK = InMemoryAuditSink()
 
@@ -64,10 +74,11 @@ def record_command_event(
 ) -> AuditRecord:
     failure = None
     if error_code is not None:
-        failure = build_command_failure(
+        failure = CommandFailure(
             code=error_code,
             message=message or "",
-            details=details,
+            retryable=error_code in _RETRYABLE_ERROR_CODES,
+            details=dict(details or {}),
         )
 
     return (sink or _DEFAULT_AUDIT_SINK).record(
@@ -79,4 +90,21 @@ def record_command_event(
         recorded_at=recorded_at,
         message=message,
         failure=failure,
+    )
+
+
+def reset_audit_sink() -> None:
+    _DEFAULT_AUDIT_SINK.reset()
+
+
+def read_audit_records(*, sink: InMemoryAuditSink | None = None) -> tuple[AuditRecord, ...]:
+    return (sink or _DEFAULT_AUDIT_SINK).read_records()
+
+
+def build_audit_snapshot(*, sink: InMemoryAuditSink | None = None) -> AuditSnapshot:
+    records = list(read_audit_records(sink=sink))
+    records.reverse()
+    return AuditSnapshot(
+        generated_at=datetime.now(tz=UTC),
+        items=records,
     )

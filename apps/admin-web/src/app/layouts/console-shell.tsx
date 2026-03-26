@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { to: "/nodes", label: "Nodes" },
   { to: "/strategies", label: "Strategies" },
   { to: "/adapters", label: "Adapters" },
+  { to: "/audit", label: "Audit" },
+  { to: "/config", label: "Config" },
   { to: "/orders", label: "Orders" },
   { to: "/positions", label: "Positions" },
   { to: "/accounts", label: "Accounts" },
@@ -30,7 +32,7 @@ export function ConsoleShell({ children }: Props) {
           <div className="console-sidebar-header">
             <p className="app-kicker">Local Control Plane</p>
             <h1>NautilusTrader Admin</h1>
-            <p className="console-sidebar-copy">Read-only operations console for runtime health and diagnostics.</p>
+            <p className="console-sidebar-copy">Local operations and control console for runtime guardrails, receipts, and recovery.</p>
           </div>
           <nav aria-label="Operations" className="console-nav">
             <ul className="console-nav-list">
@@ -47,7 +49,7 @@ export function ConsoleShell({ children }: Props) {
         <section className="console-panel">
           <header className="console-toolbar">
             <div>
-              <p className="console-section-kicker">Read-only operations</p>
+              <p className="console-section-kicker">Operations and control</p>
               <h2>Operations Console</h2>
             </div>
             <ConnectionBanner state={connectionState} />

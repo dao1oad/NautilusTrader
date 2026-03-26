@@ -1,0 +1,22 @@
+# Local PR Review
+
+- Issue: #18
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 2C frontend command confirmations, latest receipt UI, audit/config recovery surfaces, backend audit/config projection routes, required truth docs, and execution bookkeeping.
+- Findings:
+  - The fresh worktree did not contain `apps/admin-web/node_modules`, so frontend verification required a one-time `npm ci` before the new Vitest and build checks could run.
+  - No blocking product defects remained after the audit/config backend routes, command audit wiring, and Phase 2C frontend confirmation/receipt/recovery pages were verified together.
+- Resolution:
+  - Added explicit confirmation dialogs and page-level latest receipt cards for the low-risk strategy and adapter command surfaces.
+  - Extended the admin websocket client to subscribe to both `overview` and `commands`, then fan out `command.*` events through shared invalidation and command-receipt buses.
+  - Added `Audit` and `Config` routes backed by new `GET /api/admin/audit` and `GET /api/admin/config/diff` projections so operators can trace control actions and recovery guardrails from the browser.
+  - Updated truth docs, memory, and issue execution artifacts to reflect the Phase 2C control-loop slice.
+- Evidence:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm ci`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-18/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-18 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-18 diff --check`
+- Status: approved

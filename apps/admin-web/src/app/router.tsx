@@ -1,6 +1,8 @@
 import { createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
 import { RootRouteComponent } from "./routes/__root";
+import { AuditRoutePage } from "./routes/audit";
+import { ConfigRoutePage } from "./routes/config";
 import { OverviewRoutePage } from "./routes/overview";
 import { NodesRoutePage } from "./routes/nodes";
 import { StrategiesRoutePage } from "./routes/strategies";
@@ -39,6 +41,18 @@ const adaptersRoute = createRoute({
   component: AdaptersRoutePage
 });
 
+const auditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/audit",
+  component: AuditRoutePage
+});
+
+const configRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/config",
+  component: ConfigRoutePage
+});
+
 const ordersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/orders",
@@ -68,6 +82,8 @@ const routeTree = rootRoute.addChildren([
   nodesRoute,
   strategiesRoute,
   adaptersRoute,
+  auditRoute,
+  configRoute,
   ordersRoute,
   positionsRoute,
   accountsRoute,

@@ -43,6 +43,45 @@ export type LogSummary = {
   message: string;
 };
 
+export type CommandErrorCode =
+  | "invalid_request"
+  | "not_found"
+  | "conflict"
+  | "not_supported"
+  | "unavailable"
+  | "internal_error";
+
+export type CommandFailure = {
+  code: CommandErrorCode;
+  message: string;
+  retryable: boolean;
+  details: Record<string, unknown>;
+};
+
+export type CommandReceiptStatus = "accepted" | "completed" | "failed";
+
+export type CommandReceipt = {
+  command_id: string;
+  command: string;
+  target: string;
+  status: CommandReceiptStatus;
+  recorded_at: string;
+  message: string | null;
+  failure: CommandFailure | null;
+};
+
+export type AuditRecord = {
+  sequence_id: number;
+  command_id: string;
+  command: string;
+  target: string | null;
+  status: CommandReceiptStatus;
+  payload: Record<string, unknown>;
+  recorded_at: string;
+  message: string | null;
+  failure: CommandFailure | null;
+};
+
 export type SectionError = {
   section: string;
   message: string;
@@ -63,6 +102,29 @@ export type OrdersSnapshot = BoundedAdminListSnapshot<OrderSummary>;
 export type PositionsSnapshot = BoundedAdminListSnapshot<PositionSummary>;
 export type AccountsSnapshot = BoundedAdminListSnapshot<AccountSummary>;
 export type LogsSnapshot = BoundedAdminListSnapshot<LogSummary>;
+export type AuditSnapshot = AdminListSnapshot<AuditRecord>;
+
+export type ConfigDiffEntry = {
+  key: string;
+  summary: string;
+  desired: string;
+  actual: string;
+  status: "in_sync" | "drifted";
+  runbook_id: string | null;
+};
+
+export type RecoveryRunbook = {
+  runbook_id: string;
+  title: string;
+  summary: string;
+  steps: string[];
+};
+
+export type ConfigDiffSnapshot = {
+  generated_at: string;
+  items: ConfigDiffEntry[];
+  runbooks: RecoveryRunbook[];
+};
 
 export type OverviewSnapshot = {
   generated_at: string;
@@ -76,7 +138,13 @@ export type OverviewSnapshot = {
   errors: SectionError[];
 };
 
+export type CommandEvent =
+  | { type: "command.accepted"; receipt: CommandReceipt }
+  | { type: "command.completed"; receipt: CommandReceipt }
+  | { type: "command.failed"; receipt: CommandReceipt };
+
 export type AdminEvent =
+  | CommandEvent
   | { type: "subscribed"; channels: string[] }
   | { type: "connection.state"; state: ConnectionState }
   | { type: "overview.updated" }

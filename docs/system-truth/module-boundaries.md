@@ -7,9 +7,9 @@
 - `nautilus_trader/*`: Python/Cython 域层，向策略、回测、实盘和工具使用者暴露统一包结构。
 - `nautilus_trader/admin/*`: 管理控制面边界；负责把 `live`、`execution`、`portfolio`、`accounting` 与日志 runtime 投影到稳定的只读 snapshot、控制命令 request/receipt 与 audit record，不暴露内部 runtime object，也不在 `Phase 2A` 直接承载高风险交易命令。
 - `python/nautilus_trader/*`: PyO3 输出层与类型桩；职责是稳定 Python import surface，而不是重新实现业务逻辑。
-- `apps/admin-web/src/app/*`: 管理控制台壳层、路由树与运行态上下文；负责组合 read-only console shell，而不是直接读取底层 runtime object。
-- `apps/admin-web/src/features/*`: 按页面切分的 read-only route surface；每个 feature 只负责自己的 query-backed 页面与展示逻辑。
-- `apps/admin-web/src/shared/*`: admin DTO 类型镜像、API client、query key、realtime invalidation 与 shared page-state primitive；是前端跨页面共享层，不承载业务命令副作用。
+- `apps/admin-web/src/app/*`: 管理控制台壳层、路由树与运行态上下文；负责组合 `Overview/Nodes/.../Audit/Config` 页面与 shared websocket runtime，而不是直接读取底层 runtime object。
+- `apps/admin-web/src/features/*`: 按页面切分的 route surface；`strategies`、`adapters` 可以通过 shared command hook 触发低风险 POST，但 feature 本身只负责编排确认 UI、receipt 展示与 query-backed 页面逻辑。
+- `apps/admin-web/src/shared/*`: admin DTO 类型镜像、API client、query key、realtime invalidation、command receipt bus 与 shared page-state primitive；是前端跨页面共享层，不得越界成 runtime orchestration layer。
 - `schema/sql/*`: 数据库持久化对象定义；其边界与 `crates/persistence`、`nautilus_trader/persistence` 对齐。
 - `examples/*`: 示例与演示流，不作为产品真值来源。
 - `tests/*`: 验证层，不作为产品真值来源。
@@ -29,9 +29,9 @@
 - 新的 venue adapter 应进入 `crates/adapters/<venue>`，并在 Python surface、文档与测试层保持同名或同职责映射。
 - 性能关键逻辑优先进入 Rust crates；Python/Cython 层负责用户接口、组合装配和编译后暴露。
 - `nautilus_trader/admin` 与 `apps/admin-web` 之间只通过 admin snapshot DTO、WS 事件和 query/invalidation 语义通信，前端不得跨边界直接依赖内部 runtime object。
-- `Phase 1` 的 admin surface 必须保持只读；若未来引入控制命令，需要在新的 phase 中单独扩展边界、契约与 review gate。
-- `nautilus_trader/admin/services/commands.py` 只负责命令 receipt/failure 组装；`nautilus_trader/admin/services/audit.py` 只负责 append-only 审计记录落盘/内存投影。二者都不能直接越界成完整的运行时控制编排器。
-- `nautilus_trader/admin/app.py` 的 command route 仅允许低风险策略/适配器/订阅控制，并且必须返回 `CommandReceipt`；`nautilus_trader/admin/ws.py` 只负责把 `command.accepted/completed/failed` 事件广播给订阅者。
+- `Phase 2` 当前只允许低风险 command flow，而且 mutating POST 前必须经过浏览器显式确认；高风险交易命令仍需在未来 phase 单独扩展边界、契约与 review gate。
+- `nautilus_trader/admin/services/commands.py` 只负责命令 receipt/failure 组装与审计/事件联动；`nautilus_trader/admin/services/audit.py` 只负责 append-only 审计记录投影；`nautilus_trader/admin/services/config.py` 只负责 control-plane config diff / runbook snapshot。三者都不能越界成完整的运行时控制编排器。
+- `nautilus_trader/admin/app.py` 的 command route 仅允许低风险策略/适配器/订阅控制，并且必须返回 `CommandReceipt`；`GET /api/admin/audit` 与 `GET /api/admin/config/diff` 只暴露 browser-facing 恢复投影；`nautilus_trader/admin/ws.py` 只负责把 `command.accepted/completed/failed` 事件广播给订阅者。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
 - `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽本地 pre-PR review 或 PR-only 约束。
 - 本地构建辅助脚本必须在 Linux 开发机和容器内可直接运行，不能隐式要求 Windows-only 路径或在 root 环境下强依赖 `sudo`。

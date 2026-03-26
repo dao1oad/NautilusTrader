@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
 
 import { subscribeToAdminEvents } from "../shared/realtime/admin-events";
+import { subscribeToCommandReceipts } from "../shared/realtime/command-receipt-bus";
 import { subscribeToInvalidations } from "../shared/realtime/invalidation-bus";
 
 
@@ -96,5 +97,68 @@ test("publishes overview invalidations to the shared bus", () => {
     "logs"
   ]);
 
+  unsubscribeInvalidations();
+});
+
+
+test("subscribes to both overview and command channels on connect", () => {
+  FakeWebSocket.instances = [];
+
+  vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+
+  subscribeToAdminEvents({
+    onEvent: vi.fn(),
+    onStateChange: vi.fn()
+  });
+
+  const socket = FakeWebSocket.instances[0];
+  socket.emit("open", new Event("open"));
+
+  expect(socket.sent).toEqual([
+    JSON.stringify({ type: "subscribe", channels: ["overview", "commands"] })
+  ]);
+});
+
+
+test("publishes command receipts and audit/config invalidations from command events", () => {
+  FakeWebSocket.instances = [];
+
+  const publishedTopics: string[] = [];
+  const publishedReceipts: string[] = [];
+
+  vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+
+  const unsubscribeInvalidations = subscribeToInvalidations((topic) => {
+    publishedTopics.push(topic);
+  });
+  const unsubscribeReceipts = subscribeToCommandReceipts((event) => {
+    publishedReceipts.push(`${event.type}:${event.receipt.command_id}`);
+  });
+
+  subscribeToAdminEvents({
+    onEvent: vi.fn(),
+    onStateChange: vi.fn()
+  });
+
+  const socket = FakeWebSocket.instances[0];
+  socket.emit("message", {
+    data: JSON.stringify({
+      type: "command.completed",
+      receipt: {
+        command_id: "cmd-1",
+        command: "strategy.start",
+        target: "strategies/demo",
+        status: "completed",
+        recorded_at: "2026-03-26T00:00:02Z",
+        message: "Command completed for local strategy.start.",
+        failure: null
+      }
+    })
+  });
+
+  expect(publishedReceipts).toEqual(["command.completed:cmd-1"]);
+  expect(publishedTopics).toEqual(["audit", "config"]);
+
+  unsubscribeReceipts();
   unsubscribeInvalidations();
 });
