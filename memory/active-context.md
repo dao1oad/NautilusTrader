@@ -8,6 +8,7 @@
 
 - PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
 - 2026-03-26 已完成 Phase 1 umbrella `#9` 的 close-out merge；当前具体实施入口切换到 issue `#16`，为 Phase 2A 建立 typed command contract、错误码与 append-only audit sink。
+- 2026-03-27 issue `#16` 已通过 PR `#38` 合并到 `main`；当前实施入口切换到 issue `#17`，为策略/适配器/订阅控制增加低风险 backend command endpoints 与 WS receipt 事件。
 
 ## Blockers
 
@@ -93,11 +94,12 @@
 - 2026-03-26 已将仓库治理运行态切换为纯本机模式：`codex-orchestrator` 由本地主 agent 会话驱动，issue 派发默认落到本机 `.worktrees/`，`agentboard` 运行在本机 `127.0.0.1:8088`，不再依赖远程 worker SSH/DNS 解析。
 - 2026-03-26 纯本机运行态新增 `ops/remote-execution.yaml`、`scripts/start-main-agent.ps1`、`scripts/start-local-agentboard.ps1`、`scripts/dispatch-issue.ps1`、`scripts/sync-remote-execution.ps1` 与对应 smoke 覆盖；`AGENTS.md` 也已切换到本机启动路径。
 - 2026-03-26 issue `#16` 的隔离 worktree 已补齐 `CommandRequest` / `CommandReceipt` / `CommandFailure` / `AuditRecord` DTO、稳定 `CommandErrorCode` 枚举，以及 `InMemoryAuditSink` append-only 审计服务；`pytest tests/unit_tests/admin/test_commands_schema.py tests/unit_tests/admin/test_audit_service.py -v --confcutdir=tests/unit_tests/admin` 已通过。
+- 2026-03-27 issue `#17` 的隔离 worktree 已补齐低风险 command POST route：`strategies/*/start|stop`、`adapters/*/connect|disconnect`、`subscriptions/*/subscribe|unsubscribe`，并让 `/ws/admin/events` 的 `commands` channel 流出 `command.accepted` / `command.completed` receipt 事件；新增后端红测已转绿。
 
 ## Next Actions
 
-1. 为 issue `#16` 完成本地 pre-PR review、truth-doc 检查与 PR 提交。
-2. issue `#16` 合并后派发 issue `#17`，继续 Phase 2 的低风险控制 endpoint 与 receipt/WS 落地。
+1. 为 issue `#17` 完成本地 pre-PR review、truth-doc 检查与 PR 提交。
+2. issue `#17` 合并后推进 issue `#18`，补齐 command confirmation、audit timeline 与恢复 runbook。
 3. 保持 umbrella issue `#10` 只作为 Phase 2 close-out gate，不直接承载功能实现。
 
 ## Repository

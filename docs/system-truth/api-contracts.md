@@ -31,6 +31,15 @@
   - 契约：当前稳定错误码集合为 `invalid_request`、`not_found`、`conflict`、`not_supported`、`unavailable`、`internal_error`
 - `nautilus_trader.admin.schemas.AuditRecord`
   - 契约：审计记录是 append-only 的浏览器/运维投影，固定包含单调递增 `sequence_id`、`command_id`、`status`、`payload`、`recorded_at` 与可选失败信息
+- `POST /api/admin/commands/strategies/{strategy_id}/start|stop`
+  - 契约：仅暴露策略启停这类低风险控制动作，返回 `202 Accepted` + `CommandReceipt`
+- `POST /api/admin/commands/adapters/{adapter_id}/connect|disconnect`
+  - 契约：仅暴露适配器连接控制，返回 `202 Accepted` + `CommandReceipt`
+- `POST /api/admin/commands/subscriptions/{instrument_id}/subscribe|unsubscribe`
+  - 契约：仅暴露行情订阅控制，返回 `202 Accepted` + `CommandReceipt`
+- `/ws/admin/events`
+  - 契约：当前支持 `overview` 与 `commands` 两个订阅 channel
+  - `commands` channel 事件类型固定为 `command.accepted`、`command.completed`、`command.failed`，并通过 `receipt` 字段携带 `CommandReceipt`
 - `crates/cli` 提供命令行接口产物；相关发布与打包流程由 `.github/workflows/cli-binaries.yml` 驱动
 - `schema/sql/*.sql` 是持久化数据库对象定义接口，面向 `persistence` 层
 - `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API

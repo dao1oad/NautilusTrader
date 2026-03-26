@@ -1,0 +1,32 @@
+# Issue #17 Local Execution Output
+
+- Issue: #17
+- Worker: localhost
+- Branch: `codex/issue-17-phase-2b-low-risk-strategy-adapter-and-subscription-controls`
+- Job Id: `2026-03-27T00-22-20-issue-17-manual`
+- Summary: Added low-risk strategy/adapter/subscription command endpoints that return typed receipts and stream `command.accepted` / `command.completed` events over the admin websocket.
+- Notes:
+  - The worktree was created directly from `origin/main` at `b90a3f4` so the PR branch starts after issue `#16` merged.
+  - Frontend verification initially failed because `apps/admin-web/node_modules` was absent in this fresh worktree; `npm ci` hydrated the existing frontend package without requiring any code changes.
+- Files:
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/services/commands.py`
+  - `nautilus_trader/admin/ws.py`
+  - `tests/unit_tests/admin/test_strategy_commands.py`
+  - `tests/unit_tests/admin/test_adapter_commands.py`
+  - `tests/unit_tests/admin/test_subscription_commands.py`
+  - `tests/unit_tests/admin/test_ws.py`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/active-context.md`
+  - `memory/issue-ledger.md`
+- Verification:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm ci`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-17 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-17 diff --check`

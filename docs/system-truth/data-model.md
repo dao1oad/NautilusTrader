@@ -59,6 +59,10 @@
   - 数据职责：Phase 2 管理命令的稳定错误码枚举，供 HTTP/WS 回执与审计流复用
 - `AuditRecord`
   - 数据职责：append-only 管理命令审计事件；以 `sequence_id` 表达时间序列顺序，并保留原始 payload 与失败上下文
+- `command.*` WS event envelope
+  - 数据职责：把 `CommandReceipt` 包装成浏览器可消费的实时事件；当前 envelope 结构为 `{type, receipt}`
+- `CommandRequest.target`
+  - 数据职责：当前低风险控制目标统一投影为 `strategies/<id>`、`adapters/<id>`、`subscriptions/<instrument_id>` 三类资源定位
 
 当前浏览器可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
 
