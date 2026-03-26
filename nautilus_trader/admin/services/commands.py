@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC
 from datetime import datetime
+from threading import Lock
 from typing import Any
 
 from nautilus_trader.admin.schemas import CommandErrorCode
@@ -14,6 +15,17 @@ _RETRYABLE_ERROR_CODES = {
     CommandErrorCode.UNAVAILABLE,
     CommandErrorCode.INTERNAL_ERROR,
 }
+
+_SUPPORTED_COMMANDS = {
+    "strategy.start",
+    "strategy.stop",
+    "adapter.connect",
+    "adapter.disconnect",
+    "subscription.subscribe",
+    "subscription.unsubscribe",
+}
+_COMMAND_EVENTS: list[dict[str, Any]] = []
+_COMMAND_EVENTS_LOCK = Lock()
 
 
 def build_command_failure(
@@ -79,3 +91,48 @@ def build_failed_receipt(
         message=message,
         failure=build_command_failure(code=code, message=message, details=details),
     )
+
+
+def reset_command_event_stream() -> None:
+    with _COMMAND_EVENTS_LOCK:
+        _COMMAND_EVENTS.clear()
+
+
+def drain_command_events(*, after: int = 0) -> tuple[int, list[dict[str, Any]]]:
+    with _COMMAND_EVENTS_LOCK:
+        next_cursor = len(_COMMAND_EVENTS)
+        return next_cursor, list(_COMMAND_EVENTS[after:])
+
+
+def _publish_command_receipt(receipt: CommandReceipt) -> None:
+    event = {
+        "type": f"command.{receipt.status}",
+        "receipt": receipt.model_dump(mode="json"),
+    }
+    with _COMMAND_EVENTS_LOCK:
+        _COMMAND_EVENTS.append(event)
+
+
+def submit_command(request: CommandRequest) -> CommandReceipt:
+    if request.command not in _SUPPORTED_COMMANDS:
+        failed = build_failed_receipt(
+            request,
+            code=CommandErrorCode.NOT_SUPPORTED,
+            message=f"Command '{request.command}' is not supported.",
+        )
+        _publish_command_receipt(failed)
+        return failed
+
+    accepted = build_accepted_receipt(
+        request,
+        message=f"Command queued for local {request.command}.",
+    )
+    completed = build_completed_receipt(
+        request,
+        message=f"Command completed for local {request.command}.",
+    )
+
+    _publish_command_receipt(accepted)
+    _publish_command_receipt(completed)
+
+    return accepted

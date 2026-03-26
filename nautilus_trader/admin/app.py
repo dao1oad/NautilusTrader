@@ -4,6 +4,8 @@ from fastapi import WebSocket
 
 from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
+from nautilus_trader.admin.schemas import CommandReceipt
+from nautilus_trader.admin.schemas import CommandRequest
 from nautilus_trader.admin.schemas import HealthStatus
 from nautilus_trader.admin.schemas import LogsSnapshot
 from nautilus_trader.admin.schemas import NodesSnapshot
@@ -13,6 +15,8 @@ from nautilus_trader.admin.schemas import PositionsSnapshot
 from nautilus_trader.admin.schemas import StrategiesSnapshot
 from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
+from nautilus_trader.admin.services.commands import reset_command_event_stream
+from nautilus_trader.admin.services.commands import submit_command
 from nautilus_trader.admin.services.logs import build_logs_snapshot
 from nautilus_trader.admin.services.nodes import build_nodes_snapshot
 from nautilus_trader.admin.services.orders import build_orders_snapshot
@@ -81,11 +85,99 @@ def _register_event_routes(app: FastAPI) -> None:
         await handle_admin_events_socket(websocket)
 
 
+def _register_command_routes(app: FastAPI) -> None:
+    @app.post(
+        "/api/admin/commands/strategies/{strategy_id}/start",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def start_strategy(strategy_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="strategy.start",
+                target=f"strategies/{strategy_id}",
+                payload={"strategy_id": strategy_id},
+            ),
+        )
+
+    @app.post(
+        "/api/admin/commands/strategies/{strategy_id}/stop",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def stop_strategy(strategy_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="strategy.stop",
+                target=f"strategies/{strategy_id}",
+                payload={"strategy_id": strategy_id},
+            ),
+        )
+
+    @app.post(
+        "/api/admin/commands/adapters/{adapter_id}/connect",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def connect_adapter(adapter_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="adapter.connect",
+                target=f"adapters/{adapter_id}",
+                payload={"adapter_id": adapter_id},
+            ),
+        )
+
+    @app.post(
+        "/api/admin/commands/adapters/{adapter_id}/disconnect",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def disconnect_adapter(adapter_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="adapter.disconnect",
+                target=f"adapters/{adapter_id}",
+                payload={"adapter_id": adapter_id},
+            ),
+        )
+
+    @app.post(
+        "/api/admin/commands/subscriptions/{instrument_id}/subscribe",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def subscribe_market_data(instrument_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="subscription.subscribe",
+                target=f"subscriptions/{instrument_id}",
+                payload={"instrument_id": instrument_id},
+            ),
+        )
+
+    @app.post(
+        "/api/admin/commands/subscriptions/{instrument_id}/unsubscribe",
+        response_model=CommandReceipt,
+        status_code=202,
+    )
+    def unsubscribe_market_data(instrument_id: str) -> CommandReceipt:
+        return submit_command(
+            CommandRequest(
+                command="subscription.unsubscribe",
+                target=f"subscriptions/{instrument_id}",
+                payload={"instrument_id": instrument_id},
+            ),
+        )
+
+
 def create_admin_app() -> FastAPI:
     app = FastAPI(title="NautilusTrader Admin API")
 
+    reset_command_event_stream()
     _register_core_routes(app)
     _register_read_only_surface_routes(app)
+    _register_command_routes(app)
     _register_event_routes(app)
 
     return app

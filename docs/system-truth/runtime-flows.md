@@ -16,6 +16,12 @@
 
 `Phase 2A` 当前只建立命令契约、错误码和 append-only 审计边界，不直接引入高风险交易执行流。
 
+## Low-Risk Command Runtime Flow
+
+`POST /api/admin/commands/* -> submit_command(CommandRequest) -> HTTP 202 CommandReceipt(accepted) -> command event buffer -> /ws/admin/events(commands) 推送 command.accepted + command.completed`
+
+当前 command flow 仍是本机 stub mode：它验证和广播低风险控制意图，但不提前引入交易类命令或多用户权限流。
+
 ## Example And Test Flow
 
 `examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性

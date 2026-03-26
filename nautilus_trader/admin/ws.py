@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Sequence
 
 from fastapi import WebSocket
 from fastapi import WebSocketDisconnect
 
+from nautilus_trader.admin.services.commands import drain_command_events
 
-SUPPORTED_CHANNELS = {"overview"}
+
+SUPPORTED_CHANNELS = {"overview", "commands"}
 
 
 def _unsupported_channels(channels: Sequence[str]) -> list[str]:
@@ -15,10 +18,22 @@ def _unsupported_channels(channels: Sequence[str]) -> list[str]:
 
 async def handle_admin_events_socket(websocket: WebSocket) -> None:
     await websocket.accept()
+    subscribed_channels: set[str] = set()
+    command_cursor = 0
 
     try:
         while True:
-            payload = await websocket.receive_json()
+            try:
+                payload = await asyncio.wait_for(websocket.receive_json(), timeout=0.1)
+            except TimeoutError:
+                if "commands" not in subscribed_channels:
+                    continue
+
+                command_cursor, events = drain_command_events(after=command_cursor)
+                for event in events:
+                    await websocket.send_json(event)
+                continue
+
             if not isinstance(payload, dict):
                 await websocket.send_json(
                     {
@@ -51,6 +66,7 @@ async def handle_admin_events_socket(websocket: WebSocket) -> None:
                 )
                 continue
 
+            subscribed_channels.update(channels)
             await websocket.send_json({"type": "subscribed", "channels": channels})
     except WebSocketDisconnect:
         return

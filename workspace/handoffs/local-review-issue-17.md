@@ -1,0 +1,21 @@
+# Local PR Review
+
+- Issue: #17
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 2B low-risk strategy/adapter/subscription command endpoints, command receipt websocket events, required truth docs, and execution bookkeeping.
+- Findings:
+  - The fresh worktree did not contain `apps/admin-web/node_modules`, so frontend verification initially failed with missing `vitest` and `vite` binaries.
+  - No blocking product defects remained after hydrating frontend dependencies and rerunning the full verification suite.
+- Resolution:
+  - Added low-risk command POST routes that return `CommandReceipt` for strategy start/stop, adapter connect/disconnect, and subscription subscribe/unsubscribe.
+  - Extended the admin websocket to support a `commands` channel that streams typed `command.accepted` and `command.completed` receipt events from the in-memory command buffer.
+  - Updated truth docs, memory, and issue execution artifacts to reflect the Phase 2B backend control slice.
+- Evidence:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm ci`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-17/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-17 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-17 diff --check`
+- Status: approved

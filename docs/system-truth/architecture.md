@@ -33,5 +33,6 @@
 - 当前仓库保留自己的 `.git`、`origin` 和治理规则；上游源码仅作为文件快照导入
 - Python 运行时表面必须保持 `nautilus_trader/`、`python/nautilus_trader/`、`crates/pyo3` 与 Rust core crates 的接口一致性
 - `Phase 2A` 的命令契约保持本机单人操作模式：`CommandRequest` 默认 `requested_by=local-operator`，所有控制结果都必须先落到 typed receipt 和 append-only audit record，再由后续 phase 绑定到真实控制 endpoint。
+- `Phase 2B` 只开放低风险控制面：策略启停、适配器连接控制、行情订阅控制；HTTP route 必须返回 typed receipt，WS 只流出 receipt 事件，不引入任何交易类命令。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

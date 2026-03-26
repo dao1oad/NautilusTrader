@@ -31,6 +31,7 @@
 - `nautilus_trader/admin` 与 `apps/admin-web` 之间只通过 admin snapshot DTO、WS 事件和 query/invalidation 语义通信，前端不得跨边界直接依赖内部 runtime object。
 - `Phase 1` 的 admin surface 必须保持只读；若未来引入控制命令，需要在新的 phase 中单独扩展边界、契约与 review gate。
 - `nautilus_trader/admin/services/commands.py` 只负责命令 receipt/failure 组装；`nautilus_trader/admin/services/audit.py` 只负责 append-only 审计记录落盘/内存投影。二者都不能直接越界成完整的运行时控制编排器。
+- `nautilus_trader/admin/app.py` 的 command route 仅允许低风险策略/适配器/订阅控制，并且必须返回 `CommandReceipt`；`nautilus_trader/admin/ws.py` 只负责把 `command.accepted/completed/failed` 事件广播给订阅者。
 - `tests/`、`examples/`、`memory/`、`workspace/` 不得被当作产品静态真值。
 - `ops/review-gates.yaml` 中的 review 约束只放宽人工 approving review，不放宽本地 pre-PR review 或 PR-only 约束。
 - 本地构建辅助脚本必须在 Linux 开发机和容器内可直接运行，不能隐式要求 Windows-only 路径或在 root 环境下强依赖 `sudo`。
