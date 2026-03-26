@@ -41,6 +41,8 @@
   - 契约：仅暴露适配器连接控制，返回 `202 Accepted` + `CommandReceipt`
 - `POST /api/admin/commands/subscriptions/{instrument_id}/subscribe|unsubscribe`
   - 契约：仅暴露行情订阅控制，返回 `202 Accepted` + `CommandReceipt`
+- `Phase 2` close-out contract
+  - 契约：当前 mutating admin surface 只允许策略启停、适配器连接控制与行情订阅控制；不存在任何订单修改、批量交易或高风险不可逆 command endpoint
 - `GET /api/admin/audit`
   - 契约：返回浏览器可见的 append-only 审计时间线，HTTP body 为 `AuditSnapshot`
 - `GET /api/admin/config/diff`

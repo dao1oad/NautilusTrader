@@ -42,6 +42,8 @@
 
 `Phase 2C` 的浏览器 mutating command flow 只能通过显式确认对话发起低风险控制；高风险交易命令、批量动作与多用户审批流仍被 guardrail 阻断。
 
+`Phase 2` exit gate 当前要求 `#16/#17/#18` 全部合并、Phase 级验收命令通过，并保持“显式确认 + typed receipt + append-only 审计 + 无高风险交易命令”四项约束同时成立。
+
 ## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> 本机 codex-orchestrator 执行 -> 本地 pre-PR review -> PR -> review 闭环 -> merge -> memory/system-truth 回写`
