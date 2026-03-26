@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from datetime import UTC
 from datetime import datetime
+from enum import Enum
+from typing import Any
 from typing import Literal
+from uuid import uuid4
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -50,6 +54,53 @@ class LogSummary(BaseModel):
     level: Literal["DEBUG", "INFO", "WARN", "ERROR"]
     component: str
     message: str
+
+
+class CommandErrorCode(str, Enum):
+    INVALID_REQUEST = "invalid_request"
+    NOT_FOUND = "not_found"
+    CONFLICT = "conflict"
+    NOT_SUPPORTED = "not_supported"
+    UNAVAILABLE = "unavailable"
+    INTERNAL_ERROR = "internal_error"
+
+
+class CommandFailure(BaseModel):
+    code: CommandErrorCode
+    message: str
+    retryable: bool = False
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class CommandRequest(BaseModel):
+    command: str
+    target: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+    requested_by: str = "local-operator"
+    command_id: str = Field(default_factory=lambda: str(uuid4()))
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+
+
+class CommandReceipt(BaseModel):
+    command_id: str
+    command: str
+    target: str
+    status: Literal["accepted", "completed", "failed"]
+    recorded_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    message: str | None = None
+    failure: CommandFailure | None = None
+
+
+class AuditRecord(BaseModel):
+    sequence_id: int
+    command_id: str
+    command: str
+    target: str | None = None
+    status: Literal["accepted", "completed", "failed"]
+    payload: dict[str, Any] = Field(default_factory=dict)
+    recorded_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    message: str | None = None
+    failure: CommandFailure | None = None
 
 
 class SectionError(BaseModel):

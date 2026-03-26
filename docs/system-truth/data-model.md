@@ -49,6 +49,16 @@
   - 数据职责：日志摘要；表达浏览器可见的 `timestamp`、`level`、`component` 与 `message`
 - `SectionError`
   - 数据职责：局部失败投影；用于把后端子区域失败以 `section + message` 的形式暴露给浏览器，而不是泄露内部异常对象
+- `CommandRequest`
+  - 数据职责：管理命令请求 DTO；表达控制意图、目标资源、结构化 payload、发起者与请求时间戳
+- `CommandReceipt`
+  - 数据职责：命令处理结果 DTO；统一承载 `accepted/completed/failed` 状态、时间戳、可选消息与失败体
+- `CommandFailure`
+  - 数据职责：命令失败投影；把稳定错误码、重试提示和细节数据暴露给浏览器/运维，而不是泄露 Python 异常对象
+- `CommandErrorCode`
+  - 数据职责：Phase 2 管理命令的稳定错误码枚举，供 HTTP/WS 回执与审计流复用
+- `AuditRecord`
+  - 数据职责：append-only 管理命令审计事件；以 `sequence_id` 表达时间序列顺序，并保留原始 payload 与失败上下文
 
 当前浏览器可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
 

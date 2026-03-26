@@ -8,6 +8,7 @@
 
 - `crates/`: Rust workspace，承载核心领域模型、回测、实盘、网络、持久化、风险、组合管理、CLI 与各交易所/数据源适配器。
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
+- `nautilus_trader/admin/`: 管理控制面后端；负责把运行态状态、控制命令契约与审计记录投影成稳定的 admin DTO，而不是把内部 `live`/`execution` object 直接暴露给浏览器。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
@@ -31,5 +32,6 @@
 - 当前仓库允许单维护者模式：GitHub approving review 计数可配置为 `0`，但不能替代本地 pre-PR review
 - 当前仓库保留自己的 `.git`、`origin` 和治理规则；上游源码仅作为文件快照导入
 - Python 运行时表面必须保持 `nautilus_trader/`、`python/nautilus_trader/`、`crates/pyo3` 与 Rust core crates 的接口一致性
+- `Phase 2A` 的命令契约保持本机单人操作模式：`CommandRequest` 默认 `requested_by=local-operator`，所有控制结果都必须先落到 typed receipt 和 append-only audit record，再由后续 phase 绑定到真实控制 endpoint。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力
