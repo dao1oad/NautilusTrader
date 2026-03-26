@@ -23,7 +23,7 @@ Resolve GitHub issue #24 according to repository policy.
 
 ## Forbidden Scope
 
-- Remote main branch
+- Protected main branch
 - Shared governance files unless explicitly assigned
 
 ## Verification
@@ -33,4 +33,4 @@ Resolve GitHub issue #24 according to repository policy.
 
 ## Review Notes
 
-- Remote Codex review required before merge
+- Local pre-PR review record required before opening PR

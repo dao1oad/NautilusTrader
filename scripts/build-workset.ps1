@@ -51,8 +51,33 @@ function Get-Dependencies {
     return @()
   }
 
-  $matches = [regex]::Matches($Body, '#(\d+)')
-  return @($matches | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+  $dependencies = New-Object System.Collections.Generic.List[string]
+  $lines = $Body -split "\r?\n"
+  $inDependsSection = $false
+
+  foreach ($line in $lines) {
+    $trimmed = $line.Trim()
+
+    if (-not $inDependsSection) {
+      if ($trimmed -match '^(#+\s*)?Depends on\b') {
+        $inDependsSection = $true
+      } else {
+        continue
+      }
+    } elseif ($trimmed -match '^#+\s+\S+') {
+      break
+    }
+
+    if (-not $trimmed) {
+      continue
+    }
+
+    foreach ($match in [regex]::Matches($trimmed, '#(\d+)')) {
+      $dependencies.Add($match.Groups[1].Value)
+    }
+  }
+
+  return @($dependencies | Select-Object -Unique)
 }
 
 function Get-RemoteJobsRegistry {

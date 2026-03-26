@@ -86,7 +86,27 @@ for job in remote_registry.get("jobs", []):
 def get_dependencies(body: str) -> list[str]:
     if not body:
         return []
-    return sorted(set(re.findall(r"#(\d+)", body)))
+
+    dependencies: list[str] = []
+    in_depends_section = False
+
+    for raw_line in body.splitlines():
+        line = raw_line.strip()
+
+        if not in_depends_section:
+            if re.match(r"^(#+\s*)?Depends on\b", line):
+                in_depends_section = True
+            else:
+                continue
+        elif re.match(r"^#+\s+\S+", line):
+            break
+
+        if not line:
+            continue
+
+        dependencies.extend(re.findall(r"#(\d+)", line))
+
+    return sorted(set(dependencies))
 
 
 def get_issue_state(labels: list[str], dependencies: list[str]) -> str:

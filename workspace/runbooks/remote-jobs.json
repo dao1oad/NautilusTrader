@@ -16,12 +16,11 @@
       "manifest_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/manifest.json",
       "artifact_root": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7",
       "log_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/runner.ndjson",
-      "execution_status": "running",
-      "summary": "Using packaged fallback codex.orchestrator.json (compatibility path). Run `codex-orchestrator init codex` to pin repo-local config.",
+      "execution_status": "failed",
+      "summary": "Using packaged fallback codex.orchestrator.json (compatibility path). Run `codex-orchestrator init codex` to pin repo-local config.\nStage 'Run RLM loop' failed with exit code 10.\nGuardrails: spec-guard command not found.",
       "files_modified": [],
-      "last_synced_at": "2026-03-26T16:12:31.8046192+08:00",
-      "remote_status": "in_progress"
+      "last_synced_at": "2026-03-26T19:56:07.9007546+08:00",
+      "remote_status": "failed"
     }
   ]
 }
-

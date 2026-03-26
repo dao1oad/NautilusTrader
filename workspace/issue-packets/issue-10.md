@@ -1,4 +1,3 @@
-<<<<<<<< HEAD:workspace/issue-packets/issue-10.md
 # Issue Packet: #10
 
 ## Issue
@@ -11,20 +10,6 @@
 ## Goal
 
 Resolve GitHub issue #10 according to repository policy.
-========
-# Issue Packet: #19
-
-## Issue
-
-- ID: 19
-- Title: Phase 3A: blotter, fills, and position drill-down
-- Priority: Medium
-- Dependencies: 11, 10
-
-## Goal
-
-Resolve GitHub issue #19 according to repository policy.
->>>>>>>> 9785dfd (feat: switch NautilusTrader to pure local governance runtime):workspace/issue-packets/issue-19.md
 
 ## Constraints
 
