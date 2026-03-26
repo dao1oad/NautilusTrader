@@ -28,6 +28,25 @@
 - `scripts/pre-pr-check.ps1` 读取 issue 链接、truth-doc 映射、memory 更新和 `workspace/handoffs/review-resolution-issue-<issue>.md` 作为本地 review 信号
 - PR 元数据通过 `.github/PULL_REQUEST_TEMPLATE.md` 和 GitHub 事件负载传递
 
+## Admin Read-Only Control Plane Contracts
+
+- `nautilus_trader/admin/app.py`
+  - 暴露只读 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/logs`
+  - `orders`、`positions`、`accounts`、`logs` 四个列表 endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
+  - 当前只暴露 `GET` 与 `WebSocket /ws/admin/events`；`Phase 1` 不包含任何 mutating command endpoint
+- `nautilus_trader/admin/schemas.py`
+  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`LogsSnapshot`
+  - 所有列表 snapshot 都保留 `generated_at`、`partial`、`items`、`errors`；bounded list snapshot 额外保留 `limit`
+- `apps/admin-web/src/shared/types/admin.ts`
+  - 是前端对上述 DTO 的 TypeScript 镜像；前端只消费 admin DTO，不直接序列化内部 runtime object
+- `apps/admin-web/src/shared/api/admin-client.ts`
+  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters` 走无参 `GET`；`orders`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`
+  - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`
+- `apps/admin-web/src/shared/realtime/admin-events.ts`
+  - 固定浏览器侧 WS 入口为 `/ws/admin/events`
+  - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`server.error`
+  - 连接建立后只订阅 `overview` channel，并把读到的事件交给 invalidation bus 与运行态状态管理
+
 ## Repository Operational Interfaces
 
 - GitHub Actions 公开 `build`、`build-v2`、`coverage`、`docker`、`performance`、`security-audit`、`build-docs`、`nightly-tests` 等工程接口
