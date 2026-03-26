@@ -8,11 +8,11 @@
 
 - PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
 - 2026-03-26 已完成 Phase 1 umbrella `#9` 的 close-out merge；当前具体实施入口切换到 issue `#16`，为 Phase 2A 建立 typed command contract、错误码与 append-only audit sink。
-- 2026-03-27 issue `#17` 已通过 PR `#39` 合并到 `main`；当前实施入口切换到 issue `#18`，为低风险控制流补齐前端显式确认、最新 receipt、审计时间线与 config diff / recovery runbook。
+- 2026-03-27 issue `#18` 已通过 PR `#40` 合并到 `main`；当前实施入口切换到 umbrella issue `#10`，负责 Phase 2 close-out、phase-level truth docs / memory 回写与最终验收。
 
 ## Blockers
 
-- 无新的人工决策阻塞；当前 issue `#18` 的 scoped 实现与本地验证已完成，剩余动作是补齐 truth-doc / memory / review 产物并开 PR。
+- 无新的人工决策阻塞；当前 issue `#10` 的 close-out 只剩回写 merge 状态、记录 Phase 2 exit gate 结果并提交 umbrella PR。
 
 ## Confirmed Facts
 
@@ -98,12 +98,14 @@
 - 2026-03-27 issue `#18` 的隔离 worktree 已补齐 frontend `ConfirmCommandDialog`、page-level latest receipt 卡片、`Audit` / `Config` 路由与查询页面，并把 admin websocket 同时订阅 `overview` + `commands` channel，通过 command receipt bus / invalidation bus 刷新恢复面。
 - 2026-03-27 issue `#18` 还把 backend 命令流接上 `AuditSnapshot` 与 `ConfigDiffSnapshot` 读取契约：`GET /api/admin/audit` 直接投影 append-only audit 记录，`GET /api/admin/config/diff` 暴露本机 control-plane guardrail / runbook 只读快照。
 - 2026-03-27 已在 issue `#18` worktree 上验证 `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run build` 全部通过；`vite build` 仍只打印来自 `@tanstack/react-query` 的既有 `"use client"` 指令忽略警告。
+- 2026-03-27 PR `#40` 已合并到 `main`，merge commit 为 `b5f5bdbadf0477032ff4b928885ceb4ac5e45c30`；GitHub issue `#18` 已自动关闭，远端 open issues 当前剩余 9 个。
+- 2026-03-27 `#16/#17/#18` 已全部通过 PR 合并，Phase 2 的 operator-facing 能力现已同时满足显式确认、typed receipt、append-only 审计与“无高风险交易命令”四项 exit gate 约束。
 
 ## Next Actions
 
-1. 为 issue `#18` 完成本地 pre-PR review、truth-doc 检查与 PR 提交。
-2. issue `#18` 合并后推进 umbrella issue `#10` 的 Phase 2 close-out，确认 `#16/#17/#18` 全部完成。
-3. 保持 umbrella issue `#10` 只作为 Phase 2 close-out gate，不直接承载功能实现。
+1. 为 umbrella issue `#10` 记录 Phase 2 close-out 的 truth-doc / memory / review 产物并开 PR。
+2. issue `#10` 合并后把具体实施入口切换到 `#19`，开始 Phase 3A blotter / fills / position drill-down。
+3. 保持 `#11` 与 `#12` 继续只作为后续 phase umbrella gate，不直接承载功能实现。
 
 ## Repository
 
@@ -120,3 +122,7 @@
 ## Last Merge Update
 
 - 2026-03-27: PR #39 merged to main; Phase 2B low-risk strategy/adapter/subscription controls complete.
+
+## Last Merge Update
+
+- 2026-03-27: PR #40 merged to main; Phase 2C confirmations, audit timeline, and recovery surfaces complete.

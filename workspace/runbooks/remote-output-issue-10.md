@@ -1,0 +1,26 @@
+# Issue #10 Local Execution Output
+
+- Issue: #10
+- Worker: localhost
+- Branch: `codex/issue-10-phase-2-close-out`
+- Job Id: `2026-03-27T00-58-02-issue-10-manual`
+- Summary: Recorded the Phase 2 umbrella close-out after `#16/#17/#18` merged by updating phase-level truth docs, memory, and review artifacts, then rerunning the exit-gate verification commands.
+- Notes:
+  - This worktree was created directly from `origin/main` at `b5f5bdb`, the merge commit from PR `#40`, so the close-out diff starts from the exact mainline state that closed issue `#18`.
+  - Phase 2 close-out only touches truth-doc / memory / review bookkeeping; no new product code paths or high-risk command surfaces were introduced in this umbrella slice.
+- Files:
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/active-context.md`
+  - `memory/issue-ledger.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-10.md`
+  - `workspace/handoffs/local-review-issue-10.md`
+  - `workspace/handoffs/review-resolution-issue-10.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-10 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-10/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-10/apps/admin-web && npm run build`
+  - `git -C /root/NautilusTrader/.worktrees/issue-10 diff --check`

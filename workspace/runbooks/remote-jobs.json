@@ -132,8 +132,8 @@
       "manifest_path": "",
       "artifact_root": "",
       "log_path": "",
-      "execution_status": "awaiting-local-review",
-      "summary": "Phase 2C frontend confirmations, live receipts, audit timeline, and config diff / recovery runbook surfaces are ready for local pre-PR review.",
+      "execution_status": "merged",
+      "summary": "PR #40 merged to main; Phase 2C frontend confirmations, live receipts, audit timeline, and config diff / recovery surfaces complete.",
       "files_modified": [
         "nautilus_trader/admin/app.py",
         "nautilus_trader/admin/schemas.py",
@@ -177,10 +177,44 @@
         "workspace/handoffs/review-resolution-issue-18.md",
         "workspace/handoffs/local-review-issue-18.md"
       ],
-      "last_synced_at": "2026-03-27T00:47:05+08:00",
-      "remote_status": "completed",
+      "last_synced_at": "2026-03-27T00:58:02+08:00",
+      "remote_status": "merged",
+      "pr_number": 40,
       "output_artifact_path": "workspace/runbooks/remote-output-issue-18.md",
       "review_resolution_path": "workspace/handoffs/review-resolution-issue-18.md"
+    },
+    {
+      "issue_number": 10,
+      "title": "Phase 2: admin control commands and audit loop",
+      "packet_path": "workspace/issue-packets/issue-10.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-10",
+      "branch": "codex/issue-10-phase-2-close-out",
+      "task_id": "issue-10-phase-2-close-out",
+      "job_id": "2026-03-27T00-58-02-issue-10-manual",
+      "tmux_session": "manual-main-agent",
+      "dispatch_prompt_path": "",
+      "manifest_path": "",
+      "artifact_root": "",
+      "log_path": "",
+      "execution_status": "awaiting-local-review",
+      "summary": "Phase 2 umbrella close-out truth docs, memory, and review artifacts are ready for local pre-PR review after #16/#17/#18 merged.",
+      "files_modified": [
+        "docs/system-truth/api-contracts.md",
+        "docs/system-truth/data-model.md",
+        "docs/system-truth/runtime-flows.md",
+        "memory/active-context.md",
+        "memory/issue-ledger.md",
+        "workspace/runbooks/remote-jobs.json",
+        "workspace/runbooks/remote-output-issue-10.md",
+        "workspace/handoffs/local-review-issue-10.md",
+        "workspace/handoffs/review-resolution-issue-10.md"
+      ],
+      "last_synced_at": "2026-03-27T00:58:02+08:00",
+      "remote_status": "completed",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-10.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-10.md"
     }
   ]
 }

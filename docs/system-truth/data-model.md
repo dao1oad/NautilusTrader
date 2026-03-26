@@ -71,6 +71,8 @@
   - 数据职责：把 `CommandReceipt` 包装成浏览器可消费的实时事件；当前 envelope 结构为 `{type, receipt}`
 - `CommandRequest.target`
   - 数据职责：当前低风险控制目标统一投影为 `strategies/<id>`、`adapters/<id>`、`subscriptions/<instrument_id>` 三类资源定位
+- `Phase 2` close-out guardrail
+  - 数据职责：当前浏览器可见 command/audit/config DTO 只覆盖低风险控制与恢复投影；不存在订单修改、批量交易或其他高风险不可逆命令的数据模型
 
 当前浏览器可见的数据模型就是上述 admin DTO；任何内部运行时对象都必须先投影到这些 DTO，再通过 `nautilus_trader/admin` 暴露。
 
