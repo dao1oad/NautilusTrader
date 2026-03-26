@@ -10,18 +10,31 @@
       "worktree_path": "/root/NautilusTrader/.worktrees/issue-9",
       "branch": "codex/issue-9-phase-1-admin-console-read-only-operations-surfaces",
       "task_id": "issue-9-phase-1-admin-console-read-only-operations-surfaces",
-      "job_id": "2026-03-26T12-57-00-660Z-3bcda7b8",
-      "tmux_session": "codex-orchestrator-issue-9-20260326205659",
+      "job_id": "2026-03-26T15-11-54-481Z-68dfbdcb",
+      "tmux_session": "codex-orchestrator-issue-9-20260326231151",
       "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-9.prompt.md",
-      "manifest_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8/manifest.json",
-      "artifact_root": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8",
-      "log_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8/runner.ndjson",
-      "execution_status": "failed",
-      "summary": "Local codex-orchestrator status is unavailable for this run.",
-      "files_modified": [],
-      "last_synced_at": "2026-03-26T20:57:23.5368333+08:00",
-      "remote_status": "missing"
+      "manifest_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T15-11-54-481Z-68dfbdcb/manifest.json",
+      "artifact_root": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T15-11-54-481Z-68dfbdcb",
+      "log_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T15-11-54-481Z-68dfbdcb/runner.ndjson",
+      "execution_status": "awaiting-local-review",
+      "summary": "Phase 1 umbrella close-out truth docs, review artifact naming, memory, and review handoff artifacts are ready for local pre-PR review.",
+      "files_modified": [
+        "docs/system-truth/api-contracts.md",
+        "docs/system-truth/data-model.md",
+        "docs/system-truth/runtime-flows.md",
+        "docs/system-truth/module-boundaries.md",
+        "memory/active-context.md",
+        "memory/decision-log.md",
+        "memory/progress-log.md",
+        "memory/issue-ledger.md",
+        "workspace/runbooks/remote-jobs.json",
+        "workspace/runbooks/remote-output-issue-9.md",
+        "workspace/handoffs/review-resolution-issue-9.md"
+      ],
+      "last_synced_at": "2026-03-26T23:29:38+08:00",
+      "remote_status": "completed",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-9.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-9.md"
     }
   ]
 }
-

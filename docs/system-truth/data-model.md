@@ -66,8 +66,9 @@
 - `memory/issue-ledger.md`: issue 编排账本
 - `workspace/runbooks/issues-snapshot.json`: GitHub open issues 标准化快照
 - `workspace/issue-packets/*.md`: subagent 任务包
-- `workspace/handoffs/local-review-issue-*.md`: issue 级本地 PR review 凭据
-- `workspace/handoffs/review-resolution-*.md`: 历史远端 review 闭环记录
+- `workspace/handoffs/review-resolution-issue-*.md`: issue 级本地 pre-PR review 凭据；当前由 `scripts/prepare-remote-pr.ps1` 生成并由 `scripts/pre-pr-check.ps1` 校验
+- `workspace/handoffs/local-review-issue-*.md`: 早期本地 review 迁移阶段遗留的历史凭据，保留用于已合并 PR 的审计追溯，不再作为当前 gate 的 canonical 输入
+- `workspace/handoffs/review-resolution-*.md`: 历史远端 review 或旧 PR 级闭环记录
 - `ops/*.yaml`: 治理策略、agent 配置、review gate 与编排设置
 
 ## Data Model Rules

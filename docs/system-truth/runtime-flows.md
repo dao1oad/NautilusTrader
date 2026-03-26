@@ -14,6 +14,22 @@
 
 `examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性
 
+## Admin Read-Only Request Flow
+
+`TanStack Router route -> route-owned page component -> TanStack Query query key -> apps/admin-web/src/shared/api/admin-client.ts -> /api/admin/* FastAPI route -> nautilus_trader/admin/services/* snapshot builder -> live/execution/portfolio/accounting/logging runtime surfaces -> admin snapshot DTO -> browser page render`
+
+`Overview`、`Nodes`、`Strategies`、`Adapters` 走无界单次 snapshot；`Orders`、`Positions`、`Accounts`、`Logs` 必须通过 `limit` 约束读取范围，避免 UI 发起无界查询。
+
+## Admin Realtime Refresh Flow
+
+`/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> page state clears transient runtime error on successful fresh snapshot`
+
+当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`orders`、`positions`、`accounts`、`logs` 八类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部 Phase 1 read-only surfaces。
+
+## Admin Command Guardrail Flow
+
+`Phase 1` 没有浏览器到后端的 mutating command flow；admin web 只允许读取 REST snapshot 与订阅只读 WS 事件，任何控制命令都必须留到 `Phase 2` 再引入。
+
 ## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> 本机 codex-orchestrator 执行 -> 本地 pre-PR review -> PR -> review 闭环 -> merge -> memory/system-truth 回写`
