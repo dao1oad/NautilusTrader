@@ -10,17 +10,18 @@
       "worktree_path": "/root/NautilusTrader/.worktrees/issue-9",
       "branch": "codex/issue-9-phase-1-admin-console-read-only-operations-surfaces",
       "task_id": "issue-9-phase-1-admin-console-read-only-operations-surfaces",
-      "job_id": "2026-03-26T08-12-14-898Z-29873ca7",
-      "tmux_session": "codex-orchestrator-issue-9-20260326161214",
+      "job_id": "2026-03-26T12-53-13-732Z-b069580f",
+      "tmux_session": "codex-orchestrator-issue-9-20260326205309",
       "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-9.prompt.md",
-      "manifest_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/manifest.json",
-      "artifact_root": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7",
-      "log_path": "/root/NautilusTrader/.worktrees/issue-9/.runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T08-12-14-898Z-29873ca7/runner.ndjson",
+      "manifest_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f/manifest.json",
+      "artifact_root": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f",
+      "log_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f/runner.ndjson",
       "execution_status": "failed",
-      "summary": "Using packaged fallback codex.orchestrator.json (compatibility path). Run `codex-orchestrator init codex` to pin repo-local config.\nStage 'Run RLM loop' failed with exit code 10.\nGuardrails: spec-guard command not found.",
+      "summary": "Local codex-orchestrator status is unavailable for this run.",
       "files_modified": [],
-      "last_synced_at": "2026-03-26T19:56:07.9007546+08:00",
-      "remote_status": "failed"
+      "last_synced_at": "2026-03-26T20:53:38.1539191+08:00",
+      "remote_status": "missing"
     }
   ]
 }
+

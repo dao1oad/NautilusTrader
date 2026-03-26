@@ -4,6 +4,7 @@ param(
   [string]$WorkerConfigPath = 'ops/remote-execution.yaml',
   [string]$RemoteJobsPath = 'workspace\runbooks\remote-jobs.json',
   [string]$LedgerPath = 'memory\issue-ledger.md',
+  [switch]$RecoverFailedRun,
   [switch]$DryRun
 )
 
@@ -174,6 +175,10 @@ function Get-IssueLedgerRow {
         title = if ($cells.Count -gt 1) { $cells[1] } else { '' }
         state = if ($cells.Count -gt 4) { $cells[4] } else { '' }
         execution = if ($cells.Count -gt 6) { $cells[6] } else { '' }
+        worker = if ($cells.Count -gt 7) { $cells[7] } else { '' }
+        job = if ($cells.Count -gt 8) { $cells[8] } else { '' }
+        branch = if ($cells.Count -gt 9) { $cells[9] } else { '' }
+        next = if ($cells.Count -gt 11) { $cells[11] } else { '' }
       }
     }
   }
@@ -424,6 +429,58 @@ function Ensure-LocalWorktree {
   }
 }
 
+function Stop-TmuxSessionIfExists {
+  param([string]$SessionName)
+
+  if (-not $SessionName) {
+    return
+  }
+
+  & tmux has-session -t $SessionName 2>$null
+  if ($LASTEXITCODE -eq 0) {
+    & tmux kill-session -t $SessionName
+    if ($LASTEXITCODE -ne 0) {
+      throw "Unable to kill tmux session $SessionName during failed local run recovery."
+    }
+  }
+}
+
+function Reset-FailedLocalRunState {
+  param(
+    [string]$RepoPath,
+    [string]$WorktreePath,
+    [string]$BranchName,
+    [int]$IssueNumber,
+    [object]$Registry
+  )
+
+  # Recover a failed local run by recreating the issue worktree from the current base ref.
+  $existingJob = @($Registry.jobs | Where-Object { [string]$_.issue_number -eq [string]$IssueNumber } | Select-Object -First 1)
+  if ($existingJob -and $existingJob.tmux_session) {
+    Stop-TmuxSessionIfExists -SessionName ([string]$existingJob.tmux_session)
+  }
+
+  $worktreeGitPath = Join-Path $WorktreePath '.git'
+  if (Test-Path $worktreeGitPath) {
+    & git -C $RepoPath worktree remove --force $WorktreePath
+    if ($LASTEXITCODE -ne 0) {
+      throw "Unable to remove stale worktree for failed local run recovery: $WorktreePath"
+    }
+  } elseif (Test-Path $WorktreePath) {
+    throw "Worktree recovery requires a git worktree path, but found a plain directory: $WorktreePath"
+  }
+
+  if (Test-GitRefExists -RepoPath $RepoPath -RefName ("refs/heads/{0}" -f $BranchName)) {
+    $baseRef = Get-WorktreeBaseRef -RepoPath $RepoPath
+    & git -C $RepoPath branch -f $BranchName $baseRef 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      throw "Unable to reset branch $BranchName during failed local run recovery."
+    }
+  }
+
+  $Registry.jobs = @($Registry.jobs | Where-Object { [string]$_.issue_number -ne [string]$IssueNumber })
+}
+
 function Sync-IncludeFilesToWorktree {
   param(
     [string]$RepoPath,
@@ -499,6 +556,8 @@ if (-not $issueRow) {
   throw "Issue #$IssueNumber is not present in $LedgerPath."
 }
 
+$recoverFailedRunRequested = [bool]$RecoverFailedRun -or ($issueRow.state -eq 'ready' -and $issueRow.execution -eq 'failed')
+
 $repoPath = Resolve-ConfigPath -Path $config.repo_path
 $worktreeRoot = Resolve-ConfigPath -Path $config.worktree_root
 $dispatchRoot = Resolve-ConfigPath -Path $config.dispatch_root
@@ -543,6 +602,7 @@ if ($DryRun) {
     tmux_session = $tmuxSessionName
     worktree = $worktreePath
     dispatch_prompt = $dispatchPath
+    recover_failed_run = $recoverFailedRunRequested
     include_files = $includeFiles
     prompt = $prompt
   } | ConvertTo-Json -Depth 6
@@ -553,6 +613,12 @@ $orchestratorPath = Resolve-CommandPath -ConfiguredPath $config.codex_orchestrat
 if (-not $config.runner) {
   $config.runner = 'rlm'
 }
+
+if ($recoverFailedRunRequested) {
+  Write-Host ("Recovering failed local run for issue #{0} before re-dispatch." -f $IssueNumber)
+  Reset-FailedLocalRunState -RepoPath $repoPath -WorktreePath $worktreePath -BranchName $branchName -IssueNumber $IssueNumber -Registry $registry
+}
+
 Ensure-LocalWorktree -RepoPath $repoPath -WorktreeRoot $worktreeRoot -WorktreePath $worktreePath -BranchName $branchName
 Sync-IncludeFilesToWorktree -RepoPath $repoPath -WorktreePath $worktreePath -IncludeFiles $includeFiles
 New-Item -ItemType Directory -Force -Path $dispatchRoot | Out-Null

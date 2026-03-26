@@ -39,6 +39,7 @@
 
 6. 读取 `memory/issue-ledger.md`，输出当前：
 - ready issues
+- recoverable failed issues
 - blocked issues
 - running issues
 - 推荐首先派发的 issue
@@ -49,6 +50,9 @@
 7. 默认采用自动执行模式：
 - 如果存在最高优先级且依赖满足的 ready issue，直接执行
   `pwsh -NoProfile -File scripts/dispatch-issue.ps1 -IssueNumber <issue-number>`
+- 如果不存在 idle 的 ready issue，但存在 `ready + failed + Inspect local job` 的 issue，直接走 failed issue retry 路径：
+  `pwsh -NoProfile -File scripts/dispatch-issue.ps1 -IssueNumber <issue-number> -RecoverFailedRun`
+- failed issue retry 前必须说明正在恢复 failed local run，并重建本机 worktree 后再重新派发
 - 派发完成后，报告 job id、worker、branch、下一步观察命令
 
 8. 给出本机观察命令：
@@ -62,6 +66,7 @@
 - 当前本机执行是否已启动
 - agentboard 访问方式
 - 已派发 issue 和 job id
+- 如果是 failed issue retry，明确写出本次 retry 的 issue 和恢复动作
 - 下一步我应输入的命令
 ```
 

@@ -15,6 +15,7 @@ $smokes = @(
   'tests\smoke\test-truth-doc-enforcement.ps1',
   'tests\smoke\test-startup-prompt.ps1',
   'tests\smoke\test-main-agent-startup-prompt.ps1',
+  'tests\smoke\test-main-agent-recovery.ps1',
   'tests\smoke\test-remote-execution-integration.ps1',
   'tests\smoke\test-remote-execution-runtime.ps1'
 )

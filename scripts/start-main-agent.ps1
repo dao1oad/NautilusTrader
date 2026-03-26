@@ -153,6 +153,24 @@ function Format-IssueList {
   return ($Rows | ForEach-Object { '#{0}' -f $_.IssueNumber }) -join ', '
 }
 
+function New-IssueSelection {
+  param(
+    [object]$Row,
+    [bool]$RecoverFailedRun,
+    [string]$RecommendedNextStep
+  )
+
+  if (-not $Row) {
+    return $null
+  }
+
+  return [pscustomobject]@{
+    Row = $Row
+    RecoverFailedRun = $RecoverFailedRun
+    RecommendedNextStep = $RecommendedNextStep
+  }
+}
+
 function Get-RecommendedIssue {
   param(
     [object[]]$Rows,
@@ -160,12 +178,31 @@ function Get-RecommendedIssue {
   )
 
   if ($ExplicitIssueNumber -gt 0) {
-    return $Rows | Where-Object { $_.IssueNumber -eq $ExplicitIssueNumber } | Select-Object -First 1
+    $explicitIssue = $Rows | Where-Object { $_.IssueNumber -eq $ExplicitIssueNumber } | Select-Object -First 1
+    if (-not $explicitIssue) {
+      return $null
+    }
+
+    $recoverFailedRun = $explicitIssue.State -eq 'ready' -and $explicitIssue.Execution -eq 'failed'
+    $recommendedNextStep = if ($recoverFailedRun) { 'Retry failed local issue' } else { $explicitIssue.Next }
+    return New-IssueSelection -Row $explicitIssue -RecoverFailedRun $recoverFailedRun -RecommendedNextStep $recommendedNextStep
   }
 
-  return $Rows |
+  $dispatchableIssue = $Rows |
     Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'idle' -and $_.Next -eq 'Dispatch subagent' } |
     Select-Object -First 1
+  if ($dispatchableIssue) {
+    return New-IssueSelection -Row $dispatchableIssue -RecoverFailedRun $false -RecommendedNextStep 'Dispatch subagent'
+  }
+
+  $recoverableFailedIssue = $Rows |
+    Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'failed' -and $_.Next -eq 'Inspect local job' } |
+    Select-Object -First 1
+  if ($recoverableFailedIssue) {
+    return New-IssueSelection -Row $recoverableFailedIssue -RecoverFailedRun $true -RecommendedNextStep 'Retry failed local issue'
+  }
+
+  return $null
 }
 
 $checkGovernanceArgs = @()
@@ -185,21 +222,23 @@ if (-not $SkipRemoteChecks) {
 
 $ledgerRows = @(Get-IssueLedgerRows -Path $LedgerPath)
 $readyIssues = @($ledgerRows | Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'idle' })
+$recoverableFailedIssues = @($ledgerRows | Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'failed' -and $_.Next -eq 'Inspect local job' })
 $blockedIssues = @($ledgerRows | Where-Object { $_.State -eq 'blocked' })
 $runningIssues = @($ledgerRows | Where-Object { $_.Execution -in @('running', 'dispatching', 'awaiting-local-review') })
 $recommendedIssue = Get-RecommendedIssue -Rows $ledgerRows -ExplicitIssueNumber $IssueNumber
 
 Write-Host 'Issue Ledger summary'
 Write-Host ("Ready issues: {0}" -f (Format-IssueList -Rows $readyIssues))
+Write-Host ("Recoverable failed issues: {0}" -f (Format-IssueList -Rows $recoverableFailedIssues))
 Write-Host ("Blocked issues: {0}" -f (Format-IssueList -Rows $blockedIssues))
 Write-Host ("Running issues: {0}" -f (Format-IssueList -Rows $runningIssues))
 Write-Host (Get-AgentboardAccessSummary -ConfigPath $WorkerConfigPath)
 
 if ($recommendedIssue) {
-  Write-Host ("Recommended issue: #{0} ({1})" -f $recommendedIssue.IssueNumber, $recommendedIssue.Title)
-  Write-Host ("Recommended next step: {0}" -f $recommendedIssue.Next)
+  Write-Host ("Recommended issue: #{0} ({1})" -f $recommendedIssue.Row.IssueNumber, $recommendedIssue.Row.Title)
+  Write-Host ("Recommended next step: {0}" -f $recommendedIssue.RecommendedNextStep)
 } else {
-  Write-Host 'No issue is ready to Dispatch subagent.'
+  Write-Host 'No issue is ready to dispatch or retry.'
 }
 
 if (-not $AutoDispatch) {
@@ -207,8 +246,14 @@ if (-not $AutoDispatch) {
 }
 
 if (-not $recommendedIssue) {
-  throw 'AutoDispatch requested but no issue is ready to dispatch.'
+  throw 'AutoDispatch requested but no issue is ready to dispatch or retry.'
 }
 
-Invoke-RepoScript -Name 'dispatch-issue.ps1' -Arguments @('-IssueNumber', [string]$recommendedIssue.IssueNumber)
-Write-Host ("Dispatched issue #{0}. Next: pwsh -NoProfile -File scripts/sync-remote-execution.ps1" -f $recommendedIssue.IssueNumber)
+$dispatchArguments = @('-IssueNumber', [string]$recommendedIssue.Row.IssueNumber)
+if ($recommendedIssue.RecoverFailedRun) {
+  Write-Host ("Retry failed local issue #{0} before re-dispatch." -f $recommendedIssue.Row.IssueNumber)
+  $dispatchArguments += '-RecoverFailedRun'
+}
+
+Invoke-RepoScript -Name 'dispatch-issue.ps1' -Arguments $dispatchArguments
+Write-Host ("Dispatched issue #{0}. Next: pwsh -NoProfile -File scripts/sync-remote-execution.ps1" -f $recommendedIssue.Row.IssueNumber)
