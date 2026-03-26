@@ -19,6 +19,18 @@
 ## Runtime Interfaces
 
 - Python import root 为 `nautilus_trader`；其包结构覆盖 `accounting`、`adapters`、`analysis`、`backtest`、`cache`、`common`、`config`、`core`、`data`、`execution`、`indicators`、`live`、`model`、`persistence`、`portfolio`、`risk`、`serialization`、`system`、`trading`
+- `nautilus_trader.admin.schemas.CommandRequest`
+  - 契约：管理命令请求统一携带 `command`、`target`、`payload`、`command_id`、`requested_at` 与 `requested_by`
+  - 默认：当前固定为本机单人模式，`requested_by` 缺省值为 `local-operator`
+- `nautilus_trader.admin.schemas.CommandReceipt`
+  - 契约：所有管理控制结果都投影为 typed receipt，状态集合固定为 `accepted`、`completed`、`failed`
+  - 字段：`command_id`、`command`、`target`、`status`、`recorded_at`、可选 `message` 与可选 `failure`
+- `nautilus_trader.admin.schemas.CommandFailure`
+  - 契约：失败回执与审计记录都复用同一错误体，至少包含稳定 `code`、人类可读 `message`、`retryable` 与结构化 `details`
+- `nautilus_trader.admin.schemas.CommandErrorCode`
+  - 契约：当前稳定错误码集合为 `invalid_request`、`not_found`、`conflict`、`not_supported`、`unavailable`、`internal_error`
+- `nautilus_trader.admin.schemas.AuditRecord`
+  - 契约：审计记录是 append-only 的浏览器/运维投影，固定包含单调递增 `sequence_id`、`command_id`、`status`、`payload`、`recorded_at` 与可选失败信息
 - `crates/cli` 提供命令行接口产物；相关发布与打包流程由 `.github/workflows/cli-binaries.yml` 驱动
 - `schema/sql/*.sql` 是持久化数据库对象定义接口，面向 `persistence` 层
 - `examples/*` 与 `tests/*` 依赖上述 Python/Rust surface，不单独定义产品 API

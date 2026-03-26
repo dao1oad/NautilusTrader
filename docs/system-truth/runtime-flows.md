@@ -10,6 +10,12 @@
 
 `数据源/交易所适配器 -> 规范化 market/order/account 事件 -> common/core/model -> backtest/live/execution -> portfolio/risk/system/trading -> persistence/serialization/报告输出`
 
+## Admin Command Contract Flow
+
+`操作意图 -> CommandRequest(command/target/payload/requested_by) -> command service 组装 typed receipt -> audit sink 追加 AuditRecord(sequence_id/status/payload) -> 后续 phase 再把 receipt/audit 暴露到 HTTP/WS/UI`
+
+`Phase 2A` 当前只建立命令契约、错误码和 append-only 审计边界，不直接引入高风险交易执行流。
+
 ## Example And Test Flow
 
 `examples/*` 与 `tests/*` 通过同一 `nautilus_trader` import surface 驱动回测、实盘、适配器和持久化场景，验证 Python 层与 Rust 核心的一致性

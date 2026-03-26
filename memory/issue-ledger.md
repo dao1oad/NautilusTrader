@@ -10,8 +10,7 @@
 | #19 | Phase 3A: blotter, fills, and position drill-down | Medium | 10 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #18 | Phase 2C: command confirmations, audit timeline, and recovery runbooks | Medium | 16, 17 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #17 | Phase 2B: low-risk strategy, adapter, and subscription controls | Medium | 16 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
-| #16 | Phase 2A: command contract, error codes, and audit sink | Medium | 9 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
+| #16 | Phase 2A: command contract, error codes, and audit sink | Medium | 9 | ready | No | awaiting-local-review | localhost | 2026-03-26T15-46-24-018Z-87f53a5d | codex/issue-16-phase-2a-command-contract-error-codes-and-audit-sink | TBD | Complete local pre-PR review |
 | #12 | Phase 4: unified workbench and delivery hardening | Medium | 11 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
-| #10 | Phase 2: admin control commands and audit loop | Medium | 9 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
-| #9 | Phase 1: admin console read-only operations surfaces | Medium | 8 | ready | No | awaiting-local-review | localhost | 2026-03-26T15-11-54-481Z-68dfbdcb | codex/issue-9-phase-1-admin-console-read-only-operations-surfaces | TBD | Open PR |
+| #10 | Phase 2: admin control commands and audit loop | Medium | 9 | ready | No | idle | TBD | TBD | TBD | TBD | Dispatch subagent |

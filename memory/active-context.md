@@ -7,6 +7,7 @@
 ## Current Phase
 
 - PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
+- 2026-03-26 已完成 Phase 1 umbrella `#9` 的 close-out merge；当前具体实施入口切换到 issue `#16`，为 Phase 2A 建立 typed command contract、错误码与 append-only audit sink。
 
 ## Blockers
 
@@ -91,14 +92,13 @@
 - 2026-03-25 新 policy 下，PR `#36` 已补入 `workspace/handoffs/local-review-issue-15.md` 作为本地 PR review 证据，后续只需等待新的 `pr-gate/build` 基于该规则收口。
 - 2026-03-26 已将仓库治理运行态切换为纯本机模式：`codex-orchestrator` 由本地主 agent 会话驱动，issue 派发默认落到本机 `.worktrees/`，`agentboard` 运行在本机 `127.0.0.1:8088`，不再依赖远程 worker SSH/DNS 解析。
 - 2026-03-26 纯本机运行态新增 `ops/remote-execution.yaml`、`scripts/start-main-agent.ps1`、`scripts/start-local-agentboard.ps1`、`scripts/dispatch-issue.ps1`、`scripts/sync-remote-execution.ps1` 与对应 smoke 覆盖；`AGENTS.md` 也已切换到本机启动路径。
-- 2026-03-26 已确认 `#13`、`#14`、`#15` 的功能与 truth-doc 变更都已并入 `main`，`#9` 当前只剩 umbrella close-out 文档/记忆收尾与本地 pre-PR review。
-- 2026-03-26 当前分支 `codex/issue-9-phase-1-admin-console-read-only-operations-surfaces` 已补齐 Phase 1 umbrella truth-doc 与 memory 收尾，本地 pre-PR review 已接受，下一步是开 PR。
+- 2026-03-26 issue `#16` 的隔离 worktree 已补齐 `CommandRequest` / `CommandReceipt` / `CommandFailure` / `AuditRecord` DTO、稳定 `CommandErrorCode` 枚举，以及 `InMemoryAuditSink` append-only 审计服务；`pytest tests/unit_tests/admin/test_commands_schema.py tests/unit_tests/admin/test_audit_service.py -v --confcutdir=tests/unit_tests/admin` 已通过。
 
 ## Next Actions
 
-1. 为 issue `#9` 开 PR，作为 Phase 1 umbrella close-out gate。
-2. 在 `#9` 合并后，把执行入口推进到依赖它的 `#10`。
-3. 跟踪并单独修复 `rlm` runner 在 review-ready 后仍继续迭代的问题，避免后续 umbrella close-out 再次卡在人工停止。
+1. 为 issue `#16` 完成本地 pre-PR review、truth-doc 检查与 PR 提交。
+2. issue `#16` 合并后派发 issue `#17`，继续 Phase 2 的低风险控制 endpoint 与 receipt/WS 落地。
+3. 保持 umbrella issue `#10` 只作为 Phase 2 close-out gate，不直接承载功能实现。
 
 ## Repository
 
@@ -107,3 +107,7 @@
 ## Last Merge Update
 
 - 2026-03-26: Rebasing the pure-local runtime migration onto the latest `main` so the local-only governance stack remains the default operating model.
+
+## Last Merge Update
+
+- 2026-03-26: PR #37 merged to main; Phase 1 umbrella close-out complete.
