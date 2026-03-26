@@ -60,6 +60,7 @@ codex
 Then input `继续`, or paste the full startup prompt from `prompts/main-agent-startup-prompt.md`.
 
 If the last local issue run failed, the same `继续` entrypoint will retry that failed local issue run through the recovery path before re-dispatching.
+If a local issue run is already running, `继续` will keep the main agent in observation mode and report the active job instead of starting a duplicate dispatch.
 
 That startup path boots the current repository governance stack in place:
 

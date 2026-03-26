@@ -246,6 +246,12 @@ if (-not $AutoDispatch) {
 }
 
 if (-not $recommendedIssue) {
+  if ($runningIssues.Count -gt 0) {
+    Write-Host ("A local issue run is already active: {0}" -f (Format-IssueList -Rows $runningIssues))
+    Write-Host 'Observation mode only; no new issue will be dispatched.'
+    exit 0
+  }
+
   throw 'AutoDispatch requested but no issue is ready to dispatch or retry.'
 }
 

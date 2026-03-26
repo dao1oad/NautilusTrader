@@ -16,18 +16,18 @@ $prompt = Get-Content 'prompts\main-agent-startup-prompt.md' -Raw
 $start = Get-Content 'scripts\start-main-agent.ps1' -Raw
 $dispatch = Get-Content 'scripts\dispatch-issue.ps1' -Raw
 
-if ($agents -notmatch 'continue' -or $agents -notmatch 'failed' -or $agents -notmatch 'retry') {
-  Write-Error 'AGENTS.md must document that a generic continuation request can retry a failed local issue run.'
+if ($agents -notmatch 'continue' -or $agents -notmatch 'failed' -or $agents -notmatch 'retry' -or $agents -notmatch 'running') {
+  Write-Error 'AGENTS.md must document that a generic continuation request can retry a failed local issue run and tolerate an already running local issue.'
   exit 1
 }
 
-if ($prompt -notmatch 'failed' -or $prompt -notmatch 'retry' -or $prompt -notmatch 'Inspect local job') {
-  Write-Error 'main-agent-startup-prompt.md must explain how the local main agent should recover and retry a failed issue run.'
+if ($prompt -notmatch 'failed' -or $prompt -notmatch 'retry' -or $prompt -notmatch 'Inspect local job' -or $prompt -notmatch 'running') {
+  Write-Error 'main-agent-startup-prompt.md must explain both failed issue recovery and already-running local issue behavior.'
   exit 1
 }
 
-if ($start -notmatch "Execution -eq 'failed'" -or $start -notmatch 'RecoverFailedRun' -or $start -notmatch 'Retry failed local issue') {
-  Write-Error 'start-main-agent.ps1 must detect failed ready issues and re-dispatch them through the recovery path.'
+if ($start -notmatch "Execution -eq 'failed'" -or $start -notmatch 'RecoverFailedRun' -or $start -notmatch 'Retry failed local issue' -or $start -notmatch 'A local issue run is already active') {
+  Write-Error 'start-main-agent.ps1 must recover failed ready issues and fall back to observation mode when a local issue is already running.'
   exit 1
 }
 

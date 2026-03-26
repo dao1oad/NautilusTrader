@@ -14,6 +14,6 @@
 | #12 | Phase 4: unified workbench and delivery hardening | Medium | 11 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #11 | Phase 3: trading operations and diagnostics surfaces | Medium | 10 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #10 | Phase 2: admin control commands and audit loop | Medium | 9 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
-| #9 | Phase 1: admin console read-only operations surfaces | Medium | 8 | ready | No | failed | localhost | 2026-03-26T12-53-13-732Z-b069580f | codex/issue-9-phase-1-admin-console-read-only-operations-surfaces | TBD | Inspect local job |
+| #9 | Phase 1: admin console read-only operations surfaces | Medium | 8 | ready | No | failed | localhost | 2026-03-26T12-57-00-660Z-3bcda7b8 | codex/issue-9-phase-1-admin-console-read-only-operations-surfaces | TBD | Inspect local job |
 
 

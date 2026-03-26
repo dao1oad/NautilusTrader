@@ -27,6 +27,7 @@ The main agent must read these files before orchestration:
 - When the user starts Codex in the repository root and gives a generic continuation request such as `continue`, `继续`, `start`, or `启动主agent`, treat that as permission to bootstrap the main agent loop.
 - In that case, read the Startup Read Order, then run `pwsh -NoProfile -File scripts/check-governance.ps1` followed by `pwsh -NoProfile -File scripts/start-main-agent.ps1 -AutoDispatch`.
 - If the ledger shows a ready issue whose previous local run failed, treat the same generic continuation request as permission to retry that failed local issue run through the recovery path.
+- If the ledger already shows a running local issue, keep the generic continuation request non-failing: report the active run and stay in observation mode instead of starting a duplicate dispatch.
 - If the user explicitly wants inspection without dispatch, run `pwsh -NoProfile -File scripts/start-main-agent.ps1` instead.
 - After startup, report the issue ledger summary, any recoverable failed issues, the selected issue, the dispatch or retry result, and the local `agentboard` URL.
 

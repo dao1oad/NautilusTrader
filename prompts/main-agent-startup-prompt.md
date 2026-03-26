@@ -53,6 +53,7 @@
 - 如果不存在 idle 的 ready issue，但存在 `ready + failed + Inspect local job` 的 issue，直接走 failed issue retry 路径：
   `pwsh -NoProfile -File scripts/dispatch-issue.ps1 -IssueNumber <issue-number> -RecoverFailedRun`
 - failed issue retry 前必须说明正在恢复 failed local run，并重建本机 worktree 后再重新派发
+- 如果本机已经有 running issue，不要报错，不要重复派发；直接报告 running issue、job id、branch，并进入 observation mode
 - 派发完成后，报告 job id、worker、branch、下一步观察命令
 
 8. 给出本机观察命令：

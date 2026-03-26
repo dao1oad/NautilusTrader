@@ -10,16 +10,16 @@
       "worktree_path": "/root/NautilusTrader/.worktrees/issue-9",
       "branch": "codex/issue-9-phase-1-admin-console-read-only-operations-surfaces",
       "task_id": "issue-9-phase-1-admin-console-read-only-operations-surfaces",
-      "job_id": "2026-03-26T12-53-13-732Z-b069580f",
-      "tmux_session": "codex-orchestrator-issue-9-20260326205309",
+      "job_id": "2026-03-26T12-57-00-660Z-3bcda7b8",
+      "tmux_session": "codex-orchestrator-issue-9-20260326205659",
       "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-9.prompt.md",
-      "manifest_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f/manifest.json",
-      "artifact_root": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f",
-      "log_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-53-13-732Z-b069580f/runner.ndjson",
+      "manifest_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8/manifest.json",
+      "artifact_root": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8",
+      "log_path": ".runs/issue-9-phase-1-admin-console-read-only-operations-surfaces/cli/2026-03-26T12-57-00-660Z-3bcda7b8/runner.ndjson",
       "execution_status": "failed",
       "summary": "Local codex-orchestrator status is unavailable for this run.",
       "files_modified": [],
-      "last_synced_at": "2026-03-26T20:53:38.1539191+08:00",
+      "last_synced_at": "2026-03-26T20:57:23.5368333+08:00",
       "remote_status": "missing"
     }
   ]
