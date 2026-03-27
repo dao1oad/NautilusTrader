@@ -1,0 +1,51 @@
+# Issue #22 Local Execution Output
+
+- Issue: #22
+- Worker: localhost
+- Branch: `codex/issue-22-phase-4a-backtest-and-report-integration`
+- Job Id: `2026-03-27T06-25-06-328Z-bf77afef`
+- Summary: Added the Phase 4A backtests and reports surfaces across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the full admin slice.
+- Notes:
+  - The original local `codex-orchestrator` run failed during environment setup/model-capacity recovery, so this handoff captures the manually completed and revalidated branch state for PR creation.
+  - Added typed `BacktestTaskSummary` / `ReportSummary` DTOs plus `/api/admin/backtests` and `/api/admin/reports` routes and projection services.
+  - Routed the admin web shell to dedicated Backtests and Reports pages, added bounded list/drill-down summaries, and extended shared query invalidation plus tests for the new analysis surfaces.
+  - Fresh verification covered the full admin API pytest suite, the full admin-web Vitest suite, the frontend production build, governance checks, and `git diff --check`.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and a chunk-size warning, but the production build completed successfully.
+- Files:
+  - `apps/admin-web/src/app.tsx`
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/router.tsx`
+  - `apps/admin-web/src/app/routes/backtests.tsx`
+  - `apps/admin-web/src/app/routes/reports.tsx`
+  - `apps/admin-web/src/features/backtests/backtests-page.tsx`
+  - `apps/admin-web/src/features/reports/reports-page.tsx`
+  - `apps/admin-web/src/shared/api/admin-client.ts`
+  - `apps/admin-web/src/shared/query/query-client.ts`
+  - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - `apps/admin-web/src/shared/types/admin.ts`
+  - `apps/admin-web/src/test/admin-events.test.ts`
+  - `apps/admin-web/src/test/backtest-report-surfaces.test.tsx`
+  - `apps/admin-web/src/test/console-shell.test.tsx`
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/schemas.py`
+  - `nautilus_trader/admin/services/backtests.py`
+  - `nautilus_trader/admin/services/reports.py`
+  - `tests/unit_tests/admin/test_backtests_api.py`
+  - `tests/unit_tests/admin/test_reports_api.py`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/progress-log.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-22.md`
+  - `workspace/handoffs/local-review-issue-22.md`
+  - `workspace/handoffs/review-resolution-issue-22.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-22 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-22 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-22/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-22/apps/admin-web && npm run build`
+  - `git -C /root/NautilusTrader/.worktrees/issue-22 diff --check`

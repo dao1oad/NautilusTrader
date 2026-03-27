@@ -1,0 +1,21 @@
+# Local PR Review
+
+- Issue: #22
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 4A backend backtests / reports snapshots, routed admin-web analysis surfaces, mapped truth docs, progress-log memory update, and local execution review artifacts.
+- Findings:
+  - No blocking product defects remained after verifying the new `/api/admin/backtests` and `/api/admin/reports` contracts together with the routed frontend surfaces and shared invalidation wiring.
+  - The Phase 4A slice correctly keeps the analysis workbench read-only: both surfaces are bounded by `limit`, and neither the backend nor the browser introduces backtest start/stop, report regeneration, or strategy-editor write flows.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and a chunk-size warning, but the production build completed successfully.
+- Resolution:
+  - Added typed backtest/report DTOs, projection services, and `/api/admin/backtests` plus `/api/admin/reports` routes on the admin API.
+  - Routed the admin web shell to dedicated Backtests and Reports pages, added bounded list/drill-down analysis summaries, and extended shared query/invalidation tests for the new surfaces.
+  - Synced the mapped truth docs, recorded fresh verification evidence, and prepared the Phase 4A branch for PR creation after manually taking over the failed local orchestrator run.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/issue-22 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-22 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-22/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-22/apps/admin-web && npm run build`
+  - `git -C /root/NautilusTrader/.worktrees/issue-22 diff --check`
+- Status: approved

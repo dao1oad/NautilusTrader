@@ -18,7 +18,9 @@ export const adminQueryKeys = {
     ["admin", "catalog", limit, startTime, endTime] as const,
   playback: (limit: number, startTime: string, endTime: string) =>
     ["admin", "playback", limit, startTime, endTime] as const,
-  diagnostics: () => ["admin", "diagnostics"] as const
+  diagnostics: () => ["admin", "diagnostics"] as const,
+  backtests: (limit: number) => ["admin", "backtests", limit] as const,
+  reports: (limit: number) => ["admin", "reports", limit] as const
 };
 
 export const queryClient = new QueryClient({

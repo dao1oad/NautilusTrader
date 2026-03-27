@@ -30,7 +30,7 @@
 
 `TanStack Router route -> route-owned page component -> TanStack Query query key -> apps/admin-web/src/shared/api/admin-client.ts -> /api/admin/* FastAPI route -> nautilus_trader/admin/services/* snapshot builder -> live/execution/portfolio/accounting/logging runtime surfaces -> admin snapshot DTO -> browser page render`
 
-`Overview`、`Nodes`、`Strategies`、`Adapters`、`Risk center`、`Diagnostics` 走无界单次 snapshot；`Orders`、`Fills`、`Positions`、`Accounts`、`Logs` 必须通过 `limit` 约束读取范围，避免 UI 发起无界查询。`Catalog` 与 `Playback` 则必须同时带上 `limit + start_time + end_time`，把 bounded UTC window 一并传给后端。`/orders` route 在浏览器侧以 `Blotter` 呈现，且 trading ops 页面当前在单次 bounded snapshot 内执行 keyword filter 与前端分页（每页 `25` 行），不会把无界结果直接挂到 DOM。
+`Overview`、`Nodes`、`Strategies`、`Adapters`、`Risk center`、`Diagnostics` 走无界单次 snapshot；`Orders`、`Fills`、`Positions`、`Accounts`、`Logs`、`Backtests` 与 `Reports` 必须通过 `limit` 约束读取范围，避免 UI 发起无界查询。`Catalog` 与 `Playback` 则必须同时带上 `limit + start_time + end_time`，把 bounded UTC window 一并传给后端。`/orders` route 在浏览器侧以 `Blotter` 呈现，且 trading ops 页面当前在单次 bounded snapshot 内执行 keyword filter 与前端分页（每页 `25` 行），不会把无界结果直接挂到 DOM。
 
 `Positions` 页面当前允许操作员在表格中选择单行并展开同一 snapshot 内的 drill-down 详情；该详情只消费 `PositionSummary` 中已投影的可选字段，不会绕过 admin DTO 直接读取内部运行态对象。
 
@@ -38,11 +38,13 @@
 
 `Catalog` 页面把 bounded history query、browse item 和 operator note 合并在同一 `CatalogSnapshot` 中展示；`Playback` 页面把同一类 bounded window 投影成 `PlaybackRequest + timeline + projected events`，并仅在该页面局部挂载 chart runtime；`Diagnostics` 页面则必须把 link health 与 query timing 的 partial failure 明确投影到 `errors`，不能只靠浏览器 console 暗示异常。
 
+`Backtests` 页面在单次 bounded snapshot 内展示回测任务、进度与关联 `report_id`，并允许操作员查看同一 DTO 中的 task detail；`Reports` 页面在单次 bounded snapshot 内展示收益摘要、artifact family 与报告细节。两者都只消费投影后的 admin DTO，不触发新的 backtest/report 生成作业。
+
 ## Admin Realtime Refresh Flow
 
 `/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts / command-receipt-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> 页面清理 transient runtime error 并刷新 receipt/audit/config surface`
 
-当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs`、`catalog`、`playback`、`diagnostics` 十五类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部只读 surfaces，`command.*` 会触发 `audit` / `config` 刷新并同步当前页面 receipt。
+当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs`、`catalog`、`playback`、`diagnostics`、`backtests`、`reports` 十七类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部只读 surfaces，`command.*` 会触发 `audit` / `config` 刷新并同步当前页面 receipt。
 
 ## Admin Command Guardrail Flow
 
@@ -51,6 +53,8 @@
 `Phase 2` exit gate 当前要求 `#16/#17/#18` 全部合并、Phase 级验收命令通过，并保持“显式确认 + typed receipt + append-only 审计 + 无高风险交易命令”四项约束同时成立。
 
 `Phase 3` exit gate 当前要求 `#19/#20/#21` 全部合并、Phase 级验收命令通过，并同时保持“trading ops surface 只读 + catalog/playback query bounded 到 UTC window + diagnostics / slow-query failure operator-visible + chart runtime 仅局部封装在 playback page”四项约束成立。
+
+`Phase 4A` implementation gate 当前要求 `#22` 保持“analysis surfaces 只读 + backtests/reports query bounded by limit + report artifact families operator-visible + 不引入回测启动/策略编辑写流”四项约束成立。
 
 ## Repository Operational Flow
 

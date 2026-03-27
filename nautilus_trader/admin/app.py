@@ -10,6 +10,7 @@ from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
 from nautilus_trader.admin.schemas import CatalogSnapshot
 from nautilus_trader.admin.schemas import AuditSnapshot
+from nautilus_trader.admin.schemas import BacktestsSnapshot
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
 from nautilus_trader.admin.schemas import ConfigDiffSnapshot
@@ -22,11 +23,13 @@ from nautilus_trader.admin.schemas import OrdersSnapshot
 from nautilus_trader.admin.schemas import OverviewSnapshot
 from nautilus_trader.admin.schemas import PlaybackSnapshot
 from nautilus_trader.admin.schemas import PositionsSnapshot
+from nautilus_trader.admin.schemas import ReportsSnapshot
 from nautilus_trader.admin.schemas import RiskSnapshot
 from nautilus_trader.admin.schemas import StrategiesSnapshot
 from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
 from nautilus_trader.admin.services.audit import build_audit_snapshot
+from nautilus_trader.admin.services.backtests import build_backtests_snapshot
 from nautilus_trader.admin.services.audit import reset_audit_sink
 from nautilus_trader.admin.services.catalog import build_catalog_snapshot
 from nautilus_trader.admin.services.catalog import build_playback_snapshot
@@ -44,6 +47,7 @@ from nautilus_trader.admin.services.nodes import build_nodes_snapshot
 from nautilus_trader.admin.services.orders import build_orders_snapshot
 from nautilus_trader.admin.services.overview import build_overview_snapshot
 from nautilus_trader.admin.services.positions import build_positions_snapshot
+from nautilus_trader.admin.services.reports import build_reports_snapshot
 from nautilus_trader.admin.services.risk import build_risk_snapshot
 from nautilus_trader.admin.services.strategies import build_strategies_snapshot
 from nautilus_trader.admin.ws import handle_admin_events_socket
@@ -143,6 +147,18 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
     @app.get("/api/admin/diagnostics", response_model=DiagnosticsSnapshot)
     def diagnostics(inject_partial_error: bool = False) -> DiagnosticsSnapshot:
         return build_diagnostics_snapshot(inject_partial_error=inject_partial_error)
+
+    @app.get("/api/admin/backtests", response_model=BacktestsSnapshot)
+    def backtests(
+        limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
+    ) -> BacktestsSnapshot:
+        return build_backtests_snapshot(limit=limit)
+
+    @app.get("/api/admin/reports", response_model=ReportsSnapshot)
+    def reports(
+        limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
+    ) -> ReportsSnapshot:
+        return build_reports_snapshot(limit=limit)
 
     @app.get("/api/admin/audit", response_model=AuditSnapshot)
     def audit() -> AuditSnapshot:

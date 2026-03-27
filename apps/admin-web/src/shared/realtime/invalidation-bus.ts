@@ -17,7 +17,9 @@ export type InvalidationTopic =
   | "logs"
   | "catalog"
   | "playback"
-  | "diagnostics";
+  | "diagnostics"
+  | "backtests"
+  | "reports";
 
 type InvalidationListener = (topic: InvalidationTopic, event: AdminEvent) => void;
 
@@ -46,7 +48,9 @@ function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
       "logs",
       "catalog",
       "playback",
-      "diagnostics"
+      "diagnostics",
+      "backtests",
+      "reports"
     ];
   }
 
