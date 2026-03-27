@@ -256,6 +256,29 @@ function Sync-BootstrapMemoryState {
   & $syncScript -State $State | Out-Null
 }
 
+function Test-InstructionStamp {
+  param([string]$Path)
+
+  $content = Get-Content $Path -Raw
+  $match = [regex]::Match($content, '^(?:\uFEFF)?<!--\s*codex:instruction-stamp\s+([a-f0-9]{64})\s*-->(?:\r?\n)?')
+  if (-not $match.Success) {
+    throw "$Path must declare a codex:instruction-stamp header."
+  }
+
+  $body = $content.Substring($match.Length)
+  $hasher = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $computed = -join ($hasher.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($body)) | ForEach-Object { $_.ToString('x2') })
+  } finally {
+    $hasher.Dispose()
+  }
+
+  $declared = $match.Groups[1].Value
+  if ($declared -ne $computed) {
+    throw "$Path instruction stamp mismatch. Expected $computed but found $declared."
+  }
+}
+
 $required = @(
   'AGENTS.md',
   $ProjectPolicyPath,
@@ -275,6 +298,8 @@ $missing = $required | Where-Object { -not (Test-Path $_) }
 if ($missing.Count -gt 0) {
   throw ("Missing governance files: " + ($missing -join ', '))
 }
+
+Test-InstructionStamp -Path 'AGENTS.md'
 
 if (-not (Get-ConfigBoolean -Path $ProjectPolicyPath -Key 'enforce_pull_request_only')) {
   throw 'project-policy.yaml must enable PR-only merge.'

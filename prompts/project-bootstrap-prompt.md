@@ -3,6 +3,7 @@
 将下面整段内容粘贴给 Codex 或其他兼容 agent，用于在**复制当前模板目录**后的新项目中完成治理框架搭建和初始化。
 
 English anchors for tooling:
+
 - `copy the template directory`
 - `minimal confirmation list`
 

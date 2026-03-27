@@ -43,6 +43,7 @@
 推荐直接使用 [main-agent-startup-prompt.md](prompts/main-agent-startup-prompt.md) 启动当前仓库主 agent。
 
 它会要求 agent：
+
 - 读取治理、记忆与 truth-doc 配置
 - 启动本机 `codex-orchestrator` 与 `agentboard`
 - 同步 issue ledger 与本机执行状态

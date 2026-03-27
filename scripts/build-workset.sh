@@ -9,7 +9,7 @@ input_path="workspace/runbooks/issues-snapshot.json"
 remote_jobs_path="workspace/runbooks/remote-jobs.json"
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/build-workset.sh [--input-path PATH]
 EOF
 }
@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
       remote_jobs_path=$2
       shift 2
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -55,7 +55,7 @@ resolved_input_path=$(resolve_repo_path "$input_path")
 resolved_remote_jobs_path=$(resolve_repo_path "$remote_jobs_path")
 [[ -f "$resolved_input_path" ]] || fail "Issue snapshot not found: $resolved_input_path"
 
-python3 - "$resolved_input_path" "$resolved_remote_jobs_path" "$repo_root" <<'PY'
+python3 - "$resolved_input_path" "$resolved_remote_jobs_path" "$repo_root" << 'PY'
 import json
 import re
 import sys
@@ -87,26 +87,36 @@ def get_dependencies(body: str) -> list[str]:
     if not body:
         return []
 
-    dependencies: list[str] = []
-    in_depends_section = False
+    body = body.replace("`r`n", "\r\n").replace("`n", "\n").replace("`r", "\r")
 
-    for raw_line in body.splitlines():
-        line = raw_line.strip()
+    def get_section_issue_references(section_pattern: str) -> list[str]:
+        references: list[str] = []
+        in_section = False
 
-        if not in_depends_section:
-            if re.match(r"^(#+\s*)?Depends on\b", line):
-                in_depends_section = True
-            else:
+        for raw_line in body.splitlines():
+            line = raw_line.strip()
+
+            if not in_section:
+                if re.match(section_pattern, line, re.IGNORECASE):
+                    in_section = True
+                else:
+                    continue
+            elif re.match(r"^#+\s+\S+", line):
+                break
+
+            if not line:
                 continue
-        elif re.match(r"^#+\s+\S+", line):
-            break
 
-        if not line:
-            continue
+            references.extend(re.findall(r"#(\d+)", line))
 
-        dependencies.extend(re.findall(r"#(\d+)", line))
+        return references
 
-    return sorted(set(dependencies))
+    dependencies: list[str] = []
+    dependencies.extend(get_section_issue_references(r"^(#+\s*)?Depends on\b"))
+    if re.search(r"^(#+\s*)?Phase Close-Out Owned By This Umbrella\b", body, re.IGNORECASE | re.MULTILINE):
+        dependencies.extend(get_section_issue_references(r"^(#+\s*)?Child issues\b"))
+
+    return sorted(set(dependencies), key=int)
 
 
 def get_issue_state(labels: list[str], dependencies: list[str]) -> str:

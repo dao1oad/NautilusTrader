@@ -330,16 +330,19 @@ foreach ($jobRecord in @($registry.jobs)) {
       $summary = if ($jobRecord.summary) { $jobRecord.summary } else { "Local status: $($remoteJob.status)" }
     }
 
-    Set-ObjectProperty -Object $jobRecord -Name 'remote_status' -Value ([string]$remoteJob.status)
-    Set-ObjectProperty -Object $jobRecord -Name 'summary' -Value $summary
-    if ($manifestPath) { Set-ObjectProperty -Object $jobRecord -Name 'manifest_path' -Value ($manifestPath.Replace('\', '/')) }
-    if ($artifactRoot) { Set-ObjectProperty -Object $jobRecord -Name 'artifact_root' -Value ($artifactRoot.Replace('\', '/')) }
-    if ($logPath) { Set-ObjectProperty -Object $jobRecord -Name 'log_path' -Value ($logPath.Replace('\', '/')) }
+    $isStale = $false
+    if ($remoteJob.PSObject.Properties.Name -contains 'activity' -and $remoteJob.activity) {
+      $activity = $remoteJob.activity
+      if ($activity.PSObject.Properties.Name -contains 'stale') {
+        $isStale = [bool]$activity.stale
+      }
+    }
 
     $mappedExecution = switch ([string]$remoteJob.status) {
       'succeeded' { 'awaiting-local-review' }
       'completed' { 'awaiting-local-review' } # Execution=awaiting-local-review
       'running' { 'running' }
+      'in_progress' { 'running' }
       'queued' { 'running' }
       'pending' { 'running' }
       'failed' { 'failed' }
@@ -350,6 +353,21 @@ foreach ($jobRecord in @($registry.jobs)) {
       $mappedExecution = 'failed'
     }
 
+    if ($isStale -and $mappedExecution -eq 'running') {
+      $mappedExecution = 'failed'
+      $summary = if ($summary -match '(?i)stale') {
+        $summary
+      } else {
+        "$summary`nLocal codex-orchestrator run became stale and requires inspection."
+      }
+    }
+
+    $remoteStatus = if ($isStale) { 'stale' } else { [string]$remoteJob.status }
+    Set-ObjectProperty -Object $jobRecord -Name 'remote_status' -Value $remoteStatus
+    Set-ObjectProperty -Object $jobRecord -Name 'summary' -Value $summary
+    if ($manifestPath) { Set-ObjectProperty -Object $jobRecord -Name 'manifest_path' -Value ($manifestPath.Replace('\', '/')) }
+    if ($artifactRoot) { Set-ObjectProperty -Object $jobRecord -Name 'artifact_root' -Value ($artifactRoot.Replace('\', '/')) }
+    if ($logPath) { Set-ObjectProperty -Object $jobRecord -Name 'log_path' -Value ($logPath.Replace('\', '/')) }
     Set-ObjectProperty -Object $jobRecord -Name 'execution_status' -Value $mappedExecution
   } elseif ([string]$jobRecord.execution_status -in @('running', 'dispatching')) {
     $summary = if ($jobRecord.summary) { $jobRecord.summary } else { 'Local codex-orchestrator status is unavailable for this run.' }
@@ -362,11 +380,16 @@ foreach ($jobRecord in @($registry.jobs)) {
   $prValue = if ($jobRecord.pr_number) { "#$($jobRecord.pr_number)" } else { 'TBD' }
 
   if (-not (Test-IssueLedgerRowExists -Path $LedgerPath -TargetIssueNumber $jobRecord.issue_number)) {
-    if ([string]$jobRecord.execution_status -eq 'merged') {
-      continue
+    # build-workset rebuilds the ledger from open issues only, so any missing row
+    # must be archived in the local execution registry instead of blocking startup.
+    if ([string]$jobRecord.execution_status -ne 'merged') {
+      Set-ObjectProperty -Object $jobRecord -Name 'execution_status' -Value 'merged'
+      if (-not $jobRecord.summary) {
+        Set-ObjectProperty -Object $jobRecord -Name 'summary' -Value 'Archived because the issue is no longer present in the rebuilt open-issue ledger.'
+      }
     }
 
-    throw "Issue #$($jobRecord.issue_number) is not present in $LedgerPath."
+    continue
   }
 
   Update-IssueLedgerRow -Path $LedgerPath -TargetIssueNumber $jobRecord.issue_number -Updates @{

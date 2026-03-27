@@ -10,7 +10,7 @@ pr_number=""
 summary="Merge completed."
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/close-loop.sh [--issue-number N] [--pr-number N] [--summary TEXT]
 EOF
 }
@@ -37,7 +37,7 @@ while [[ $# -gt 0 ]]; do
       summary=$2
       shift 2
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-python3 - "$repo_root" "$issue_number" "$pr_number" "$summary" <<'PY'
+python3 - "$repo_root" "$issue_number" "$pr_number" "$summary" << 'PY'
 import datetime as dt
 import sys
 from pathlib import Path

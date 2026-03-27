@@ -124,7 +124,7 @@ class AuditSnapshot(BaseModel):
     generated_at: datetime
     partial: bool = False
     items: list[AuditRecord] = Field(default_factory=list)
-    errors: list["SectionError"] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
 
 
 class ConfigDiffEntry(BaseModel):

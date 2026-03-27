@@ -126,6 +126,72 @@ try {
     exit 1
   }
 
+  $staleRunningLedgerPath = Join-Path $tempRoot 'stale-running-issue-ledger.md'
+  $staleRunningRegistryPath = Join-Path $tempRoot 'stale-running-remote-jobs.json'
+  $staleRunningStatusPath = Join-Path $tempRoot 'stale-running-status.json'
+
+  Set-Content -Path $staleRunningLedgerPath -Value @'
+# Issue Ledger
+
+| Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #204 | Stale local run verification | High | None | ready | No | running | localhost | job-204 | codex/issue-204-stale-local-run-verification | TBD | Wait for local execution |
+'@
+
+  Set-Content -Path $staleRunningRegistryPath -Value @'
+{
+  "version": 1,
+  "jobs": [
+    {
+      "issue_number": 204,
+      "worker_host": "localhost",
+      "branch": "codex/issue-204-stale-local-run-verification",
+      "job_id": "job-204",
+      "task_id": "issue-204-stale-local-run-verification",
+      "execution_status": "running",
+      "summary": "Local execution in progress"
+    }
+  ]
+}
+'@
+
+  Set-Content -Path $staleRunningStatusPath -Value @'
+{
+  "run_id": "job-204",
+  "status": "in_progress",
+  "manifest": ".runs/issue-204/cli/job-204/manifest.json",
+  "artifact_root": ".runs/issue-204/cli/job-204",
+  "log_path": ".runs/issue-204/cli/job-204/runner.ndjson",
+  "activity": {
+    "stale": true,
+    "age_seconds": 120,
+    "stale_threshold_seconds": 30
+  }
+}
+'@
+
+  $staleRunningSyncOutput = & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File 'scripts/sync-remote-execution.ps1' `
+    -WorkerConfigPath 'ops/remote-execution.yaml' `
+    -RemoteJobsPath $staleRunningRegistryPath `
+    -LedgerPath $staleRunningLedgerPath `
+    -StatusJsonOverridePath $staleRunningStatusPath 2>&1 | Out-String
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error ("sync-remote-execution.ps1 must mark stale local runs as failed recoverable jobs: {0}" -f $staleRunningSyncOutput.Trim())
+    exit 1
+  }
+
+  $staleRunningLedger = Get-Content $staleRunningLedgerPath -Raw
+  $staleRunningRegistry = Get-Content $staleRunningRegistryPath -Raw
+  if ($staleRunningLedger -notmatch '\| #204 \| Stale local run verification \| .* \| ready \| .* \| failed \| localhost \| job-204 \| codex/issue-204-stale-local-run-verification \| TBD \| Inspect local job \|') {
+    Write-Error 'sync-remote-execution.ps1 must downgrade stale local runs to failed execution in the ledger.'
+    exit 1
+  }
+
+  if ($staleRunningRegistry -notmatch '"execution_status"\s*:\s*"failed"' -or $staleRunningRegistry -notmatch 'stale') {
+    Write-Error 'sync-remote-execution.ps1 must persist stale local runs as failed with a stale-run summary.'
+    exit 1
+  }
+
   $archivedLedgerPath = Join-Path $tempRoot 'archived-issue-ledger.md'
   $archivedRegistryPath = Join-Path $tempRoot 'archived-remote-jobs.json'
   $emptyRemoteStatusPath = Join-Path $tempRoot 'empty-remote-status.json'
@@ -181,6 +247,67 @@ try {
     exit 1
   }
 
+  $staleClosedLedgerPath = Join-Path $tempRoot 'stale-closed-issue-ledger.md'
+  $staleClosedRegistryPath = Join-Path $tempRoot 'stale-closed-remote-jobs.json'
+  $staleClosedStatusPath = Join-Path $tempRoot 'stale-closed-status.json'
+
+  Set-Content -Path $staleClosedLedgerPath -Value @'
+# Issue Ledger
+
+| Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #42 | Governance check-run alignment | Medium | None | ready | No | idle | TBD | TBD | TBD | TBD | Dispatch subagent |
+'@
+
+  Set-Content -Path $staleClosedRegistryPath -Value @'
+{
+  "version": 1,
+  "jobs": [
+    {
+      "issue_number": 47,
+      "worker_host": "localhost",
+      "branch": "codex/issue-47-governance-finalize-pure-local-codex-runtime-and-sync-protected-main",
+      "job_id": "job-47",
+      "task_id": "issue-47-governance-finalize-pure-local-codex-runtime-and-sync-protected-main",
+      "execution_status": "running",
+      "summary": "Stale local execution"
+    }
+  ]
+}
+'@
+
+  Set-Content -Path $staleClosedStatusPath -Value @'
+{
+  "run_id": "job-47",
+  "status": "in_progress",
+  "manifest": ".runs/issue-47/cli/job-47/manifest.json",
+  "artifact_root": ".runs/issue-47/cli/job-47",
+  "log_path": ".runs/issue-47/cli/job-47/runner.ndjson"
+}
+'@
+
+  $staleClosedSyncOutput = & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File 'scripts/sync-remote-execution.ps1' `
+    -WorkerConfigPath 'ops/remote-execution.yaml' `
+    -RemoteJobsPath $staleClosedRegistryPath `
+    -LedgerPath $staleClosedLedgerPath `
+    -StatusJsonOverridePath $staleClosedStatusPath 2>&1 | Out-String
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error ("sync-remote-execution.ps1 must archive stale jobs whose issue is no longer present in the rebuilt open-issue ledger: {0}" -f $staleClosedSyncOutput.Trim())
+    exit 1
+  }
+
+  $staleClosedLedger = Get-Content $staleClosedLedgerPath -Raw
+  $staleClosedRegistry = Get-Content $staleClosedRegistryPath -Raw
+  if ($staleClosedLedger -match '#47') {
+    Write-Error 'sync-remote-execution.ps1 must not reintroduce stale closed issues into the rebuilt open-issue ledger.'
+    exit 1
+  }
+
+  if ($staleClosedRegistry -notmatch '"execution_status"\s*:\s*"merged"') {
+    Write-Error 'sync-remote-execution.ps1 must archive stale jobs whose issue disappeared from the rebuilt open-issue ledger.'
+    exit 1
+  }
+
   $prepareLedgerPath = Join-Path $tempRoot 'prepare-issue-ledger.md'
   $prepareRegistryPath = Join-Path $tempRoot 'prepare-remote-jobs.json'
   $prepareOutputPath = Join-Path $tempRoot 'job-output.json'
@@ -209,7 +336,7 @@ try {
       "artifact_root": "/tmp/run-303",
       "log_path": "/tmp/run-303/runner.ndjson",
       "execution_status": "running",
-      "summary": "Local execution completed",
+      "summary": "Stage 'Run RLM loop' failed with exit code 10.",
       "files_modified": [
         "scripts/dispatch-issue.ps1"
       ]
@@ -265,7 +392,17 @@ try {
     exit 1
   }
 
-  if ($reviewResolution -notmatch 'Worker: localhost' -or $reviewResolution -notmatch 'Job Id: job-303' -or $reviewResolution -notmatch 'Agent Output Summary: Local execution completed') {
+  if ($prepareRegistry -notmatch '"summary"\s*:\s*"Implemented local PR payload"') {
+    Write-Error 'prepare-remote-pr.ps1 must let override payload summaries replace stale failed-job summaries when preparing local review.'
+    exit 1
+  }
+
+  if ($prepareRegistry -notmatch '"manifest_path"\s*:\s*"\.runs/issue-303/cli/job-303/manifest\.json"' -or $prepareRegistry -notmatch '"log_path"\s*:\s*"\.runs/issue-303/cli/job-303/runner\.ndjson"') {
+    Write-Error 'prepare-remote-pr.ps1 must persist override manifest/log paths without stringifying the entire override object.'
+    exit 1
+  }
+
+  if ($reviewResolution -notmatch 'Worker: localhost' -or $reviewResolution -notmatch 'Job Id: job-303' -or $reviewResolution -notmatch 'Agent Output Summary: Implemented local PR payload') {
     Write-Error 'prepare-remote-pr.ps1 must write issue-scoped review evidence with the local job identity and output summary.'
     exit 1
   }

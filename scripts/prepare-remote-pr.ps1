@@ -341,12 +341,12 @@ if ($JobOutputOverridePath) {
   $overridePayload = Get-JsonObjectFromText -Text $outputText
   if ($overridePayload) {
     if ($overridePayload.manifest_path) {
-      Set-ObjectProperty -Object $jobRecord -Name 'manifest_path' -Value [string]$overridePayload.manifest_path
+      Set-ObjectProperty -Object $jobRecord -Name 'manifest_path' -Value ([string]$overridePayload.manifest_path)
     }
     if ($overridePayload.log_path) {
-      Set-ObjectProperty -Object $jobRecord -Name 'log_path' -Value [string]$overridePayload.log_path
+      Set-ObjectProperty -Object $jobRecord -Name 'log_path' -Value ([string]$overridePayload.log_path)
     }
-    if ($overridePayload.summary -and -not $jobRecord.summary) {
+    if ($overridePayload.summary) {
       $outputSummary = [string]$overridePayload.summary
     }
   }
