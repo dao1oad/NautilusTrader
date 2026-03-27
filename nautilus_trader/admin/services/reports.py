@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import UTC
 from datetime import datetime
 
-from nautilus_trader.admin.schemas import ReportSummary
 from nautilus_trader.admin.schemas import ReportsSnapshot
+from nautilus_trader.admin.schemas import ReportSummary
 
 
 REPORT_SUMMARIES = [

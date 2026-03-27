@@ -10,9 +10,9 @@ from fastapi.responses import FileResponse
 
 from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
-from nautilus_trader.admin.schemas import CatalogSnapshot
 from nautilus_trader.admin.schemas import AuditSnapshot
 from nautilus_trader.admin.schemas import BacktestsSnapshot
+from nautilus_trader.admin.schemas import CatalogSnapshot
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
 from nautilus_trader.admin.schemas import ConfigDiffSnapshot
@@ -31,14 +31,14 @@ from nautilus_trader.admin.schemas import StrategiesSnapshot
 from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
 from nautilus_trader.admin.services.audit import build_audit_snapshot
-from nautilus_trader.admin.services.backtests import build_backtests_snapshot
 from nautilus_trader.admin.services.audit import reset_audit_sink
-from nautilus_trader.admin.services.catalog import build_catalog_snapshot
-from nautilus_trader.admin.services.catalog import build_playback_snapshot
+from nautilus_trader.admin.services.backtests import build_backtests_snapshot
 from nautilus_trader.admin.services.catalog import DEFAULT_CATALOG_END_TIME
 from nautilus_trader.admin.services.catalog import DEFAULT_CATALOG_START_TIME
 from nautilus_trader.admin.services.catalog import DEFAULT_PLAYBACK_END_TIME
 from nautilus_trader.admin.services.catalog import DEFAULT_PLAYBACK_START_TIME
+from nautilus_trader.admin.services.catalog import build_catalog_snapshot
+from nautilus_trader.admin.services.catalog import build_playback_snapshot
 from nautilus_trader.admin.services.commands import reset_command_event_stream
 from nautilus_trader.admin.services.commands import submit_command
 from nautilus_trader.admin.services.config import build_config_diff_snapshot
@@ -63,10 +63,16 @@ RESERVED_FRONTEND_PREFIXES = ("api", "ws")
 
 def _validate_time_window(*, start_time: datetime, end_time: datetime) -> None:
     if start_time.tzinfo is None or end_time.tzinfo is None:
-        raise HTTPException(status_code=422, detail="start_time and end_time must be UTC timestamps")
+        raise HTTPException(
+            status_code=422,
+            detail="start_time and end_time must be UTC timestamps",
+        )
 
     if start_time.utcoffset() != timedelta(0) or end_time.utcoffset() != timedelta(0):
-        raise HTTPException(status_code=422, detail="start_time and end_time must be UTC timestamps")
+        raise HTTPException(
+            status_code=422,
+            detail="start_time and end_time must be UTC timestamps",
+        )
 
     if end_time <= start_time:
         raise HTTPException(status_code=422, detail="end_time must be greater than start_time")
@@ -94,7 +100,7 @@ def _register_core_routes(app: FastAPI) -> None:
         return build_adapters_snapshot()
 
 
-def _register_read_only_surface_routes(app: FastAPI) -> None:
+def _register_activity_snapshot_routes(app: FastAPI) -> None:
     @app.get("/api/admin/orders", response_model=OrdersSnapshot)
     def orders(
         limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
@@ -119,6 +125,8 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
     ) -> AccountsSnapshot:
         return build_accounts_snapshot(limit=limit)
 
+
+def _register_observability_snapshot_routes(app: FastAPI) -> None:
     @app.get("/api/admin/risk", response_model=RiskSnapshot)
     def risk() -> RiskSnapshot:
         return build_risk_snapshot()
@@ -130,6 +138,20 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
     ) -> LogsSnapshot:
         return build_logs_snapshot(limit=limit, inject_partial_error=inject_partial_error)
 
+    @app.get("/api/admin/diagnostics", response_model=DiagnosticsSnapshot)
+    def diagnostics(inject_partial_error: bool = False) -> DiagnosticsSnapshot:
+        return build_diagnostics_snapshot(inject_partial_error=inject_partial_error)
+
+    @app.get("/api/admin/audit", response_model=AuditSnapshot)
+    def audit() -> AuditSnapshot:
+        return build_audit_snapshot()
+
+    @app.get("/api/admin/config/diff", response_model=ConfigDiffSnapshot)
+    def config_diff() -> ConfigDiffSnapshot:
+        return build_config_diff_snapshot()
+
+
+def _register_catalog_snapshot_routes(app: FastAPI) -> None:
     @app.get("/api/admin/catalog", response_model=CatalogSnapshot)
     def catalog(
         limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
@@ -148,10 +170,8 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
         _validate_time_window(start_time=start_time, end_time=end_time)
         return build_playback_snapshot(limit=limit, start_time=start_time, end_time=end_time)
 
-    @app.get("/api/admin/diagnostics", response_model=DiagnosticsSnapshot)
-    def diagnostics(inject_partial_error: bool = False) -> DiagnosticsSnapshot:
-        return build_diagnostics_snapshot(inject_partial_error=inject_partial_error)
 
+def _register_research_snapshot_routes(app: FastAPI) -> None:
     @app.get("/api/admin/backtests", response_model=BacktestsSnapshot)
     def backtests(
         limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
@@ -164,13 +184,12 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
     ) -> ReportsSnapshot:
         return build_reports_snapshot(limit=limit)
 
-    @app.get("/api/admin/audit", response_model=AuditSnapshot)
-    def audit() -> AuditSnapshot:
-        return build_audit_snapshot()
 
-    @app.get("/api/admin/config/diff", response_model=ConfigDiffSnapshot)
-    def config_diff() -> ConfigDiffSnapshot:
-        return build_config_diff_snapshot()
+def _register_read_only_surface_routes(app: FastAPI) -> None:
+    _register_activity_snapshot_routes(app)
+    _register_observability_snapshot_routes(app)
+    _register_catalog_snapshot_routes(app)
+    _register_research_snapshot_routes(app)
 
 
 def _register_event_routes(app: FastAPI) -> None:
