@@ -50,6 +50,8 @@
 
 `Phase 2` exit gate 当前要求 `#16/#17/#18` 全部合并、Phase 级验收命令通过，并保持“显式确认 + typed receipt + append-only 审计 + 无高风险交易命令”四项约束同时成立。
 
+`Phase 3` exit gate 当前要求 `#19/#20/#21` 全部合并、Phase 级验收命令通过，并同时保持“trading ops surface 只读 + catalog/playback query bounded 到 UTC window + diagnostics / slow-query failure operator-visible + chart runtime 仅局部封装在 playback page”四项约束成立。
+
 ## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> 本机 codex-orchestrator 执行 -> 本地 pre-PR review -> PR -> review 闭环 -> merge -> memory/system-truth 回写`
