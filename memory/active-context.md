@@ -7,11 +7,11 @@
 ## Current Phase
 
 - PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
-- 2026-03-27 当前具体实施入口已切到 issue `#19`；隔离分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 已完成 Phase 3A 的 blotter、fills 与 position drill-down surface，并已通过本地 pre-PR review。
+- 2026-03-27 当前具体实施入口已切到 issue `#19`；隔离分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 已完成 Phase 3A 的 blotter、fills 与 position drill-down surface，通过本地 pre-PR review，并已打开 PR `#42`。
 
 ## Blockers
 
-- 无新的人工决策阻塞；当前 issue `#19` 已完成本地 pre-PR review，下一步是整理 PR 说明并进入 Phase 3A 合并流程。
+- 无新的人工决策阻塞；当前 issue `#19` 已进入 PR `#42` 的远端检查 / review 阶段，正等待门禁结果。
 
 ## Confirmed Facts
 
@@ -103,10 +103,11 @@
 - 2026-03-27 已在 issue `#19` worktree 上验证 `/root/NautilusTrader/.venv/bin/pytest tests/unit_tests/admin/test_fills_api.py tests/unit_tests/admin/test_positions_api.py -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`cd apps/admin-web && npm run build` 与 `git diff --check` 全部通过；`vite build` 仍只打印既有 `@tanstack/react-query` `"use client"` 指令忽略警告。
 - 2026-03-27 已为 issue `#19` 补齐 `workspace/runbooks/remote-output-issue-19.md` 与 pending `workspace/handoffs/review-resolution-issue-19.md`，并再次确认 `pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run build`、`pwsh -NoProfile -File scripts/check-governance.ps1` 与 `git diff --check` 全部通过。
 - 2026-03-27 issue `#19` 已完成本地 pre-PR review rerun：`workspace/handoffs/local-review-issue-19.md` 状态更新为 `approved`，`workspace/handoffs/review-resolution-issue-19.md` 状态更新为 `accepted`；复核证据覆盖 targeted backend pytest、`src/test/trading-read-only-surfaces.test.tsx`、full admin-web Vitest、frontend build、governance check 与 `git diff --check`。
+- 2026-03-27 PR `#42` 已由分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 打开到 `main`；首轮 `pr-gate` 暴露的 truth-doc 缺口已在 `architecture` / `integrations` / `module-boundaries` 三份真值文档中补齐。
 
 ## Next Actions
 
-1. 为 issue `#19` 准备 PR 说明并进入 Phase 3A 合并流程。
+1. 监控 PR `#42` 的 `pr-gate`、`pre-commit` 与其余远端检查结果，并处理任何新反馈。
 2. 继续保持 `workspace/handoffs/local-review-issue-19.md` 与 `workspace/handoffs/review-resolution-issue-19.md` 作为该 PR 的本地 review 证据。
 3. 保持 issue `#20` 与 `#21` 继续阻塞，直到 issue `#19` 合并后再解锁后续 Phase 3 子任务。
 

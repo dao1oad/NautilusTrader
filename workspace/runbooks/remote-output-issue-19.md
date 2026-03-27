@@ -8,6 +8,7 @@
 - Notes:
   - The worktree already contained the scoped Phase 3A backend route and trading-surface changes when this iteration started, so this pass focused on tightening the bounded frontend operator workflow with shared keyword filtering plus refreshing the truth-doc and handoff text.
   - A final frontend regression fix stabilized the fallback row key for position drill-down selection so reordered snapshots keep the operator's active row even when `position_id` is absent.
+  - PR `#42` follow-up then synchronized `docs/system-truth/architecture.md`, `docs/system-truth/integrations.md`, and `docs/system-truth/module-boundaries.md` so the mapped truth-doc gate matches the shipped Phase 3A trading-surface scope.
   - Fresh verification for the local review rerun covered the issue-specific backend tests, the dedicated trading-surface Vitest file, the full admin-web Vitest suite, the frontend production build, governance checks, and `git diff --check`.
   - `vite build` still prints the existing `@tanstack/react-query` `"use client"` directive warnings, but the production build completed successfully.
 - Files:
@@ -33,7 +34,10 @@
   - `apps/admin-web/src/test/console-shell.test.tsx`
   - `apps/admin-web/src/test/trading-read-only-surfaces.test.tsx`
   - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
   - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
   - `docs/system-truth/runtime-flows.md`
   - `memory/active-context.md`
   - `memory/issue-ledger.md`
