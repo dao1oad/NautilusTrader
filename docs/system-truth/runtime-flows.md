@@ -30,15 +30,17 @@
 
 `TanStack Router route -> route-owned page component -> TanStack Query query key -> apps/admin-web/src/shared/api/admin-client.ts -> /api/admin/* FastAPI route -> nautilus_trader/admin/services/* snapshot builder -> live/execution/portfolio/accounting/logging runtime surfaces -> admin snapshot DTO -> browser page render`
 
-`Overview`、`Nodes`、`Strategies`、`Adapters` 走无界单次 snapshot；`Orders`、`Fills`、`Positions`、`Accounts`、`Logs` 必须通过 `limit` 约束读取范围，避免 UI 发起无界查询。`/orders` route 在浏览器侧以 `Blotter` 呈现，且 trading ops 页面当前在单次 bounded snapshot 内执行 keyword filter 与前端分页（每页 `25` 行），不会把无界结果直接挂到 DOM。
+`Overview`、`Nodes`、`Strategies`、`Adapters`、`Risk center` 走无界单次 snapshot；`Orders`、`Fills`、`Positions`、`Accounts`、`Logs` 必须通过 `limit` 约束读取范围，避免 UI 发起无界查询。`/orders` route 在浏览器侧以 `Blotter` 呈现，且 trading ops 页面当前在单次 bounded snapshot 内执行 keyword filter 与前端分页（每页 `25` 行），不会把无界结果直接挂到 DOM。
 
 `Positions` 页面当前允许操作员在表格中选择单行并展开同一 snapshot 内的 drill-down 详情；该详情只消费 `PositionSummary` 中已投影的可选字段，不会绕过 admin DTO 直接读取内部运行态对象。
+
+`Accounts` 页面当前也允许在 bounded snapshot 内展开单个账户的 balances / exposure / alerts drill-down；`Risk center` 页面只消费单次 `RiskSnapshot` 中的 summary / events / blocks，不引入任何风险控制写流。
 
 ## Admin Realtime Refresh Flow
 
 `/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts / command-receipt-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> 页面清理 transient runtime error 并刷新 receipt/audit/config surface`
 
-当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`logs` 十一类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部只读 surfaces，`command.*` 会触发 `audit` / `config` 刷新并同步当前页面 receipt。
+当前 invalidation topic 固定为 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs` 十二类；`overview.updated` 与 `snapshot.invalidate` 会广播到全部只读 surfaces，`command.*` 会触发 `audit` / `config` 刷新并同步当前页面 receipt。
 
 ## Admin Command Guardrail Flow
 

@@ -11,6 +11,7 @@ import { OrdersRoutePage } from "./routes/orders";
 import { FillsRoutePage } from "./routes/fills";
 import { PositionsRoutePage } from "./routes/positions";
 import { AccountsRoutePage } from "./routes/accounts";
+import { RiskRoutePage } from "./routes/risk";
 import { LogsRoutePage } from "./routes/logs";
 
 
@@ -78,6 +79,12 @@ const accountsRoute = createRoute({
   component: AccountsRoutePage
 });
 
+const riskRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/risk",
+  component: RiskRoutePage
+});
+
 const logsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/logs",
@@ -95,6 +102,7 @@ const routeTree = rootRoute.addChildren([
   fillsRoute,
   positionsRoute,
   accountsRoute,
+  riskRoute,
   logsRoute
 ]);
 

@@ -71,3 +71,10 @@
 - Synced the remaining Phase 1 umbrella truth docs and memory for issue `#9`, documenting the shipped read-only REST/WS surfaces, routed admin pages, and the no-command guardrail on `main`.
 - Refreshed the issue `#9` execution registry to the current local run artifact and staged `workspace/runbooks/remote-output-issue-9.md` plus `workspace/handoffs/review-resolution-issue-9.md` so the branch is ready for local pre-PR review.
 - Completed the local pre-PR review for issue `#9`, reconciled the recorded run metadata with the final branch diff, and interrupted the lingering RLM loop after iteration 2 so the review-ready state would stop drifting.
+
+## 2026-03-27
+
+- Merged PR #42 to `main`, then re-dispatched Phase 3B issue `#20` from the refreshed `origin/main` baseline after fixing the local worktree base-ref selection path.
+- Completed issue `#20` in `/root/NautilusTrader/.worktrees/issue-20`, adding the typed risk snapshot API plus richer account summary and drill-down diagnostics for the admin console's Phase 3B operations surfaces.
+- Re-verified the Phase 3B slice with `pytest tests/unit_tests/admin/test_accounts_api.py tests/unit_tests/admin/test_risk_api.py -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `pwsh -NoProfile -File scripts/check-governance.ps1`, and `git diff --check`.
+- Recorded `workspace/handoffs/local-review-issue-20.md`, `workspace/handoffs/review-resolution-issue-20.md`, and `workspace/runbooks/remote-output-issue-20.md`, and advanced the local execution registry to the pre-PR review handoff state for issue `#20`.

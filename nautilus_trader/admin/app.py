@@ -15,6 +15,7 @@ from nautilus_trader.admin.schemas import NodesSnapshot
 from nautilus_trader.admin.schemas import OrdersSnapshot
 from nautilus_trader.admin.schemas import OverviewSnapshot
 from nautilus_trader.admin.schemas import PositionsSnapshot
+from nautilus_trader.admin.schemas import RiskSnapshot
 from nautilus_trader.admin.schemas import StrategiesSnapshot
 from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
@@ -29,6 +30,7 @@ from nautilus_trader.admin.services.nodes import build_nodes_snapshot
 from nautilus_trader.admin.services.orders import build_orders_snapshot
 from nautilus_trader.admin.services.overview import build_overview_snapshot
 from nautilus_trader.admin.services.positions import build_positions_snapshot
+from nautilus_trader.admin.services.risk import build_risk_snapshot
 from nautilus_trader.admin.services.strategies import build_strategies_snapshot
 from nautilus_trader.admin.ws import handle_admin_events_socket
 
@@ -83,6 +85,10 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
         limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
     ) -> AccountsSnapshot:
         return build_accounts_snapshot(limit=limit)
+
+    @app.get("/api/admin/risk", response_model=RiskSnapshot)
+    def risk() -> RiskSnapshot:
+        return build_risk_snapshot()
 
     @app.get("/api/admin/logs", response_model=LogsSnapshot)
     def logs(
