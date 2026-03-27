@@ -16,11 +16,15 @@
 - `apps/admin-web/src/shared/realtime/admin-events.ts` 通过 `/ws/admin/events` 同时订阅 `overview` 与 `commands` channel，并把 `snapshot.invalidate` / `command.*` 事件桥接到 shared invalidation / receipt bus；`fills`、`positions`、`accounts`、`risk`、`catalog`、`playback`、`diagnostics`、`backtests` 与 `reports` surface 依赖同一 invalidation 语义刷新 snapshot
 - `nautilus_trader/admin/services/fills.py` 当前把 execution/cache 中已有的 fills 数据投影成 `FillSummary` / `FillsSnapshot`，供浏览器只读消费；它不直接接入交易 venue，也不承担命令执行职责。`nautilus_trader/admin/services/accounts.py` 与 `nautilus_trader/admin/services/risk.py` 同样只负责 account/risk 投影，不直接执行业务控制。`nautilus_trader/admin/services/catalog.py` 与 `nautilus_trader/admin/services/diagnostics.py` 也只负责 catalog/history/playback/diagnostics projection，不直接调度真实回放或修改链路状态。`nautilus_trader/admin/services/backtests.py` 与 `nautilus_trader/admin/services/reports.py` 只负责把现有回测任务/报告结果投影成管理台摘要，不直接启动回测或生成新报告。
 - `apps/admin-web/src/app/layouts/workbench-shell.tsx` 通过浏览器 `localStorage` 与 `apps/admin-web/src/shared/workspaces/workspace-store.ts` 协作，持久化 `Operations/Analysis` 入口、recent views 与 per-route layout/filter 偏好；该集成是严格本地的，不会把 workspace state 同步到 FastAPI、WebSocket 或 GitHub 侧自动化
+- `nautilus_trader/admin/app.py` 当前把构建后的 admin-web bundle 作为同源静态入口托管；bundle 路径通过 `NAUTILUS_ADMIN_FRONTEND_DIR`、包内 `nautilus_trader/admin/static` 与 repo `apps/admin-web/dist` 三者按顺序解析，因此浏览器最终以同一 origin 同时命中 HTML、静态资产、REST 与 WebSocket
 - `apps/admin-web/src/features/playback/playback-preview-chart.tsx` 是当前唯一引入 `lightweight-charts` 的集成点；图表依赖被局部封装在 playback page，用于渲染 bounded timeline preview，不扩散到其他 admin-web route
+- `apps/admin-web/scripts/check-bundle-budget.mjs` 与 `.github/workflows/build.yml` 的 `frontend-admin-web` job 当前共同形成 admin-web 交付 budget gate：CI 会在 production build 后校验 JS/CSS 预算，再执行 Playwright smoke，确保交付模型不是纯文档约定
+- `apps/admin-web/playwright.config.ts` 与 `apps/admin-web/tests/e2e/serve_admin_app.py` 当前通过轻量 Python 依赖 + Chromium browser 把 Playwright 对接到 backend-hosted bundle；该集成只用于验证最终交付路径，不替代生产启动入口
 - `nautilus_trader/admin/services/config.py` 当前把本机 control-plane guardrail 与 recovery runbook 作为浏览器只读 projection 暴露，不直接接入交易 venue 或远端配置中心
 - `Phase 3` close-out integration boundary 当前要求浏览器所有 trading ops / diagnostics workflow 都通过 bounded snapshot / preview DTO 协作；`catalog` / `playback` 的 UTC window、`operator_notes` 与 `errors`，以及 `diagnostics` 的 partial / slow-query feedback 必须跨 HTTP 和 UI 完整透传，不允许依赖隐式超时或 console log 暗示异常
 - `Phase 4A` integration boundary 当前要求 `Backtests` / `Reports` workflow 继续通过 bounded snapshot DTO 协作；`report_id` 与 `artifacts` 只作为浏览器可见导航线索，不直接把 admin-web 绑定到内部 backtest scheduler 或 analysis runtime object
 - `Phase 4B` integration boundary 当前要求 unified workbench 只接入浏览器 `localStorage` 这一条本地状态链路；它不能引入新的后端偏好持久化、远端用户配置同步或 CI/merge gate 对 workspace state 的依赖
+- `Phase 4C` integration boundary 当前要求 backend-hosted bundle、Playwright smoke、bundle budget gate 与轻量 Python WebSocket support 一起闭环；Tauri 结论只落在评估文档中，不引入新的桌面运行时集成
 
 ## Repository Governance Integrations
 

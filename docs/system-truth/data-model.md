@@ -53,6 +53,10 @@
   - 数据职责：`Backtests` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
 - `ReportsSnapshot`
   - 数据职责：`Reports` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `nautilus_trader/admin/static.__init__`
+  - 数据职责：admin-web 交付配置定位器；负责解析 `NAUTILUS_ADMIN_FRONTEND_DIR`、包内静态目录与 repo `apps/admin-web/dist` 三个候选 bundle 目录
+- `NAUTILUS_ADMIN_FRONTEND_DIR`
+  - 数据职责：可选运行时环境变量；用于把 FastAPI 根入口绑定到指定的已构建 admin-web bundle 目录
 - `NodeSummary`
   - 数据职责：node 级摘要；在 `Phase 0` 至少表达 node 状态与可选 `node_id`
 - `StrategySummary`
@@ -142,12 +146,16 @@
   - 数据职责：最近访问 route 投影；表达 `to`、`label`、`workbench` 与 `visitedAt`
 - `WorkspaceRoutePreference`
   - 数据职责：per-route 的本地工作偏好；当前表达 `filterText` 与 `layout`
+- `apps/admin-web/scripts/check-bundle-budget.mjs`
+  - 数据职责：前端交付 budget 配置；当前保存 JS 与 CSS 的原始大小 / gzip 大小阈值，供 CI 与本地验证复用
 - `Phase 3` close-out guardrail
   - 数据职责：当前 trading-ops / diagnostics DTO 同时表达 bounded query window、timeline preview、operator_notes、partial 与 errors；浏览器不得构造无界历史读取，也不得把慢查询/partial failure 降级成只写 console 的隐式状态
 - `Phase 4A` close-out guardrail
   - 数据职责：当前 analysis DTO 只表达 bounded backtest/report 浏览所需的任务、收益摘要和 artifact family 投影；浏览器不得把这些 DTO 误用成回测编排请求体，也不得绕过 admin DTO 直接拼接内部分析对象
 - `Phase 4B` close-out guardrail
   - 数据职责：workspace state 只表达浏览器导航与本地偏好，不是后端 DTO、不是 review gate 输入、也不是多用户共享配置；recent route 和记忆化入口都必须能在本地存储缺失时退回默认路径
+- `Phase 4C` close-out guardrail
+  - 数据职责：当前交付数据模型固定为 `dist/index.html + hashed assets + bundle locator config + explicit budget thresholds`；桌面壳决策不新增产品运行时数据结构
 
 ## Governance Data
 

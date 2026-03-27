@@ -1,10 +1,12 @@
 from datetime import datetime
 from datetime import timedelta
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import Query
 from fastapi import WebSocket
+from fastapi.responses import FileResponse
 
 from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
@@ -50,11 +52,13 @@ from nautilus_trader.admin.services.positions import build_positions_snapshot
 from nautilus_trader.admin.services.reports import build_reports_snapshot
 from nautilus_trader.admin.services.risk import build_risk_snapshot
 from nautilus_trader.admin.services.strategies import build_strategies_snapshot
+from nautilus_trader.admin.static import resolve_admin_frontend_dir
 from nautilus_trader.admin.ws import handle_admin_events_socket
 
 
 DEFAULT_READ_ONLY_LIMIT = 100
 MAX_READ_ONLY_LIMIT = 500
+RESERVED_FRONTEND_PREFIXES = ("api", "ws")
 
 
 def _validate_time_window(*, start_time: datetime, end_time: datetime) -> None:
@@ -261,6 +265,46 @@ def _register_command_routes(app: FastAPI) -> None:
         )
 
 
+def _resolve_frontend_asset(frontend_dir: Path, frontend_path: str) -> Path | None:
+    requested_path = Path(frontend_path)
+    candidate = (frontend_dir / requested_path).resolve()
+
+    try:
+        candidate.relative_to(frontend_dir)
+    except ValueError:
+        return None
+
+    if candidate.is_file():
+        return candidate
+
+    return None
+
+
+def _register_frontend_routes(app: FastAPI) -> None:
+    frontend_dir = resolve_admin_frontend_dir()
+    if frontend_dir is None:
+        return
+
+    frontend_dir = frontend_dir.resolve()
+    index_file = frontend_dir / "index.html"
+
+    @app.get("/", include_in_schema=False)
+    def frontend_index() -> FileResponse:
+        return FileResponse(index_file)
+
+    @app.get("/{frontend_path:path}", include_in_schema=False)
+    def frontend_asset(frontend_path: str) -> FileResponse:
+        first_segment = frontend_path.split("/", maxsplit=1)[0]
+        if first_segment in RESERVED_FRONTEND_PREFIXES:
+            raise HTTPException(status_code=404, detail="Not found")
+
+        asset = _resolve_frontend_asset(frontend_dir, frontend_path)
+        if asset is not None:
+            return FileResponse(asset)
+
+        return FileResponse(index_file)
+
+
 def create_admin_app() -> FastAPI:
     app = FastAPI(title="NautilusTrader Admin API")
 
@@ -270,5 +314,6 @@ def create_admin_app() -> FastAPI:
     _register_read_only_surface_routes(app)
     _register_command_routes(app)
     _register_event_routes(app)
+    _register_frontend_routes(app)
 
     return app

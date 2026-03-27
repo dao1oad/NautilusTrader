@@ -6,11 +6,16 @@
   - 包名：`nautilus_trader`
   - Python 版本：`>=3.12,<3.15`
   - 构建后端：`poetry.core.masonry.api`
+  - 运行时依赖新增 `wsproto`，用于让 admin WebSocket endpoint 在真实 ASGI 服务器上保持可用
+  - wheel/sdist 显式包含 `nautilus_trader/admin/static/**/*`，为 backend-hosted admin-web bundle 预留正式打包入口
   - 可选依赖组：`betfair`、`ib`、`docker`、`polymarket`、`visualization`
 - `build.py`
   - 输入：环境变量 `RUSTUP_TOOLCHAIN`、`BUILD_MODE`、`PROFILE_MODE`、`ANNOTATION_MODE`、`PARALLEL_BUILD`、`COPY_TO_SOURCE`、`FORCE_STRIP`、`PYO3_ONLY`、`DRY_RUN`、`HIGH_PRECISION`
   - 契约：先编译 Rust 关键库，再构建 Cython 扩展，并按平台处理链接参数与精度模式
   - Rust toolchain 约束：默认遵循仓库根目录 `rust-toolchain.toml` 的 pin；`RUSTUP_TOOLCHAIN` 仅用于显式切换到 `nightly` 或特定版本 pin
+- `nautilus_trader/admin/static/__init__.py`
+  - 契约：admin-web bundle 查找顺序固定为 `NAUTILUS_ADMIN_FRONTEND_DIR` -> 包内 `nautilus_trader/admin/static` -> repo `apps/admin-web/dist`
+  - 约束：只有包含 `index.html` 的目录才会被识别为有效前端 bundle
 - `Cargo.toml`
   - 契约：声明 workspace members、共享依赖与 adapter/core crate 边界；新 Rust 生产模块必须进入 workspace
 - `rust-toolchain.toml`
@@ -63,6 +68,7 @@
 
 - `nautilus_trader/admin/app.py`
   - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/fills`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/risk`、`GET /api/admin/logs`、`GET /api/admin/catalog`、`GET /api/admin/playback`、`GET /api/admin/diagnostics`、`GET /api/admin/backtests`、`GET /api/admin/reports`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
+  - 当前还负责交付浏览器入口：`GET /` 返回 bundle `index.html`；`GET /{frontend_path:path}` 在不命中 `/api/*` 与 `/ws/*` 时优先返回静态资产，否则回退到同一个 `index.html` 以支持 SPA deep link
   - `orders`、`fills`、`positions`、`accounts`、`logs`、`catalog`、`playback`、`backtests` 与 `reports` 九个列表/preview endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
   - `catalog` 与 `playback` 额外要求浏览器显式携带 `start_time` / `end_time` UTC query 参数；后端必须把该 bounded window 原样回显到 DTO，避免无界历史查询
   - 低风险 mutating command endpoint 仍限定为策略/适配器/订阅控制；高风险交易命令不在当前 surface 中
@@ -110,12 +116,17 @@
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`
   - 连接建立后同时订阅 `overview` 与 `commands` channel，并把读到的事件交给 invalidation bus、command receipt bus 与运行态状态管理
+- `apps/admin-web/scripts/check-bundle-budget.mjs`
+  - 契约：当前对生产构建产物执行显式 budget gate；最大单个 JS 资产预算为 `550 KiB` 原始大小 / `180 KiB` gzip，大 CSS 资产预算为 `16 KiB` 原始大小 / `4 KiB` gzip
+- `apps/admin-web/playwright.config.ts`
+  - 契约：Playwright smoke 只针对 backend-hosted bundle 运行；必须在 `dist/index.html` 已存在时启动，并通过测试专用 Python 启动脚本拉起同源 FastAPI shell
 
 ## Repository Operational Interfaces
 
 - GitHub Actions 公开 `build`、`build-v2`、`coverage`、`docker`、`performance`、`security-audit`、`build-docs`、`nightly-tests` 等工程接口
 - `governance-check` 与 `pr-gate` 继续作为当前独立仓库的合并门禁
 - `build.yml` 的 push 触发与 `cargo-deny` / `cargo-vet` 分支条件必须对齐 `main`，否则受保护分支不会运行供应链检查
+- `build.yml` 中的 `frontend-admin-web` job 当前固定执行 `npm ci`、轻量 Python runtime 依赖安装、Playwright Chromium 安装、frontend lint、Vitest、production build、bundle budget gate 与 Playwright smoke；该 job 是 admin-web 交付链路的 CI 真值
 - `codeql-analysis.yml` 的 `pull_request` 分支过滤必须包含 `main`，否则面向 `main` 的 PR 不会运行 CodeQL
 - `scripts/init-project.ps1` / `scripts/init-project.sh` 和 `scripts/check-governance.ps1` / `scripts/check-governance.sh` 是本仓库 bootstrap 与治理校验入口
 - `scripts/sync-issues.ps1` / `scripts/sync-issues.sh`、`scripts/build-workset.ps1` / `scripts/build-workset.sh`、`scripts/close-loop.ps1` / `scripts/close-loop.sh` 负责 issue 同步、编排产物生成和 merge 后 memory 回写

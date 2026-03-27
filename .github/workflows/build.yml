@@ -66,8 +66,20 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Set up Python
+        # https://github.com/actions/setup-python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
       - name: Install frontend dependencies
         run: npm ci
+
+      - name: Install admin E2E Python dependencies
+        run: python -m pip install fastapi msgspec pydantic uvicorn wsproto
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
 
       - name: Run frontend lint
         run: npm run lint
@@ -77,6 +89,14 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+
+      - name: Check frontend bundle budget
+        run: npm run check:bundle
+
+      - name: Run frontend E2E smoke tests
+        env:
+          NAUTILUS_ADMIN_E2E_PYTHON_BIN: python
+        run: npx playwright test
 
   # Dependency license, advisory, and ban checks (main only - gates protected branch)
   # https://embarkstudios.github.io/cargo-deny/
