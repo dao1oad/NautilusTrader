@@ -14,7 +14,8 @@ test("renders navigation entries for read-only operations routes", async () => {
   expect(await screen.findByRole("link", { name: "Overview" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Nodes" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Strategies" })).toBeInTheDocument();
-  expect(await screen.findByRole("link", { name: "Orders" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "Blotter" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "Fills" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Audit" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Config" })).toBeInTheDocument();
 });

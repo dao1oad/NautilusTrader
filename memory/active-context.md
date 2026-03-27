@@ -7,12 +7,11 @@
 ## Current Phase
 
 - PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
-- 2026-03-26 已完成 Phase 1 umbrella `#9` 的 close-out merge；当前具体实施入口切换到 issue `#16`，为 Phase 2A 建立 typed command contract、错误码与 append-only audit sink。
-- 2026-03-27 issue `#18` 已通过 PR `#40` 合并到 `main`；当前实施入口切换到 umbrella issue `#10`，负责 Phase 2 close-out、phase-level truth docs / memory 回写与最终验收。
+- 2026-03-27 当前具体实施入口已切到 issue `#19`；隔离分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 已完成 Phase 3A 的 blotter、fills 与 position drill-down surface，并已通过本地 pre-PR review。
 
 ## Blockers
 
-- 无新的人工决策阻塞；当前 issue `#10` 的 close-out 只剩回写 merge 状态、记录 Phase 2 exit gate 结果并提交 umbrella PR。
+- 无新的人工决策阻塞；当前 issue `#19` 已完成本地 pre-PR review，下一步是整理 PR 说明并进入 Phase 3A 合并流程。
 
 ## Confirmed Facts
 
@@ -100,12 +99,16 @@
 - 2026-03-27 已在 issue `#18` worktree 上验证 `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run build` 全部通过；`vite build` 仍只打印来自 `@tanstack/react-query` 的既有 `"use client"` 指令忽略警告。
 - 2026-03-27 PR `#40` 已合并到 `main`，merge commit 为 `b5f5bdbadf0477032ff4b928885ceb4ac5e45c30`；GitHub issue `#18` 已自动关闭，远端 open issues 当前剩余 9 个。
 - 2026-03-27 `#16/#17/#18` 已全部通过 PR 合并，Phase 2 的 operator-facing 能力现已同时满足显式确认、typed receipt、append-only 审计与“无高风险交易命令”四项 exit gate 约束。
+- 2026-03-27 issue `#19` 的隔离 worktree 已补齐 `GET /api/admin/fills`、`FillsSnapshot` / `FillSummary`、`PositionSummary` drill-down 字段，以及 admin-web 的 `Blotter` / `Fills` / `Positions` bounded trading surface、fills route 与 shared invalidation。
+- 2026-03-27 已在 issue `#19` worktree 上验证 `/root/NautilusTrader/.venv/bin/pytest tests/unit_tests/admin/test_fills_api.py tests/unit_tests/admin/test_positions_api.py -v --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`cd apps/admin-web && npm run build` 与 `git diff --check` 全部通过；`vite build` 仍只打印既有 `@tanstack/react-query` `"use client"` 指令忽略警告。
+- 2026-03-27 已为 issue `#19` 补齐 `workspace/runbooks/remote-output-issue-19.md` 与 pending `workspace/handoffs/review-resolution-issue-19.md`，并再次确认 `pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run build`、`pwsh -NoProfile -File scripts/check-governance.ps1` 与 `git diff --check` 全部通过。
+- 2026-03-27 issue `#19` 已完成本地 pre-PR review rerun：`workspace/handoffs/local-review-issue-19.md` 状态更新为 `approved`，`workspace/handoffs/review-resolution-issue-19.md` 状态更新为 `accepted`；复核证据覆盖 targeted backend pytest、`src/test/trading-read-only-surfaces.test.tsx`、full admin-web Vitest、frontend build、governance check 与 `git diff --check`。
 
 ## Next Actions
 
-1. 为 umbrella issue `#10` 记录 Phase 2 close-out 的 truth-doc / memory / review 产物并开 PR。
-2. issue `#10` 合并后把具体实施入口切换到 `#19`，开始 Phase 3A blotter / fills / position drill-down。
-3. 保持 `#11` 与 `#12` 继续只作为后续 phase umbrella gate，不直接承载功能实现。
+1. 为 issue `#19` 准备 PR 说明并进入 Phase 3A 合并流程。
+2. 继续保持 `workspace/handoffs/local-review-issue-19.md` 与 `workspace/handoffs/review-resolution-issue-19.md` 作为该 PR 的本地 review 证据。
+3. 保持 issue `#20` 与 `#21` 继续阻塞，直到 issue `#19` 合并后再解锁后续 Phase 3 子任务。
 
 ## Repository
 
@@ -118,6 +121,10 @@
 ## Last Merge Update
 
 - 2026-03-26: PR #37 merged to main; Phase 1 umbrella close-out complete.
+
+## Last Merge Update
+
+- 2026-03-27: PR #38 merged to main; Phase 2A command contract and audit sink complete.
 
 ## Last Merge Update
 

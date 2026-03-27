@@ -1,0 +1,49 @@
+# Issue #19 Local Execution Output
+
+- Issue: #19
+- Worker: localhost
+- Branch: `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down`
+- Job Id: `2026-03-27T06-47-22-issue-19-manual`
+- Summary: Added the Phase 3A blotter, fills, position drill-down, and keyword-filter trading surfaces across the admin API, admin web, truth docs, and execution bookkeeping, then passed a refreshed local pre-PR review with a final frontend drill-down persistence hardening pass.
+- Notes:
+  - The worktree already contained the scoped Phase 3A backend route and trading-surface changes when this iteration started, so this pass focused on tightening the bounded frontend operator workflow with shared keyword filtering plus refreshing the truth-doc and handoff text.
+  - A final frontend regression fix stabilized the fallback row key for position drill-down selection so reordered snapshots keep the operator's active row even when `position_id` is absent.
+  - Fresh verification for the local review rerun covered the issue-specific backend tests, the dedicated trading-surface Vitest file, the full admin-web Vitest suite, the frontend production build, governance checks, and `git diff --check`.
+  - `vite build` still prints the existing `@tanstack/react-query` `"use client"` directive warnings, but the production build completed successfully.
+- Files:
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/schemas.py`
+  - `nautilus_trader/admin/services/fills.py`
+  - `tests/unit_tests/admin/test_fills_api.py`
+  - `tests/unit_tests/admin/test_positions_api.py`
+  - `apps/admin-web/src/app.tsx`
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/router.tsx`
+  - `apps/admin-web/src/app/routes/fills.tsx`
+  - `apps/admin-web/src/features/fills/fills-page.tsx`
+  - `apps/admin-web/src/features/orders/orders-page.tsx`
+  - `apps/admin-web/src/features/positions/positions-page.tsx`
+  - `apps/admin-web/src/features/read-only/admin-list-page.tsx`
+  - `apps/admin-web/src/shared/api/admin-client.ts`
+  - `apps/admin-web/src/shared/query/query-client.ts`
+  - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - `apps/admin-web/src/shared/types/admin.ts`
+  - `apps/admin-web/src/styles.css`
+  - `apps/admin-web/src/test/admin-events.test.ts`
+  - `apps/admin-web/src/test/console-shell.test.tsx`
+  - `apps/admin-web/src/test/trading-read-only-surfaces.test.tsx`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/active-context.md`
+  - `memory/issue-ledger.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-19.md`
+  - `workspace/handoffs/local-review-issue-19.md`
+  - `workspace/handoffs/review-resolution-issue-19.md`
+- Verification:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-19/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-19/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-19 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-19 diff --check`

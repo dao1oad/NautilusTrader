@@ -38,15 +38,32 @@ class OrderSummary(BaseModel):
     status: str
 
 
+class FillSummary(BaseModel):
+    fill_id: str
+    client_order_id: str
+    instrument_id: str
+    side: Literal["buy", "sell"]
+    quantity: str
+    price: str
+    liquidity_side: str
+    timestamp: datetime
+
+
 class AccountSummary(BaseModel):
     account_id: str
     status: str
 
 
 class PositionSummary(BaseModel):
+    position_id: str | None = None
     instrument_id: str
     side: Literal["long", "short", "flat"]
     quantity: str
+    entry_price: str | None = None
+    unrealized_pnl: str | None = None
+    realized_pnl: str | None = None
+    opened_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class LogSummary(BaseModel):
@@ -175,6 +192,14 @@ class OrdersSnapshot(BaseModel):
     limit: int
     partial: bool = False
     items: list[OrderSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class FillsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[FillSummary] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)
 
 

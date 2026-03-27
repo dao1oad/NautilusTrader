@@ -62,18 +62,22 @@
 ## Admin Read-Only Control Plane Contracts
 
 - `nautilus_trader/admin/app.py`
-  - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/logs`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
-  - `orders`、`positions`、`accounts`、`logs` 四个列表 endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
+  - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/fills`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/logs`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
+  - `orders`、`fills`、`positions`、`accounts`、`logs` 五个列表 endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
   - 低风险 mutating command endpoint 仍限定为策略/适配器/订阅控制；高风险交易命令不在当前 surface 中
 - `nautilus_trader/admin/schemas.py`
-  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`LogsSnapshot`、`AuditSnapshot`、`ConfigDiffSnapshot`
+  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`FillsSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`LogsSnapshot`、`AuditSnapshot`、`ConfigDiffSnapshot`
   - 所有列表 snapshot 都保留 `generated_at`、`partial`、`items`、`errors`；bounded list snapshot 额外保留 `limit`
+  - `PositionSummary` 在 Phase 3A 额外暴露可选的 `position_id`、`entry_price`、`unrealized_pnl`、`realized_pnl`、`opened_at` 与 `updated_at`，供浏览器 drill-down 使用
 - `apps/admin-web/src/shared/types/admin.ts`
   - 是前端对上述 DTO、command receipt event 与 config/audit 恢复模型的 TypeScript 镜像；前端只消费 admin DTO，不直接序列化内部 runtime object
 - `apps/admin-web/src/shared/api/admin-client.ts`
-  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff` 走无参 `GET`；`orders`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`
+  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff` 走无参 `GET`；`orders`、`fills`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`
   - 固定浏览器到后端的低风险 command 契约：策略与适配器控制通过 `POST /api/admin/commands/*` 返回 typed `CommandReceipt`
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`
+- `apps/admin-web/src/features/orders/orders-page.tsx`
+  - `/orders` route 在浏览器侧以 `Blotter` 文案呈现，但仍消费 `/api/admin/orders?limit=<n>` snapshot；不引入新的写接口或独立后端路由
+  - `Blotter`、`Fills`、`Positions` trading surfaces 当前都在浏览器侧提供 keyword filter，且只在单次 bounded snapshot 内做前端过滤与分页，不把无界查询下推到后端
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`

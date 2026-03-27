@@ -4,6 +4,7 @@ import type {
   AuditSnapshot,
   CommandReceipt,
   ConfigDiffSnapshot,
+  FillsSnapshot,
   LogsSnapshot,
   NodesSnapshot,
   OrdersSnapshot,
@@ -63,6 +64,11 @@ export async function getAdaptersSnapshot(): Promise<AdaptersSnapshot> {
 export async function getOrdersSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<OrdersSnapshot> {
   const response = await fetch(buildLimitedPath("/api/admin/orders", limit));
   return parseJson<OrdersSnapshot>(response);
+}
+
+export async function getFillsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<FillsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/fills", limit));
+  return parseJson<FillsSnapshot>(response);
 }
 
 

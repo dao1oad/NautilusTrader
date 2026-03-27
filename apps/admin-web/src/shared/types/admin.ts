@@ -25,15 +25,32 @@ export type OrderSummary = {
   status: string;
 };
 
+export type FillSummary = {
+  fill_id: string;
+  client_order_id: string;
+  instrument_id: string;
+  side: "buy" | "sell";
+  quantity: string;
+  price: string;
+  liquidity_side: string;
+  timestamp: string;
+};
+
 export type AccountSummary = {
   account_id: string;
   status: string;
 };
 
 export type PositionSummary = {
+  position_id?: string | null;
   instrument_id: string;
   side: "long" | "short" | "flat";
   quantity: string;
+  entry_price?: string | null;
+  unrealized_pnl?: string | null;
+  realized_pnl?: string | null;
+  opened_at?: string | null;
+  updated_at?: string | null;
 };
 
 export type LogSummary = {
@@ -99,6 +116,7 @@ export type StrategiesSnapshot = AdminListSnapshot<StrategySummary>;
 export type AdaptersSnapshot = AdminListSnapshot<AdapterSummary>;
 export type BoundedAdminListSnapshot<T> = AdminListSnapshot<T> & { limit: number };
 export type OrdersSnapshot = BoundedAdminListSnapshot<OrderSummary>;
+export type FillsSnapshot = BoundedAdminListSnapshot<FillSummary>;
 export type PositionsSnapshot = BoundedAdminListSnapshot<PositionSummary>;
 export type AccountsSnapshot = BoundedAdminListSnapshot<AccountSummary>;
 export type LogsSnapshot = BoundedAdminListSnapshot<LogSummary>;

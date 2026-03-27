@@ -6,6 +6,8 @@ import type { OrderSummary } from "../../shared/types/admin";
 import { AdminListPage } from "../read-only/admin-list-page";
 
 
+const TRADING_PAGE_SIZE = 25;
+
 const ORDER_COLUMNS = [
   {
     header: "Order",
@@ -29,6 +31,10 @@ const ORDER_COLUMNS = [
   }
 ] as const;
 
+function getOrderSearchText(order: OrderSummary) {
+  return [order.client_order_id, order.instrument_id, order.side, order.quantity, order.status].join(" ");
+}
+
 export function OrdersPage() {
   const query = useQuery({
     queryKey: adminQueryKeys.orders(READ_ONLY_DEFAULT_LIMIT),
@@ -41,9 +47,11 @@ export function OrdersPage() {
       emptyDescription="No orders are currently reported by the admin API."
       getRowKey={(order) => order.client_order_id}
       loadingDescription="Loading the latest order diagnostics."
+      pagination={{ pageSize: TRADING_PAGE_SIZE }}
+      filter={{ getSearchText: getOrderSearchText }}
       query={query}
-      tableLabel="Orders"
-      title="Orders"
+      tableLabel="Blotter"
+      title="Blotter"
     />
   );
 }
