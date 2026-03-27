@@ -318,6 +318,39 @@
       "last_synced_at": "2026-03-27T14:01:31.8590566+08:00",
       "output_artifact_path": "workspace/runbooks/remote-output-issue-21.md",
       "review_resolution_path": "workspace/handoffs/review-resolution-issue-21.md"
+    },
+    {
+      "issue_number": 11,
+      "title": "Phase 3: trading operations and diagnostics surfaces",
+      "packet_path": "workspace/issue-packets/issue-11.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-11",
+      "branch": "codex/issue-11-phase-3-trading-operations-and-diagnostics-surfaces",
+      "task_id": "issue-11-phase-3-trading-operations-and-diagnostics-surfaces",
+      "job_id": "2026-03-27T06-14-42-923Z-e216b7fc",
+      "tmux_session": "codex-orchestrator-issue-11-20260327141439",
+      "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-11.prompt.md",
+      "manifest_path": ".runs/issue-11-phase-3-trading-operations-and-diagnostics-surfaces/cli/2026-03-27T06-14-42-923Z-e216b7fc/manifest.json",
+      "artifact_root": ".runs/issue-11-phase-3-trading-operations-and-diagnostics-surfaces/cli/2026-03-27T06-14-42-923Z-e216b7fc",
+      "log_path": ".runs/issue-11-phase-3-trading-operations-and-diagnostics-surfaces/cli/2026-03-27T06-14-42-923Z-e216b7fc/runner.ndjson",
+      "execution_status": "awaiting-local-review",
+      "summary": "Phase 3 umbrella close-out truth docs, memory, and review artifacts are ready for local pre-PR review after #19/#20/#21 merged.",
+      "files_modified": [
+        "docs/system-truth/api-contracts.md",
+        "docs/system-truth/data-model.md",
+        "docs/system-truth/runtime-flows.md",
+        "docs/system-truth/integrations.md",
+        "memory/progress-log.md",
+        "workspace/runbooks/remote-jobs.json",
+        "workspace/runbooks/remote-output-issue-11.md",
+        "workspace/handoffs/local-review-issue-11.md",
+        "workspace/handoffs/review-resolution-issue-11.md"
+      ],
+      "last_synced_at": "2026-03-27T14:20:16+08:00",
+      "remote_status": "completed",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-11.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-11.md"
     }
   ]
 }

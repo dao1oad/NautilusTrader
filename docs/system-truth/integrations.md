@@ -17,6 +17,7 @@
 - `nautilus_trader/admin/services/fills.py` 当前把 execution/cache 中已有的 fills 数据投影成 `FillSummary` / `FillsSnapshot`，供浏览器只读消费；它不直接接入交易 venue，也不承担命令执行职责。`nautilus_trader/admin/services/accounts.py` 与 `nautilus_trader/admin/services/risk.py` 同样只负责 account/risk 投影，不直接执行业务控制。`nautilus_trader/admin/services/catalog.py` 与 `nautilus_trader/admin/services/diagnostics.py` 也只负责 catalog/history/playback/diagnostics projection，不直接调度真实回放或修改链路状态。
 - `apps/admin-web/src/features/playback/playback-preview-chart.tsx` 是当前唯一引入 `lightweight-charts` 的集成点；图表依赖被局部封装在 playback page，用于渲染 bounded timeline preview，不扩散到其他 admin-web route
 - `nautilus_trader/admin/services/config.py` 当前把本机 control-plane guardrail 与 recovery runbook 作为浏览器只读 projection 暴露，不直接接入交易 venue 或远端配置中心
+- `Phase 3` close-out integration boundary 当前要求浏览器所有 trading ops / diagnostics workflow 都通过 bounded snapshot / preview DTO 协作；`catalog` / `playback` 的 UTC window、`operator_notes` 与 `errors`，以及 `diagnostics` 的 partial / slow-query feedback 必须跨 HTTP 和 UI 完整透传，不允许依赖隐式超时或 console log 暗示异常
 
 ## Repository Governance Integrations
 

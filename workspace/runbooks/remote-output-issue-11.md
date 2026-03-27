@@ -1,0 +1,27 @@
+# Issue #11 Local Execution Output
+
+- Issue: #11
+- Worker: localhost
+- Branch: `codex/issue-11-phase-3-trading-operations-and-diagnostics-surfaces`
+- Job Id: `2026-03-27T06-14-42-923Z-e216b7fc`
+- Summary: Recorded the Phase 3 umbrella close-out after `#19/#20/#21` merged by updating phase-level truth docs, progress log, and local review artifacts, then rerunning the exit-gate verification commands.
+- Notes:
+  - This umbrella slice does not introduce new product code; it only records the final Phase 3 guardrails after the three child implementation PRs landed on `main`.
+  - The recovery dispatch for `#11` started a new local codex-orchestrator run, but that loop was manually stopped once it became clear the issue packet only required phase close-out bookkeeping rather than new feature work.
+  - Phase 3 close-out now explicitly records that the trading operations surfaces remain read-only, catalog/playback queries stay bounded to UTC windows, diagnostics/slow-query failures must remain operator-visible, and the chart runtime stays isolated to the playback preview page.
+- Files:
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `docs/system-truth/integrations.md`
+  - `memory/progress-log.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-11.md`
+  - `workspace/handoffs/local-review-issue-11.md`
+  - `workspace/handoffs/review-resolution-issue-11.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-11 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-11 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-11/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-11/apps/admin-web && npm run build`
+  - `git -C /root/NautilusTrader/.worktrees/issue-11 diff --check`

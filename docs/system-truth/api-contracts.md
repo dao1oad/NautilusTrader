@@ -89,6 +89,9 @@
   - `Catalog` 页面固定消费 bounded `/api/admin/catalog?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 browse item、history query feedback 与 operator note，并继续复用 `AdminListPage` 的 filter / pagination / drill-down
   - `Playback` 页面固定消费 bounded `/api/admin/playback?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 `PlaybackRequest`、timeline preview 与 projected event table；图表 runtime 仅允许封装在 `playback-preview-chart.tsx`
   - `Diagnostics` 页面固定消费 `/api/admin/diagnostics`，显示 `DiagnosticsSummary`、link health、query timing 与显式 `errors`，partial failure 必须在页面上可见
+- `Phase 3` close-out contract
+  - `Blotter`、`Fills`、`Positions`、`Accounts`、`Risk center`、`Catalog`、`Playback` 与 `Diagnostics` 当前共同构成日常运维读工作台，但仍只暴露 bounded read-only snapshot / preview 契约，不引入任何新的交易写接口
+  - `Catalog` / `Playback` 的 UTC window、`operator_notes` 与 `errors`，以及 `Diagnostics` 的 link health / query timing / partial error 都必须作为浏览器可见 DTO 字段返回，避免大查询、慢查询或链路退化时静默卡死 UI
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`

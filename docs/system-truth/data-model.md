@@ -126,6 +126,8 @@
   - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
   - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk`、`diagnostics` 八组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key；`catalog` 与 `playback` 额外带 `limit/start/end` 维度，确保 bounded window 是 cache key 的一部分
+- `Phase 3` close-out guardrail
+  - 数据职责：当前 trading-ops / diagnostics DTO 同时表达 bounded query window、timeline preview、operator_notes、partial 与 errors；浏览器不得构造无界历史读取，也不得把慢查询/partial failure 降级成只写 console 的隐式状态
 
 ## Governance Data
 
