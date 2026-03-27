@@ -124,6 +124,81 @@ export type LogSummary = {
   message: string;
 };
 
+export type CatalogEntry = {
+  catalog_id: string;
+  instrument_id: string;
+  data_type: "bars" | "trades" | "quotes";
+  timeframe: string;
+  status: "ready" | "warming" | "delayed";
+  row_count: number;
+  first_record_at: string;
+  last_record_at: string;
+};
+
+export type HistoryQuery = {
+  catalog_id: string;
+  instrument_id: string;
+  data_type: "bars" | "trades" | "quotes";
+  start_time: string;
+  end_time: string;
+  limit: number;
+  returned_rows: number;
+  feedback: string;
+};
+
+export type PlaybackRequest = {
+  request_id: string;
+  catalog_id: string;
+  instrument_id: string;
+  start_time: string;
+  end_time: string;
+  limit: number;
+  speed: string;
+  event_types: string[];
+  feedback: string;
+};
+
+export type PlaybackTimelinePoint = {
+  timestamp: string;
+  mid_price: string;
+  cumulative_events: number;
+};
+
+export type PlaybackEventSummary = {
+  timestamp: string;
+  event_type: string;
+  summary: string;
+};
+
+export type DiagnosticsSummary = {
+  overall_status: "healthy" | "degraded" | "partial";
+  healthy_links: number;
+  degraded_links: number;
+  slow_queries: number;
+  latest_catalog_sync_at: string;
+};
+
+export type LinkHealth = {
+  link_id: string;
+  label: string;
+  status: "healthy" | "degraded";
+  latency_ms: number;
+  last_checked_at: string;
+  detail: string;
+};
+
+export type QueryTiming = {
+  query_id: string;
+  surface: "catalog" | "playback" | "diagnostics";
+  status: "ok" | "slow" | "failed";
+  limit: number;
+  window_start: string;
+  window_end: string;
+  returned_rows: number;
+  duration_ms: number;
+  detail: string;
+};
+
 export type CommandErrorCode =
   | "invalid_request"
   | "not_found"
@@ -184,6 +259,10 @@ export type FillsSnapshot = BoundedAdminListSnapshot<FillSummary>;
 export type PositionsSnapshot = BoundedAdminListSnapshot<PositionSummary>;
 export type AccountsSnapshot = BoundedAdminListSnapshot<AccountSummary> & { summary: AccountsSummary };
 export type LogsSnapshot = BoundedAdminListSnapshot<LogSummary>;
+export type CatalogSnapshot = BoundedAdminListSnapshot<CatalogEntry> & {
+  history_query: HistoryQuery;
+  operator_notes: string[];
+};
 export type AuditSnapshot = AdminListSnapshot<AuditRecord>;
 export type RiskSnapshot = {
   generated_at: string;
@@ -191,6 +270,23 @@ export type RiskSnapshot = {
   partial: boolean;
   events: RiskEvent[];
   blocks: RiskBlock[];
+  errors: SectionError[];
+};
+export type PlaybackSnapshot = {
+  generated_at: string;
+  request: PlaybackRequest;
+  partial: boolean;
+  timeline: PlaybackTimelinePoint[];
+  events: PlaybackEventSummary[];
+  operator_notes: string[];
+  errors: SectionError[];
+};
+export type DiagnosticsSnapshot = {
+  generated_at: string;
+  summary: DiagnosticsSummary;
+  partial: boolean;
+  links: LinkHealth[];
+  query_timings: QueryTiming[];
   errors: SectionError[];
 };
 

@@ -137,6 +137,81 @@ class LogSummary(BaseModel):
     message: str
 
 
+class CatalogEntry(BaseModel):
+    catalog_id: str
+    instrument_id: str
+    data_type: Literal["bars", "trades", "quotes"]
+    timeframe: str
+    status: Literal["ready", "warming", "delayed"]
+    row_count: int
+    first_record_at: datetime
+    last_record_at: datetime
+
+
+class HistoryQuery(BaseModel):
+    catalog_id: str
+    instrument_id: str
+    data_type: Literal["bars", "trades", "quotes"]
+    start_time: datetime
+    end_time: datetime
+    limit: int
+    returned_rows: int
+    feedback: str
+
+
+class PlaybackRequest(BaseModel):
+    request_id: str
+    catalog_id: str
+    instrument_id: str
+    start_time: datetime
+    end_time: datetime
+    limit: int
+    speed: str
+    event_types: list[str] = Field(default_factory=list)
+    feedback: str
+
+
+class PlaybackTimelinePoint(BaseModel):
+    timestamp: datetime
+    mid_price: str
+    cumulative_events: int
+
+
+class PlaybackEventSummary(BaseModel):
+    timestamp: datetime
+    event_type: str
+    summary: str
+
+
+class DiagnosticsSummary(BaseModel):
+    overall_status: Literal["healthy", "degraded", "partial"]
+    healthy_links: int
+    degraded_links: int
+    slow_queries: int
+    latest_catalog_sync_at: datetime
+
+
+class LinkHealth(BaseModel):
+    link_id: str
+    label: str
+    status: Literal["healthy", "degraded"]
+    latency_ms: int
+    last_checked_at: datetime
+    detail: str
+
+
+class QueryTiming(BaseModel):
+    query_id: str
+    surface: Literal["catalog", "playback", "diagnostics"]
+    status: Literal["ok", "slow", "failed"]
+    limit: int
+    window_start: datetime
+    window_end: datetime
+    returned_rows: int
+    duration_ms: int
+    detail: str
+
+
 class CommandErrorCode(str, Enum):
     INVALID_REQUEST = "invalid_request"
     NOT_FOUND = "not_found"
@@ -298,4 +373,33 @@ class LogsSnapshot(BaseModel):
     limit: int
     partial: bool = False
     items: list[LogSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class CatalogSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    history_query: HistoryQuery
+    partial: bool = False
+    items: list[CatalogEntry] = Field(default_factory=list)
+    operator_notes: list[str] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class PlaybackSnapshot(BaseModel):
+    generated_at: datetime
+    request: PlaybackRequest
+    partial: bool = False
+    timeline: list[PlaybackTimelinePoint] = Field(default_factory=list)
+    events: list[PlaybackEventSummary] = Field(default_factory=list)
+    operator_notes: list[str] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class DiagnosticsSnapshot(BaseModel):
+    generated_at: datetime
+    summary: DiagnosticsSummary
+    partial: bool = False
+    links: list[LinkHealth] = Field(default_factory=list)
+    query_timings: list[QueryTiming] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)

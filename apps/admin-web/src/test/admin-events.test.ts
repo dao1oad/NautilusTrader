@@ -96,7 +96,10 @@ test("publishes overview invalidations to the shared bus", () => {
     "positions",
     "accounts",
     "risk",
-    "logs"
+    "logs",
+    "catalog",
+    "playback",
+    "diagnostics"
   ]);
 
   unsubscribeInvalidations();

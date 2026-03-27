@@ -4,7 +4,13 @@ import { RouterProvider } from "@tanstack/react-router";
 
 import { AdminRuntimeProvider } from "./app/admin-runtime";
 import { router } from "./app/router";
-import { READ_ONLY_DEFAULT_LIMIT } from "./shared/api/admin-client";
+import {
+  CATALOG_DEFAULT_END_TIME,
+  CATALOG_DEFAULT_START_TIME,
+  PLAYBACK_DEFAULT_END_TIME,
+  PLAYBACK_DEFAULT_START_TIME,
+  READ_ONLY_DEFAULT_LIMIT
+} from "./shared/api/admin-client";
 import { subscribeToAdminEvents } from "./shared/realtime/admin-events";
 import { adminQueryKeys, queryClient } from "./shared/query/query-client";
 import { subscribeToInvalidations } from "./shared/realtime/invalidation-bus";
@@ -99,6 +105,33 @@ export function App() {
 
       if (topic === "logs") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.logs(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
+      if (topic === "catalog") {
+        void queryClient.invalidateQueries({
+          queryKey: adminQueryKeys.catalog(
+            READ_ONLY_DEFAULT_LIMIT,
+            CATALOG_DEFAULT_START_TIME,
+            CATALOG_DEFAULT_END_TIME
+          )
+        });
+        return;
+      }
+
+      if (topic === "playback") {
+        void queryClient.invalidateQueries({
+          queryKey: adminQueryKeys.playback(
+            READ_ONLY_DEFAULT_LIMIT,
+            PLAYBACK_DEFAULT_START_TIME,
+            PLAYBACK_DEFAULT_END_TIME
+          )
+        });
+        return;
+      }
+
+      if (topic === "diagnostics") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.diagnostics() });
       }
     });
   }, []);
@@ -127,7 +160,10 @@ export function App() {
           resource !== "positions" &&
           resource !== "accounts" &&
           resource !== "risk" &&
-          resource !== "logs")
+          resource !== "logs" &&
+          resource !== "catalog" &&
+          resource !== "playback" &&
+          resource !== "diagnostics")
       ) {
         return;
       }

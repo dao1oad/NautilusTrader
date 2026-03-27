@@ -17,7 +17,10 @@ const NAV_ITEMS = [
   { to: "/positions", label: "Positions" },
   { to: "/accounts", label: "Accounts" },
   { to: "/risk", label: "Risk Center" },
-  { to: "/logs", label: "Logs" }
+  { to: "/logs", label: "Logs" },
+  { to: "/catalog", label: "Catalog" },
+  { to: "/playback", label: "Playback" },
+  { to: "/diagnostics", label: "Diagnostics" }
 ] as const;
 
 type Props = {

@@ -1,19 +1,26 @@
+from datetime import datetime
+from datetime import timedelta
+
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi import Query
 from fastapi import WebSocket
 
 from nautilus_trader.admin.schemas import AccountsSnapshot
 from nautilus_trader.admin.schemas import AdaptersSnapshot
+from nautilus_trader.admin.schemas import CatalogSnapshot
 from nautilus_trader.admin.schemas import AuditSnapshot
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
 from nautilus_trader.admin.schemas import ConfigDiffSnapshot
+from nautilus_trader.admin.schemas import DiagnosticsSnapshot
 from nautilus_trader.admin.schemas import FillsSnapshot
 from nautilus_trader.admin.schemas import HealthStatus
 from nautilus_trader.admin.schemas import LogsSnapshot
 from nautilus_trader.admin.schemas import NodesSnapshot
 from nautilus_trader.admin.schemas import OrdersSnapshot
 from nautilus_trader.admin.schemas import OverviewSnapshot
+from nautilus_trader.admin.schemas import PlaybackSnapshot
 from nautilus_trader.admin.schemas import PositionsSnapshot
 from nautilus_trader.admin.schemas import RiskSnapshot
 from nautilus_trader.admin.schemas import StrategiesSnapshot
@@ -21,9 +28,16 @@ from nautilus_trader.admin.services.accounts import build_accounts_snapshot
 from nautilus_trader.admin.services.adapters import build_adapters_snapshot
 from nautilus_trader.admin.services.audit import build_audit_snapshot
 from nautilus_trader.admin.services.audit import reset_audit_sink
+from nautilus_trader.admin.services.catalog import build_catalog_snapshot
+from nautilus_trader.admin.services.catalog import build_playback_snapshot
+from nautilus_trader.admin.services.catalog import DEFAULT_CATALOG_END_TIME
+from nautilus_trader.admin.services.catalog import DEFAULT_CATALOG_START_TIME
+from nautilus_trader.admin.services.catalog import DEFAULT_PLAYBACK_END_TIME
+from nautilus_trader.admin.services.catalog import DEFAULT_PLAYBACK_START_TIME
 from nautilus_trader.admin.services.commands import reset_command_event_stream
 from nautilus_trader.admin.services.commands import submit_command
 from nautilus_trader.admin.services.config import build_config_diff_snapshot
+from nautilus_trader.admin.services.diagnostics import build_diagnostics_snapshot
 from nautilus_trader.admin.services.fills import build_fills_snapshot
 from nautilus_trader.admin.services.logs import build_logs_snapshot
 from nautilus_trader.admin.services.nodes import build_nodes_snapshot
@@ -37,6 +51,17 @@ from nautilus_trader.admin.ws import handle_admin_events_socket
 
 DEFAULT_READ_ONLY_LIMIT = 100
 MAX_READ_ONLY_LIMIT = 500
+
+
+def _validate_time_window(*, start_time: datetime, end_time: datetime) -> None:
+    if start_time.tzinfo is None or end_time.tzinfo is None:
+        raise HTTPException(status_code=422, detail="start_time and end_time must be UTC timestamps")
+
+    if start_time.utcoffset() != timedelta(0) or end_time.utcoffset() != timedelta(0):
+        raise HTTPException(status_code=422, detail="start_time and end_time must be UTC timestamps")
+
+    if end_time <= start_time:
+        raise HTTPException(status_code=422, detail="end_time must be greater than start_time")
 
 
 def _register_core_routes(app: FastAPI) -> None:
@@ -96,6 +121,28 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
         inject_partial_error: bool = False,
     ) -> LogsSnapshot:
         return build_logs_snapshot(limit=limit, inject_partial_error=inject_partial_error)
+
+    @app.get("/api/admin/catalog", response_model=CatalogSnapshot)
+    def catalog(
+        limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
+        start_time: datetime = Query(default=DEFAULT_CATALOG_START_TIME),
+        end_time: datetime = Query(default=DEFAULT_CATALOG_END_TIME),
+    ) -> CatalogSnapshot:
+        _validate_time_window(start_time=start_time, end_time=end_time)
+        return build_catalog_snapshot(limit=limit, start_time=start_time, end_time=end_time)
+
+    @app.get("/api/admin/playback", response_model=PlaybackSnapshot)
+    def playback(
+        limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
+        start_time: datetime = Query(default=DEFAULT_PLAYBACK_START_TIME),
+        end_time: datetime = Query(default=DEFAULT_PLAYBACK_END_TIME),
+    ) -> PlaybackSnapshot:
+        _validate_time_window(start_time=start_time, end_time=end_time)
+        return build_playback_snapshot(limit=limit, start_time=start_time, end_time=end_time)
+
+    @app.get("/api/admin/diagnostics", response_model=DiagnosticsSnapshot)
+    def diagnostics(inject_partial_error: bool = False) -> DiagnosticsSnapshot:
+        return build_diagnostics_snapshot(inject_partial_error=inject_partial_error)
 
     @app.get("/api/admin/audit", response_model=AuditSnapshot)
     def audit() -> AuditSnapshot:
