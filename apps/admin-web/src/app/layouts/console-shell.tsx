@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { ConnectionBanner } from "../../features/connection/connection-banner";
@@ -48,6 +48,14 @@ type Props = {
 };
 
 const COMPACT_NAVIGATION_MEDIA_QUERY = "(max-width: 720px)";
+const COMPACT_NAVIGATION_FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(", ");
 
 function formatWorkbenchLabel(workbench: ConsoleWorkbenchId) {
   return workbench.charAt(0).toUpperCase() + workbench.slice(1);
@@ -74,6 +82,16 @@ function readCompactNavigationMatch() {
   return window.matchMedia(COMPACT_NAVIGATION_MEDIA_QUERY).matches;
 }
 
+function getCompactNavigationFocusableElements(container: HTMLElement | null) {
+  if (!container) {
+    return [];
+  }
+
+  return Array.from(container.querySelectorAll<HTMLElement>(COMPACT_NAVIGATION_FOCUSABLE_SELECTOR)).filter(
+    (element) => element.tabIndex !== -1 && !element.hasAttribute("disabled")
+  );
+}
+
 export function ConsoleShell({
   children,
   currentWorkbench,
@@ -85,10 +103,19 @@ export function ConsoleShell({
   const { connectionState } = useAdminRuntime();
   const [isCompactNavigation, setIsCompactNavigation] = useState(() => readCompactNavigationMatch());
   const [navigationOpen, setNavigationOpen] = useState(false);
+  const navigationRef = useRef<HTMLElement | null>(null);
+  const navigationTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const shouldRestoreTriggerFocusRef = useRef(false);
   const currentWorkbenchLabel = formatWorkbenchLabel(currentWorkbench);
   const shouldRenderSidebar = !isCompactNavigation || navigationOpen;
 
+  function closeNavigation({ restoreFocus }: { restoreFocus: boolean }) {
+    shouldRestoreTriggerFocusRef.current = restoreFocus;
+    setNavigationOpen(false);
+  }
+
   useEffect(() => {
+    shouldRestoreTriggerFocusRef.current = false;
     setNavigationOpen(false);
   }, [currentWorkbench, runtimeMeta.pageTitle]);
 
@@ -110,11 +137,107 @@ export function ConsoleShell({
     };
   }, []);
 
+  useEffect(() => {
+    if (isCompactNavigation || !navigationOpen) {
+      return;
+    }
+
+    shouldRestoreTriggerFocusRef.current = false;
+    setNavigationOpen(false);
+  }, [isCompactNavigation, navigationOpen]);
+
+  useEffect(() => {
+    if (!isCompactNavigation) {
+      shouldRestoreTriggerFocusRef.current = false;
+      return;
+    }
+
+    if (!navigationOpen) {
+      if (shouldRestoreTriggerFocusRef.current) {
+        navigationTriggerRef.current?.focus();
+        shouldRestoreTriggerFocusRef.current = false;
+      }
+
+      return;
+    }
+
+    const navigation = navigationRef.current;
+
+    if (!navigation) {
+      return;
+    }
+
+    const focusableElements = getCompactNavigationFocusableElements(navigation);
+    const initialFocusTarget = focusableElements[0] ?? navigation;
+    initialFocusTarget.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const currentNavigation = navigationRef.current;
+
+      if (!currentNavigation) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeNavigation({ restoreFocus: true });
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const currentFocusableElements = getCompactNavigationFocusableElements(currentNavigation);
+      if (currentFocusableElements.length === 0) {
+        event.preventDefault();
+        currentNavigation.focus();
+        return;
+      }
+
+      const firstElement = currentFocusableElements[0];
+      const lastElement = currentFocusableElements[currentFocusableElements.length - 1];
+      const activeElement =
+        document.activeElement instanceof HTMLElement && currentNavigation.contains(document.activeElement)
+          ? document.activeElement
+          : null;
+
+      if (event.shiftKey) {
+        if (activeElement === firstElement || activeElement === null) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+
+        return;
+      }
+
+      if (activeElement === lastElement || activeElement === null) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCompactNavigation, navigationOpen]);
+
   return (
     <main className="app-shell">
       <div className="console-frame">
         {shouldRenderSidebar ? (
-          <aside className="console-sidebar" data-open={navigationOpen ? "true" : "false"} id="workbench-navigation">
+          <aside
+            aria-label={isCompactNavigation ? "Workbench navigation" : undefined}
+            aria-modal={isCompactNavigation ? true : undefined}
+            className="console-sidebar"
+            data-open={navigationOpen ? "true" : "false"}
+            id="workbench-navigation"
+            ref={navigationRef}
+            role={isCompactNavigation ? "dialog" : undefined}
+            tabIndex={isCompactNavigation ? -1 : undefined}
+          >
             <div className="console-sidebar-header">
               <p className="app-kicker">Operator workstation</p>
               <h1>NautilusTrader Admin</h1>
@@ -142,7 +265,7 @@ export function ConsoleShell({
                     className="console-workbench-link"
                     data-active={entry.active}
                     key={entry.label}
-                    onClick={() => setNavigationOpen(false)}
+                    onClick={() => closeNavigation({ restoreFocus: false })}
                     to={entry.to}
                   >
                     {entry.label}
@@ -158,7 +281,11 @@ export function ConsoleShell({
                     <ul className="console-nav-list">
                       {group.items.map((item) => (
                         <li key={item.to}>
-                          <Link className="console-nav-link" onClick={() => setNavigationOpen(false)} to={item.to}>
+                          <Link
+                            className="console-nav-link"
+                            onClick={() => closeNavigation({ restoreFocus: false })}
+                            to={item.to}
+                          >
                             {item.label}
                           </Link>
                         </li>
@@ -173,7 +300,11 @@ export function ConsoleShell({
               <ul className="console-recent-list">
                 {recentRoutes.map((route) => (
                   <li className="console-recent-item" key={`${route.to}:${route.visitedAt}`}>
-                    <Link className="console-recent-link" onClick={() => setNavigationOpen(false)} to={route.to}>
+                    <Link
+                      className="console-recent-link"
+                      onClick={() => closeNavigation({ restoreFocus: false })}
+                      to={route.to}
+                    >
                       <span className="console-recent-label">{route.label}</span>
                       <span className="console-recent-meta">
                         <span className="console-recent-workbench">{formatWorkbenchLabel(route.workbench)}</span>
@@ -190,7 +321,7 @@ export function ConsoleShell({
           <button
             aria-label="Close navigation"
             className="console-nav-scrim"
-            onClick={() => setNavigationOpen(false)}
+            onClick={() => closeNavigation({ restoreFocus: true })}
             type="button"
           />
         ) : null}
@@ -210,7 +341,16 @@ export function ConsoleShell({
                   aria-controls={shouldRenderSidebar ? "workbench-navigation" : undefined}
                   aria-expanded={navigationOpen}
                   className="console-nav-toggle"
-                  onClick={() => setNavigationOpen((current) => !current)}
+                  onClick={() => {
+                    if (navigationOpen) {
+                      closeNavigation({ restoreFocus: true });
+                      return;
+                    }
+
+                    shouldRestoreTriggerFocusRef.current = false;
+                    setNavigationOpen(true);
+                  }}
+                  ref={navigationTriggerRef}
                   type="button"
                 >
                   {navigationOpen ? "Close navigation" : "Open navigation"}

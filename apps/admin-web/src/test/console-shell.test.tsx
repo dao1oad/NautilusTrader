@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import { App } from "../app";
 
@@ -59,9 +59,64 @@ test("mounts navigation routes only after opening the compact drawer", async () 
 
   fireEvent.click(await screen.findByRole("button", { name: "Open navigation" }));
 
+  expect(await screen.findByRole("dialog", { name: "Workbench navigation" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Nodes" })).toBeInTheDocument();
 
   fireEvent.click(screen.getByText("Close navigation"));
 
   expect(screen.queryByRole("link", { name: "Nodes" })).not.toBeInTheDocument();
+});
+
+test("closes the compact drawer on escape and returns focus to the trigger", async () => {
+  stubMatchMedia(true);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {}))
+  );
+
+  render(<App />);
+
+  const trigger = await screen.findByRole("button", { name: "Open navigation" });
+
+  fireEvent.click(trigger);
+
+  const dialog = await screen.findByRole("dialog", { name: "Workbench navigation" });
+  const focusableLinks = within(dialog).getAllByRole("link");
+
+  expect(dialog).toHaveAttribute("aria-modal", "true");
+  expect(focusableLinks[0]).toHaveFocus();
+
+  fireEvent.keyDown(document, { key: "Escape" });
+
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog", { name: "Workbench navigation" })).not.toBeInTheDocument();
+  });
+  expect(screen.getByRole("button", { name: "Open navigation" })).toHaveFocus();
+});
+
+test("traps keyboard focus inside the compact drawer while it is open", async () => {
+  stubMatchMedia(true);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {}))
+  );
+
+  render(<App />);
+
+  fireEvent.click(await screen.findByRole("button", { name: "Open navigation" }));
+
+  const dialog = await screen.findByRole("dialog", { name: "Workbench navigation" });
+  const focusableLinks = within(dialog).getAllByRole("link");
+  const firstLink = focusableLinks[0];
+  const lastLink = focusableLinks[focusableLinks.length - 1];
+
+  lastLink.focus();
+  fireEvent.keyDown(lastLink, { key: "Tab" });
+
+  expect(firstLink).toHaveFocus();
+
+  firstLink.focus();
+  fireEvent.keyDown(firstLink, { key: "Tab", shiftKey: true });
+
+  expect(lastLink).toHaveFocus();
 });
