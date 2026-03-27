@@ -11,6 +11,11 @@ test("renders navigation entries for read-only operations routes", async () => {
 
   render(<App />);
 
+  expect(await screen.findByText("Runtime status")).toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: "Open navigation" })).toBeInTheDocument();
+  expect(await screen.findByText("Recent views")).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "Operations" })).toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "Analysis" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Overview" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Nodes" })).toBeInTheDocument();
   expect(await screen.findByRole("link", { name: "Strategies" })).toBeInTheDocument();
