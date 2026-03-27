@@ -1,3 +1,6 @@
+import { act } from "react";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { render, screen } from "@testing-library/react";
 
 import { App } from "../app";
@@ -47,6 +50,12 @@ function ShellMetaProbe() {
   );
 }
 
+function ShellMetaTitleProbe({ fallbackTitle }: { fallbackTitle: string }) {
+  const meta = useCurrentWorkbenchShellMeta({ pageTitle: fallbackTitle });
+
+  return <p>{meta.pageTitle}</p>;
+}
+
 function ShellMetaHarness({ active }: { active: boolean }) {
   return (
     <WorkbenchShellMetaProvider>
@@ -77,4 +86,37 @@ test("clears route-owned shell metadata when the owner unmounts", () => {
   expect(screen.getByText("No copy")).toBeInTheDocument();
   expect(screen.getByText("No timestamp")).toBeInTheDocument();
   expect(screen.getByText("No status")).toBeInTheDocument();
+});
+
+test("replaces removed route metadata with the current fallback immediately", async () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  try {
+    await act(async () => {
+      root.render(
+        <WorkbenchShellMetaProvider>
+          <ShellMetaTitleProbe fallbackTitle="Overview" />
+          <WorkbenchShellMeta pageTitle="Risk Center" />
+        </WorkbenchShellMetaProvider>
+      );
+    });
+
+    expect(container.textContent).toContain("Risk Center");
+
+    flushSync(() => {
+      root.render(
+        <WorkbenchShellMetaProvider>
+          <ShellMetaTitleProbe fallbackTitle="Nodes" />
+        </WorkbenchShellMetaProvider>
+      );
+    });
+
+    expect(container.textContent).toContain("Nodes");
+    expect(container.textContent).not.toContain("Risk Center");
+  } finally {
+    root.unmount();
+    container.remove();
+  }
 });

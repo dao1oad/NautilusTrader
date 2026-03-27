@@ -1,5 +1,5 @@
 import type { Dispatch, ReactNode } from "react";
-import { createContext, useContext, useEffect, useReducer, useRef } from "react";
+import { createContext, useContext, useLayoutEffect, useReducer, useRef } from "react";
 
 
 export type WorkbenchShellMetaValue = {
@@ -93,7 +93,7 @@ export function useWorkbenchShellMeta(meta: WorkbenchShellMetaInput | null | und
   const dispatch = useContext(WorkbenchShellMetaDispatchContext);
   const entryIdRef = useRef(Symbol("workbench-shell-meta"));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dispatch || !meta) {
       return;
     }
