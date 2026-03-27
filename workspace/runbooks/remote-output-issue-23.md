@@ -1,0 +1,38 @@
+# Issue #23 Local Execution Output
+
+- Issue: #23
+- Worker: localhost
+- Branch: `codex/issue-23-phase-4b-unified-workbench-navigation-and-workspace-model`
+- Job Id: `2026-03-27T10-06-48-452Z-2dbd1480`
+- Summary: Added the Phase 4B unified workbench shell and browser-local workspace model across admin-web, truth docs, and local review artifacts; fresh verification passed for the full admin slice.
+- Notes:
+  - The original local `codex-orchestrator` run drifted into the skills/planning loop and was manually stopped before it wrote product changes, so this handoff captures the independently implemented and revalidated branch state for PR creation.
+  - Added `WorkbenchShell`, grouped `Operations` / `Analysis` entry links, recent view rendering, and a browser-local workspace store that remembers active workbench, per-workbench last route, and per-route table/filter preferences.
+  - The root route now enters the unified workbench shell first, but all existing admin route paths and backend contracts remain unchanged.
+  - Fresh verification covered governance checks, the full admin API pytest suite, the full admin-web Vitest suite, the frontend production build, and `git diff --check`.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and a chunk-size warning, but the production build completed successfully.
+- Files:
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/layouts/workbench-shell.tsx`
+  - `apps/admin-web/src/app/routes/__root.tsx`
+  - `apps/admin-web/src/shared/workspaces/workspace-store.ts`
+  - `apps/admin-web/src/styles.css`
+  - `apps/admin-web/src/test/workbench-shell.test.tsx`
+  - `apps/admin-web/src/test/workspace-store.test.ts`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/progress-log.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-23.md`
+  - `workspace/handoffs/local-review-issue-23.md`
+  - `workspace/handoffs/review-resolution-issue-23.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-23 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-23 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-23/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-23/apps/admin-web && npm run build`
+  - `git -C /root/NautilusTrader/.worktrees/issue-23 diff --check`

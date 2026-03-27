@@ -81,6 +81,12 @@
   - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff`、`risk`、`diagnostics` 走无参 `GET`；`orders`、`fills`、`positions`、`accounts`、`logs`、`backtests`、`reports` 走带 `limit` 的 `GET`；`catalog` 与 `playback` 走带 `limit + start_time + end_time` 的 `GET`
   - 固定浏览器到后端的低风险 command 契约：策略与适配器控制通过 `POST /api/admin/commands/*` 返回 typed `CommandReceipt`
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`；`CATALOG_DEFAULT_START_TIME/END_TIME` 与 `PLAYBACK_DEFAULT_START_TIME/END_TIME` 固定了浏览器默认 bounded query window
+- `apps/admin-web/src/app/routes/__root.tsx` / `apps/admin-web/src/app/layouts/workbench-shell.tsx`
+  - 契约：浏览器根路由必须先进入 unified workbench shell，再渲染具体 route page；该 shell 固定暴露 `Operations` 与 `Analysis` 两个入口 link，并在不改变既有 admin route path 的前提下对页面进行分组导航
+- `apps/admin-web/src/shared/workspaces/workspace-store.ts`
+  - 契约：浏览器本地 workspace state 固定写入 `localStorage["nautilus-admin-workspace"]`
+  - 字段：`activeWorkbench`、`lastRouteByWorkbench`、`recentRoutes`、`routePreferences`
+  - `routePreferences` 当前只表达 `filterText` 与 `layout`，且 `layout` 固定为表格型 `"table"`；该模型仅服务于本地单用户工作台，不对应任何后端 DTO 或同步接口
 - `apps/admin-web/src/features/orders/orders-page.tsx`
   - `/orders` route 在浏览器侧以 `Blotter` 文案呈现，但仍消费 `/api/admin/orders?limit=<n>` snapshot；不引入新的写接口或独立后端路由
   - `Blotter`、`Fills`、`Positions` trading surfaces 当前都在浏览器侧提供 keyword filter，且只在单次 bounded snapshot 内做前端过滤与分页，不把无界查询下推到后端
@@ -97,6 +103,9 @@
 - `Phase 4A` analysis contract
   - `Backtests` 与 `Reports` 当前把 analysis workflow 接入同一 admin workbench，但仍只暴露 bounded read-only task/report snapshot；后端不提供 backtest start/stop、report regeneration 或策略编辑类写接口
   - `Backtests` 通过 `report_id` 把 task summary 与已生成报告建立松耦合关联；`Reports` 通过 `artifacts` 列表声明浏览器可见的只读结果族，供操作员回看 orders/fills/positions/account 报告，但不直接跨页调用内部分析对象
+- `Phase 4B` workbench contract
+  - unified workbench 只重组现有浏览器路由，不引入新的 HTTP / WS surface；`Operations` 与 `Analysis` entry link 的落点始终解析到已有 route path
+  - workspace model 只在浏览器本地维护 workbench 最近访问、route 偏好和入口跳转目的地；任何 review、merge 或运行时自动化都不能依赖它作为仓库级真值
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`

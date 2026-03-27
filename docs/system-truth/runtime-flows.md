@@ -40,6 +40,12 @@
 
 `Backtests` 页面在单次 bounded snapshot 内展示回测任务、进度与关联 `report_id`，并允许操作员查看同一 DTO 中的 task detail；`Reports` 页面在单次 bounded snapshot 内展示收益摘要、artifact family 与报告细节。两者都只消费投影后的 admin DTO，不触发新的 backtest/report 生成作业。
 
+## Admin Workbench Workspace Flow
+
+`当前 route path -> WorkbenchShell 识别 Operations/Analysis workbench -> workspace-store 读取/更新 localStorage["nautilus-admin-workspace"] -> ConsoleShell 渲染 workbench entry link、分组导航与 recent views -> route page 继续通过既有 query-backed surface 渲染`
+
+该 flow 只在浏览器本地维护导航偏好。它不会向后端写入 session，也不会改变既有 `/api/admin/*` 或 `/ws/admin/events` 契约。
+
 ## Admin Realtime Refresh Flow
 
 `/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts / command-receipt-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> 页面清理 transient runtime error 并刷新 receipt/audit/config surface`
@@ -55,6 +61,8 @@
 `Phase 3` exit gate 当前要求 `#19/#20/#21` 全部合并、Phase 级验收命令通过，并同时保持“trading ops surface 只读 + catalog/playback query bounded 到 UTC window + diagnostics / slow-query failure operator-visible + chart runtime 仅局部封装在 playback page”四项约束成立。
 
 `Phase 4A` implementation gate 当前要求 `#22` 保持“analysis surfaces 只读 + backtests/reports query bounded by limit + report artifact families operator-visible + 不引入回测启动/策略编辑写流”四项约束成立。
+
+`Phase 4B` implementation gate 当前要求 `#23` 保持“统一 workbench 入口只重组既有 route tree + workspace state 只写浏览器本地存储 + recent views / last-route 记忆可在缺失状态下安全回退 + 不引入新的后端导航/session 契约”四项约束成立。
 
 ## Repository Operational Flow
 

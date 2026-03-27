@@ -406,6 +406,48 @@
       "remote_status": "completed",
       "output_artifact_path": "workspace/runbooks/remote-output-issue-22.md",
       "review_resolution_path": "workspace/handoffs/review-resolution-issue-22.md"
+    },
+    {
+      "issue_number": 23,
+      "title": "Phase 4B: unified workbench navigation and workspace model",
+      "packet_path": "workspace/issue-packets/issue-23.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-23",
+      "branch": "codex/issue-23-phase-4b-unified-workbench-navigation-and-workspace-model",
+      "task_id": "issue-23-phase-4b-unified-workbench-navigation-and-workspace-model",
+      "job_id": "2026-03-27T10-06-48-452Z-2dbd1480",
+      "tmux_session": "codex-orchestrator-issue-23-20260327180645",
+      "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-23.prompt.md",
+      "manifest_path": ".runs/issue-23-phase-4b-unified-workbench-navigation-and-workspace-model/cli/2026-03-27T10-06-48-452Z-2dbd1480/manifest.json",
+      "artifact_root": ".runs/issue-23-phase-4b-unified-workbench-navigation-and-workspace-model/cli/2026-03-27T10-06-48-452Z-2dbd1480",
+      "log_path": ".runs/issue-23-phase-4b-unified-workbench-navigation-and-workspace-model/cli/2026-03-27T10-06-48-452Z-2dbd1480/runner.ndjson",
+      "execution_status": "awaiting-local-review",
+      "summary": "Added the Phase 4B unified workbench shell and browser-local workspace model across admin-web, truth docs, and local review artifacts; fresh verification passed for the full admin slice.",
+      "files_modified": [
+        "apps/admin-web/src/app/layouts/console-shell.tsx",
+        "apps/admin-web/src/app/layouts/workbench-shell.tsx",
+        "apps/admin-web/src/app/routes/__root.tsx",
+        "apps/admin-web/src/shared/workspaces/workspace-store.ts",
+        "apps/admin-web/src/styles.css",
+        "apps/admin-web/src/test/workbench-shell.test.tsx",
+        "apps/admin-web/src/test/workspace-store.test.ts",
+        "docs/system-truth/api-contracts.md",
+        "docs/system-truth/architecture.md",
+        "docs/system-truth/data-model.md",
+        "docs/system-truth/integrations.md",
+        "docs/system-truth/module-boundaries.md",
+        "docs/system-truth/runtime-flows.md",
+        "memory/progress-log.md",
+        "workspace/runbooks/remote-jobs.json",
+        "workspace/runbooks/remote-output-issue-23.md",
+        "workspace/handoffs/local-review-issue-23.md",
+        "workspace/handoffs/review-resolution-issue-23.md"
+      ],
+      "last_synced_at": "2026-03-27T18:18:01+08:00",
+      "remote_status": "completed",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-23.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-23.md"
     }
   ]
 }
