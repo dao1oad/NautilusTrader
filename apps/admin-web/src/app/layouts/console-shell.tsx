@@ -115,7 +115,6 @@ export function ConsoleShell({
   }
 
   useEffect(() => {
-    shouldRestoreTriggerFocusRef.current = false;
     setNavigationOpen(false);
   }, [currentWorkbench, runtimeMeta.pageTitle]);
 
@@ -265,7 +264,7 @@ export function ConsoleShell({
                     className="console-workbench-link"
                     data-active={entry.active}
                     key={entry.label}
-                    onClick={() => closeNavigation({ restoreFocus: false })}
+                    onClick={() => closeNavigation({ restoreFocus: true })}
                     to={entry.to}
                   >
                     {entry.label}
@@ -283,7 +282,7 @@ export function ConsoleShell({
                         <li key={item.to}>
                           <Link
                             className="console-nav-link"
-                            onClick={() => closeNavigation({ restoreFocus: false })}
+                            onClick={() => closeNavigation({ restoreFocus: true })}
                             to={item.to}
                           >
                             {item.label}
@@ -302,7 +301,7 @@ export function ConsoleShell({
                   <li className="console-recent-item" key={`${route.to}:${route.visitedAt}`}>
                     <Link
                       className="console-recent-link"
-                      onClick={() => closeNavigation({ restoreFocus: false })}
+                      onClick={() => closeNavigation({ restoreFocus: true })}
                       to={route.to}
                     >
                       <span className="console-recent-label">{route.label}</span>

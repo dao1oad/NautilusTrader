@@ -120,3 +120,28 @@ test("traps keyboard focus inside the compact drawer while it is open", async ()
 
   expect(lastLink).toHaveFocus();
 });
+
+test("returns focus to the trigger after compact-drawer link navigation", async () => {
+  stubMatchMedia(true);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {}))
+  );
+
+  render(<App />);
+
+  fireEvent.click(await screen.findByRole("button", { name: "Open navigation" }));
+
+  const nodesLink = await screen.findByRole("link", { name: "Nodes" });
+  nodesLink.focus();
+
+  expect(nodesLink).toHaveFocus();
+
+  fireEvent.click(nodesLink);
+
+  expect(await screen.findByRole("heading", { name: "Nodes" })).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog", { name: "Workbench navigation" })).not.toBeInTheDocument();
+  });
+  expect(screen.getByRole("button", { name: "Open navigation" })).toHaveFocus();
+});
