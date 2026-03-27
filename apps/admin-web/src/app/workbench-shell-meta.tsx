@@ -9,6 +9,31 @@ export type WorkbenchShellMetaValue = {
   statusSummary: string | null;
 };
 
+export function resolveFreshestWorkbenchTimestamp(
+  ...timestamps: Array<string | null | undefined>
+): string | null {
+  let freshestTimestamp: string | null = null;
+  let freshestTime = Number.NEGATIVE_INFINITY;
+
+  for (const timestamp of timestamps) {
+    if (!timestamp) {
+      continue;
+    }
+
+    const parsedTimestamp = Date.parse(timestamp);
+    if (Number.isNaN(parsedTimestamp)) {
+      continue;
+    }
+
+    if (parsedTimestamp >= freshestTime) {
+      freshestTime = parsedTimestamp;
+      freshestTimestamp = timestamp;
+    }
+  }
+
+  return freshestTimestamp;
+}
+
 type WorkbenchShellMetaSelection = {
   [K in keyof WorkbenchShellMetaValue]?: WorkbenchShellMetaValue[K];
 };

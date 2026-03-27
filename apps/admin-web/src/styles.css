@@ -426,6 +426,30 @@ a {
   color: #42566d;
 }
 
+.overview-command-center {
+  display: grid;
+  gap: 18px;
+}
+
+.overview-command-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.overview-main-stack,
+.overview-risk-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.overview-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
 .resource-card {
   border: 1px solid rgba(17, 32, 51, 0.1);
   border-radius: 20px;
@@ -959,6 +983,12 @@ a {
   font-size: 1.18rem;
 }
 
+.metric-tile-meta {
+  color: var(--text-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .metric-tile[data-tone="positive"] {
   border-color: rgba(115, 224, 171, 0.24);
 }
@@ -991,6 +1021,18 @@ a {
   display: grid;
   gap: 10px;
   min-width: 0;
+}
+
+.activity-rail-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.activity-rail-timestamp {
+  color: var(--text-muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
@@ -1070,5 +1112,9 @@ a {
 
   .resource-pagination-actions {
     width: 100%;
+  }
+
+  .overview-command-grid {
+    grid-template-columns: 1fr;
   }
 }
