@@ -2,13 +2,16 @@ import type {
   AccountsSnapshot,
   AdaptersSnapshot,
   AuditSnapshot,
+  CatalogSnapshot,
   CommandReceipt,
   ConfigDiffSnapshot,
+  DiagnosticsSnapshot,
   FillsSnapshot,
   LogsSnapshot,
   NodesSnapshot,
   OrdersSnapshot,
   OverviewSnapshot,
+  PlaybackSnapshot,
   PositionsSnapshot,
   RiskSnapshot,
   StrategiesSnapshot
@@ -16,10 +19,28 @@ import type {
 
 
 export const READ_ONLY_DEFAULT_LIMIT = 100;
+export const CATALOG_DEFAULT_START_TIME = "2026-03-27T07:00:00Z";
+export const CATALOG_DEFAULT_END_TIME = "2026-03-27T09:00:00Z";
+export const PLAYBACK_DEFAULT_START_TIME = "2026-03-27T07:30:00Z";
+export const PLAYBACK_DEFAULT_END_TIME = "2026-03-27T08:00:00Z";
 
 
 function buildLimitedPath(path: string, limit: number): string {
   return `${path}?limit=${limit}`;
+}
+
+
+function buildBoundedPath(
+  path: string,
+  params: Record<string, string | number>,
+): string {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    searchParams.set(key, String(value));
+  }
+
+  return `${path}?${searchParams.toString()}`;
 }
 
 
@@ -94,6 +115,44 @@ export async function getRiskSnapshot(): Promise<RiskSnapshot> {
 export async function getLogsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<LogsSnapshot> {
   const response = await fetch(buildLimitedPath("/api/admin/logs", limit));
   return parseJson<LogsSnapshot>(response);
+}
+
+
+export async function getCatalogSnapshot(
+  limit: number = READ_ONLY_DEFAULT_LIMIT,
+  startTime: string = CATALOG_DEFAULT_START_TIME,
+  endTime: string = CATALOG_DEFAULT_END_TIME,
+): Promise<CatalogSnapshot> {
+  const response = await fetch(
+    buildBoundedPath("/api/admin/catalog", {
+      limit,
+      start_time: startTime,
+      end_time: endTime
+    })
+  );
+  return parseJson<CatalogSnapshot>(response);
+}
+
+
+export async function getPlaybackSnapshot(
+  limit: number = READ_ONLY_DEFAULT_LIMIT,
+  startTime: string = PLAYBACK_DEFAULT_START_TIME,
+  endTime: string = PLAYBACK_DEFAULT_END_TIME,
+): Promise<PlaybackSnapshot> {
+  const response = await fetch(
+    buildBoundedPath("/api/admin/playback", {
+      limit,
+      start_time: startTime,
+      end_time: endTime
+    })
+  );
+  return parseJson<PlaybackSnapshot>(response);
+}
+
+
+export async function getDiagnosticsSnapshot(): Promise<DiagnosticsSnapshot> {
+  const response = await fetch("/api/admin/diagnostics");
+  return parseJson<DiagnosticsSnapshot>(response);
 }
 
 

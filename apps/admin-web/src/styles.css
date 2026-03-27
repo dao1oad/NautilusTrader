@@ -248,6 +248,10 @@ body {
   margin: 0;
 }
 
+.resource-card h3 {
+  margin: 0;
+}
+
 .resource-alert {
   margin: 10px 0 0;
   color: #8a5a00;
@@ -390,12 +394,24 @@ body {
   margin: 0 0 12px;
 }
 
+.detail-section > .command-receipt-copy {
+  margin-bottom: 12px;
+}
+
 .detail-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
   gap: 12px;
+}
+
+.playback-chart {
+  width: 100%;
+  min-height: 260px;
+  border: 1px solid rgba(17, 32, 51, 0.08);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(232, 241, 250, 0.72), rgba(255, 255, 255, 0.96));
 }
 
 .command-action-group {
@@ -518,6 +534,28 @@ body {
 
 .config-runbooks h3 {
   margin-top: 0;
+}
+
+@media (max-width: 960px) {
+  .console-frame {
+    grid-template-columns: 1fr;
+  }
+
+  .console-panel {
+    min-height: auto;
+  }
+
+  .resource-header,
+  .overview-header,
+  .console-toolbar,
+  .resource-pagination-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resource-pagination-actions {
+    justify-content: flex-start;
+  }
 }
 
 .config-runbook-steps {

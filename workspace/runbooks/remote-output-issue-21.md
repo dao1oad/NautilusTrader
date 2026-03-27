@@ -1,0 +1,58 @@
+# Issue #21 Local Execution Output
+
+- Issue: #21
+- Worker: localhost
+- Branch: `codex/issue-21-phase-3c-catalog-history-event-playback-and-diagnostics`
+- Job Id: `2026-03-27T04-46-21-700Z-9de0cfc1`
+- Summary: Added the Phase 3C catalog, playback, and diagnostics surfaces across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the scoped backend and frontend slices.
+- Notes:
+  - The original local `codex-orchestrator` loop was manually stopped after it kept iterating beyond the review-ready state, so this handoff captures the independently revalidated branch state for PR creation.
+  - Added typed catalog browse, bounded history query, playback preview, and diagnostics DTOs plus `/api/admin/catalog`, `/api/admin/playback`, and `/api/admin/diagnostics` routes and services.
+  - Routed the admin web shell to dedicated Catalog, Playback, and Diagnostics pages, added the bounded playback preview chart, and extended shared query invalidation plus tests for the new surfaces.
+  - The playback chart dependency remains intentionally scoped to `apps/admin-web/src/features/playback/playback-preview-chart.tsx`.
+  - Fresh verification covered the targeted admin API tests, the full admin-web Vitest suite, the frontend production build, governance checks, and `git diff --check`.
+  - `vite build` still prints the existing `@tanstack/react-query` `"use client"` directive warnings and now also emits a chunk-size warning after adding the chart dependency, but the production build completed successfully.
+- Files:
+  - `apps/admin-web/package.json`
+  - `apps/admin-web/package-lock.json`
+  - `apps/admin-web/src/app.tsx`
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/router.tsx`
+  - `apps/admin-web/src/app/routes/catalog.tsx`
+  - `apps/admin-web/src/app/routes/playback.tsx`
+  - `apps/admin-web/src/app/routes/diagnostics.tsx`
+  - `apps/admin-web/src/features/catalog/catalog-page.tsx`
+  - `apps/admin-web/src/features/playback/playback-page.tsx`
+  - `apps/admin-web/src/features/playback/playback-preview-chart.tsx`
+  - `apps/admin-web/src/features/diagnostics/diagnostics-page.tsx`
+  - `apps/admin-web/src/shared/api/admin-client.ts`
+  - `apps/admin-web/src/shared/query/query-client.ts`
+  - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - `apps/admin-web/src/shared/types/admin.ts`
+  - `apps/admin-web/src/styles.css`
+  - `apps/admin-web/src/test/admin-events.test.ts`
+  - `apps/admin-web/src/test/console-shell.test.tsx`
+  - `apps/admin-web/src/test/catalog-diagnostics-surfaces.test.tsx`
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/schemas.py`
+  - `nautilus_trader/admin/services/catalog.py`
+  - `nautilus_trader/admin/services/diagnostics.py`
+  - `tests/unit_tests/admin/test_catalog_api.py`
+  - `tests/unit_tests/admin/test_diagnostics_api.py`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/progress-log.md`
+  - `workspace/handoffs/local-review-issue-21.md`
+  - `workspace/handoffs/review-resolution-issue-21.md`
+  - `workspace/runbooks/remote-output-issue-21.md`
+  - `workspace/runbooks/remote-jobs.json`
+- Verification:
+  - `PYTHONPATH=. uv run --with pytest --with fastapi --with httpx --with pydantic --no-project python -m pytest tests/unit_tests/admin/test_catalog_api.py tests/unit_tests/admin/test_diagnostics_api.py -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-21/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-21/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-21 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-21 diff --check`

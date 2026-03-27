@@ -1,0 +1,21 @@
+# Local PR Review
+
+- Issue: #21
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 3C backend catalog / playback / diagnostics snapshots, routed admin-web catalog / playback / diagnostics surfaces, chart-scoped playback preview dependency, mapped truth docs, and local execution review artifacts.
+- Findings:
+  - No blocking product defects remained after verifying the new `/api/admin/catalog`, `/api/admin/playback`, and `/api/admin/diagnostics` contracts together with the routed frontend surfaces and shared invalidation wiring.
+  - The Phase 3C hardening pass correctly enforces UTC-only `start_time` / `end_time` bounds for catalog and playback windows, matching the issue acceptance criteria around explicit bounded history queries.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and now also prints a chunk-size warning after adding the playback chart dependency, but the production build completed successfully and the chart runtime remains scoped to `playback-preview-chart.tsx`.
+- Resolution:
+  - Added typed catalog browse, bounded history query, playback preview, and diagnostics DTOs plus the `/api/admin/catalog`, `/api/admin/playback`, and `/api/admin/diagnostics` routes and services.
+  - Routed the admin web shell to dedicated Catalog, Playback, and Diagnostics pages, added the bounded playback preview chart, and extended query / invalidation wiring and tests for the new surfaces.
+  - Synced the mapped truth docs, recorded fresh verification evidence, and prepared the Phase 3C branch for PR creation after stopping the looping local orchestrator session.
+- Evidence:
+  - `PYTHONPATH=. uv run --with pytest --with fastapi --with httpx --with pydantic --no-project python -m pytest tests/unit_tests/admin/test_catalog_api.py tests/unit_tests/admin/test_diagnostics_api.py -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-21/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-21/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-21 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-21 diff --check`
+- Status: approved

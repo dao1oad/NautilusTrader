@@ -38,5 +38,7 @@
 - `Phase 2C` 把低风险 command flow 接到浏览器：所有 mutating action 都必须先经过显式确认，对应页面持续显示最新 receipt，并新增 `Audit` 与 `Config` 恢复面用于追溯本机 control-plane 状态。
 - `Phase 3A` 的 `Blotter`、`Fills` 与 `Positions` surface 必须保持 bounded read-only 工作流：`orders`、`fills`、`positions` 都通过 `limit` 约束读取，浏览器 drill-down 只消费已投影到 `OrderSummary`、`FillSummary`、`PositionSummary` 的字段，不绕过 admin DTO，也不引入任何交易写接口。
 - `Phase 3B` 的 `Accounts` 与 `Risk center` surface 必须继续保持 query-backed read-only 工作流：`accounts` 仍通过 `limit` 约束读取，但额外暴露 balance / margin / exposure summary 和 account drill-down；`risk` 作为无参 snapshot 暴露跨账户风险摘要、事件与 block，不引入任何新的 mutating trading route。
+- `Phase 3C` 的 `Catalog` 与 `Playback` surface 必须在 HTTP 契约上同时绑定 `limit + UTC time range`，并把这些边界原样回显到浏览器可见 DTO；`Diagnostics` surface 必须显式暴露 link health、query timing 与 partial error，而不是把慢查询/链路失败静默吞掉。
+- `Phase 3C` 新引入的图表依赖只能落在 `apps/admin-web/src/features/playback/*`，用于 bounded playback preview；其余页面继续复用通用表格/metric/card 组件，不扩散出新的 chart runtime。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

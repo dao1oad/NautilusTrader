@@ -14,7 +14,10 @@ export type InvalidationTopic =
   | "positions"
   | "accounts"
   | "risk"
-  | "logs";
+  | "logs"
+  | "catalog"
+  | "playback"
+  | "diagnostics";
 
 type InvalidationListener = (topic: InvalidationTopic, event: AdminEvent) => void;
 
@@ -30,7 +33,21 @@ function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
   }
 
   if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
-    return ["overview", "nodes", "strategies", "adapters", "orders", "fills", "positions", "accounts", "risk", "logs"];
+    return [
+      "overview",
+      "nodes",
+      "strategies",
+      "adapters",
+      "orders",
+      "fills",
+      "positions",
+      "accounts",
+      "risk",
+      "logs",
+      "catalog",
+      "playback",
+      "diagnostics"
+    ];
   }
 
   return [];

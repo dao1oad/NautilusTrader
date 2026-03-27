@@ -43,6 +43,12 @@
   - 数据职责：账户 drill-down 中的 instrument exposure 投影；表达 instrument、方向、净数量、名义敞口与 leverage
 - `LogsSnapshot`
   - 数据职责：`Logs` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+- `CatalogSnapshot`
+  - 数据职责：`Catalog` 只读列表快照；包含 `generated_at`、`limit`、bounded `history_query`、`partial`、`items`、`operator_notes`、`errors`
+- `PlaybackSnapshot`
+  - 数据职责：`Playback` 预览根对象；包含 `generated_at`、bounded `request`、`partial`、`timeline`、`events`、`operator_notes`、`errors`
+- `DiagnosticsSnapshot`
+  - 数据职责：`Diagnostics` 根对象；包含 `generated_at`、`summary`、`partial`、`links`、`query_timings`、`errors`
 - `NodeSummary`
   - 数据职责：node 级摘要；在 `Phase 0` 至少表达 node 状态与可选 `node_id`
 - `StrategySummary`
@@ -65,6 +71,22 @@
   - 数据职责：持仓摘要；表达浏览器可见的 position 标识、instrument、方向、数量，以及 position drill-down 所需的开仓价、已实现/未实现盈亏与时间戳
 - `LogSummary`
   - 数据职责：日志摘要；表达浏览器可见的 `timestamp`、`level`、`component` 与 `message`
+- `CatalogEntry`
+  - 数据职责：catalog browse item；表达 catalog 标识、instrument、data type、timeframe、status、row count 与可读取时间窗口
+- `HistoryQuery`
+  - 数据职责：bounded history query 投影；表达 catalog/instrument、UTC window、limit、returned_rows 与 operator-visible feedback
+- `PlaybackRequest`
+  - 数据职责：bounded playback request 投影；表达 request 标识、catalog/instrument、UTC window、limit、speed、event type 与 operator-visible feedback
+- `PlaybackTimelinePoint`
+  - 数据职责：playback 图表点；表达时间戳、mid-price 与累计事件数
+- `PlaybackEventSummary`
+  - 数据职责：playback 事件预览项；表达事件时间、事件类型与简要说明
+- `DiagnosticsSummary`
+  - 数据职责：跨 catalog/playback 的健康摘要；表达 overall_status、healthy/degraded link 数、slow query 数与最新 catalog sync 时间
+- `LinkHealth`
+  - 数据职责：链路健康投影；表达 link 标识、标签、状态、延迟、最近检查时间与人类可读 detail
+- `QueryTiming`
+  - 数据职责：查询耗时投影；表达 query 标识、surface、status、limit、窗口范围、返回行数、耗时与 detail
 - `SectionError`
   - 数据职责：局部失败投影；用于把后端子区域失败以 `section + message` 的形式暴露给浏览器，而不是泄露内部异常对象
 - `CommandRequest`
@@ -99,11 +121,11 @@
 - `apps/admin-web/src/features/read-only/admin-list-page.tsx`
   - 数据职责：通用只读列表 surface；在 bounded snapshot 之上复用表格渲染、可选 row drill-down，以及 trading ops 页面使用的前端 keyword filter 与分页状态（默认每页 `25` 行）
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
-  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs` 十二个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
+  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs`、`catalog`、`playback`、`diagnostics` 十五个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
 - `apps/admin-web/src/shared/realtime/command-receipt-bus.ts`
   - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
-  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk` 七组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
+  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk`、`diagnostics` 八组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key；`catalog` 与 `playback` 额外带 `limit/start/end` 维度，确保 bounded window 是 cache key 的一部分
 
 ## Governance Data
 

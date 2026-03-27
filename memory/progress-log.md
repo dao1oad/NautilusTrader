@@ -74,6 +74,13 @@
 
 ## 2026-03-27
 
+- Auto-dispatched issue `#21` from `origin/main` after PR `#43` merged, then manually stopped the looping local codex-orchestrator session once the branch had already reached a review-ready Phase 3C implementation state.
+- Completed issue `#21` in `/root/NautilusTrader/.worktrees/issue-21`, adding typed catalog browse / bounded history query / playback preview / diagnostics snapshots plus routed admin-web surfaces and a playback-only chart integration.
+- Re-verified the Phase 3C slice with `PYTHONPATH=. uv run --with pytest --with fastapi --with httpx --with pydantic --no-project python -m pytest tests/unit_tests/admin/test_catalog_api.py tests/unit_tests/admin/test_diagnostics_api.py -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `pwsh -NoProfile -File scripts/check-governance.ps1`, and `git diff --check`.
+- Recorded `workspace/handoffs/local-review-issue-21.md`, `workspace/handoffs/review-resolution-issue-21.md`, and `workspace/runbooks/remote-output-issue-21.md`, and advanced the local execution registry to the pre-PR review handoff state for issue `#21`.
+
+## 2026-03-27
+
 - Merged PR #42 to `main`, then re-dispatched Phase 3B issue `#20` from the refreshed `origin/main` baseline after fixing the local worktree base-ref selection path.
 - Completed issue `#20` in `/root/NautilusTrader/.worktrees/issue-20`, adding the typed risk snapshot API plus richer account summary and drill-down diagnostics for the admin console's Phase 3B operations surfaces.
 - Re-verified the Phase 3B slice with `pytest tests/unit_tests/admin/test_accounts_api.py tests/unit_tests/admin/test_risk_api.py -v --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `pwsh -NoProfile -File scripts/check-governance.ps1`, and `git diff --check`.

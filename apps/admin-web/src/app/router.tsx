@@ -13,6 +13,9 @@ import { PositionsRoutePage } from "./routes/positions";
 import { AccountsRoutePage } from "./routes/accounts";
 import { RiskRoutePage } from "./routes/risk";
 import { LogsRoutePage } from "./routes/logs";
+import { CatalogRoutePage } from "./routes/catalog";
+import { PlaybackRoutePage } from "./routes/playback";
+import { DiagnosticsRoutePage } from "./routes/diagnostics";
 
 
 const rootRoute = createRootRoute({
@@ -91,6 +94,24 @@ const logsRoute = createRoute({
   component: LogsRoutePage
 });
 
+const catalogRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/catalog",
+  component: CatalogRoutePage
+});
+
+const playbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/playback",
+  component: PlaybackRoutePage
+});
+
+const diagnosticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/diagnostics",
+  component: DiagnosticsRoutePage
+});
+
 const routeTree = rootRoute.addChildren([
   overviewRoute,
   nodesRoute,
@@ -103,7 +124,10 @@ const routeTree = rootRoute.addChildren([
   positionsRoute,
   accountsRoute,
   riskRoute,
-  logsRoute
+  logsRoute,
+  catalogRoute,
+  playbackRoute,
+  diagnosticsRoute
 ]);
 
 export const router = createRouter({

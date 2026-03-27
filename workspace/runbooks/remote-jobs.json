@@ -292,10 +292,32 @@
       "execution_status": "awaiting-local-review",
       "summary": "Added the Phase 3B risk center and enriched account diagnostics across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the scoped accounts and risk slice.",
       "files_modified": [],
-      "last_synced_at": "2026-03-27T12:37:54.0675820+08:00",
+      "last_synced_at": "2026-03-27T12:37:54.067582+08:00",
       "remote_status": "in_progress",
       "output_artifact_path": "workspace/runbooks/remote-output-issue-20.md",
       "review_resolution_path": "workspace/handoffs/review-resolution-issue-20.md"
+    },
+    {
+      "issue_number": 21,
+      "title": "Phase 3C: catalog, history, event playback, and diagnostics",
+      "packet_path": "workspace/issue-packets/issue-21.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-21",
+      "branch": "codex/issue-21-phase-3c-catalog-history-event-playback-and-diagnostics",
+      "task_id": "issue-21-phase-3c-catalog-history-event-playback-and-diagnostics",
+      "job_id": "2026-03-27T04-46-21-700Z-9de0cfc1",
+      "tmux_session": "codex-orchestrator-issue-21-20260327124619",
+      "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-21.prompt.md",
+      "manifest_path": ".runs/issue-21-phase-3c-catalog-history-event-playback-and-diagnostics/cli/2026-03-27T04-46-21-700Z-9de0cfc1/manifest.json",
+      "artifact_root": "/root/NautilusTrader/.worktrees/issue-21/.runs/issue-21-phase-3c-catalog-history-event-playback-and-diagnostics/cli/2026-03-27T04-46-21-700Z-9de0cfc1",
+      "log_path": ".runs/issue-21-phase-3c-catalog-history-event-playback-and-diagnostics/cli/2026-03-27T04-46-21-700Z-9de0cfc1/runner.ndjson",
+      "execution_status": "awaiting-local-review",
+      "summary": "Added the Phase 3C catalog, playback, and diagnostics surfaces across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the scoped backend and frontend slices.",
+      "files_modified": [],
+      "last_synced_at": "2026-03-27T14:01:31.8590566+08:00",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-21.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-21.md"
     }
   ]
 }
