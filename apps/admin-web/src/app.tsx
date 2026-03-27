@@ -132,6 +132,16 @@ export function App() {
 
       if (topic === "diagnostics") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.diagnostics() });
+        return;
+      }
+
+      if (topic === "backtests") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.backtests(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
+      if (topic === "reports") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.reports(READ_ONLY_DEFAULT_LIMIT) });
       }
     });
   }, []);
@@ -163,7 +173,9 @@ export function App() {
           resource !== "logs" &&
           resource !== "catalog" &&
           resource !== "playback" &&
-          resource !== "diagnostics")
+          resource !== "diagnostics" &&
+          resource !== "backtests" &&
+          resource !== "reports")
       ) {
         return;
       }

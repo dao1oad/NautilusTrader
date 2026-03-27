@@ -199,6 +199,38 @@ export type QueryTiming = {
   detail: string;
 };
 
+export type BacktestTaskStatus = "queued" | "running" | "completed" | "failed";
+
+export type BacktestTaskSummary = {
+  task_id: string;
+  run_id: string;
+  strategy_id: string;
+  catalog_id: string;
+  instrument_id: string;
+  status: BacktestTaskStatus;
+  requested_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  progress_pct: number;
+  report_id: string | null;
+  result_summary: string;
+};
+
+export type ReportSummary = {
+  report_id: string;
+  run_id: string;
+  strategy_id: string;
+  instrument_id: string;
+  generated_at: string;
+  net_pnl: string;
+  return_pct: string;
+  max_drawdown: string;
+  sharpe_ratio: string;
+  win_rate: string;
+  artifacts: string[];
+  summary: string;
+};
+
 export type CommandErrorCode =
   | "invalid_request"
   | "not_found"
@@ -263,6 +295,8 @@ export type CatalogSnapshot = BoundedAdminListSnapshot<CatalogEntry> & {
   history_query: HistoryQuery;
   operator_notes: string[];
 };
+export type BacktestsSnapshot = BoundedAdminListSnapshot<BacktestTaskSummary>;
+export type ReportsSnapshot = BoundedAdminListSnapshot<ReportSummary>;
 export type AuditSnapshot = AdminListSnapshot<AuditRecord>;
 export type RiskSnapshot = {
   generated_at: string;

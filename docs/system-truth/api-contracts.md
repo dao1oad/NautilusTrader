@@ -62,21 +62,23 @@
 ## Admin Read-Only Control Plane Contracts
 
 - `nautilus_trader/admin/app.py`
-  - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/fills`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/risk`、`GET /api/admin/logs`、`GET /api/admin/catalog`、`GET /api/admin/playback`、`GET /api/admin/diagnostics`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
-  - `orders`、`fills`、`positions`、`accounts`、`logs`、`catalog` 与 `playback` 七个列表/preview endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
+  - 暴露 FastAPI surface：`GET /api/admin/health`、`GET /api/admin/overview`、`GET /api/admin/nodes`、`GET /api/admin/strategies`、`GET /api/admin/adapters`、`GET /api/admin/orders`、`GET /api/admin/fills`、`GET /api/admin/positions`、`GET /api/admin/accounts`、`GET /api/admin/risk`、`GET /api/admin/logs`、`GET /api/admin/catalog`、`GET /api/admin/playback`、`GET /api/admin/diagnostics`、`GET /api/admin/backtests`、`GET /api/admin/reports`、`GET /api/admin/audit`、`GET /api/admin/config/diff`，以及低风险 `POST /api/admin/commands/*`
+  - `orders`、`fills`、`positions`、`accounts`、`logs`、`catalog`、`playback`、`backtests` 与 `reports` 九个列表/preview endpoint 都要求 `limit` query 参数满足 `1 <= limit <= 500`，默认值为 `100`
   - `catalog` 与 `playback` 额外要求浏览器显式携带 `start_time` / `end_time` UTC query 参数；后端必须把该 bounded window 原样回显到 DTO，避免无界历史查询
   - 低风险 mutating command endpoint 仍限定为策略/适配器/订阅控制；高风险交易命令不在当前 surface 中
 - `nautilus_trader/admin/schemas.py`
-  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`FillsSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`RiskSnapshot`、`LogsSnapshot`、`CatalogSnapshot`、`PlaybackSnapshot`、`DiagnosticsSnapshot`、`AuditSnapshot`、`ConfigDiffSnapshot`
+  - 定义浏览器可见 snapshot DTO：`OverviewSnapshot`、`NodesSnapshot`、`StrategiesSnapshot`、`AdaptersSnapshot`、`OrdersSnapshot`、`FillsSnapshot`、`PositionsSnapshot`、`AccountsSnapshot`、`RiskSnapshot`、`LogsSnapshot`、`CatalogSnapshot`、`PlaybackSnapshot`、`DiagnosticsSnapshot`、`BacktestsSnapshot`、`ReportsSnapshot`、`AuditSnapshot`、`ConfigDiffSnapshot`
   - 所有列表 snapshot 都保留 `generated_at`、`partial`、`items`、`errors`；bounded list snapshot 额外保留 `limit`
   - `PositionSummary` 在 Phase 3A 额外暴露可选的 `position_id`、`entry_price`、`unrealized_pnl`、`realized_pnl`、`opened_at` 与 `updated_at`，供浏览器 drill-down 使用
   - `AccountsSnapshot` 在 Phase 3B 额外保留跨账户 `summary`，并把 `AccountSummary` 扩展为 venue / account_type / base_currency、balances、exposures、alerts 等 drill-down 字段
   - `RiskSnapshot` 固定包含 `summary`、`events`、`blocks`、`partial` 与 `errors`，用于浏览器 risk-center page 展示跨账户风险摘要和当前 block
   - `CatalogSnapshot` 固定包含 bounded `limit`、`history_query`、`items`、`operator_notes` 与 `errors`；`PlaybackSnapshot` 固定包含 bounded `request`、`timeline`、`events`、`operator_notes` 与 `errors`；`DiagnosticsSnapshot` 固定包含 `summary`、`links`、`query_timings`、`partial` 与 `errors`
+  - `BacktestsSnapshot` 固定包含 bounded `limit`、`items`、`partial` 与 `errors`；`BacktestTaskSummary` 表达 task/run/strategy/catalog/instrument 标识、进度、状态、时间戳、关联 `report_id` 与结果摘要
+  - `ReportsSnapshot` 固定包含 bounded `limit`、`items`、`partial` 与 `errors`；`ReportSummary` 表达 report/run/strategy/instrument 标识、收益摘要、回撤/Sharpe/win-rate、artifact families 与操作员可见 summary
 - `apps/admin-web/src/shared/types/admin.ts`
   - 是前端对上述 DTO、command receipt event 与 config/audit 恢复模型的 TypeScript 镜像；前端只消费 admin DTO，不直接序列化内部 runtime object
 - `apps/admin-web/src/shared/api/admin-client.ts`
-  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff`、`risk`、`diagnostics` 走无参 `GET`；`orders`、`fills`、`positions`、`accounts`、`logs` 走带 `limit` 的 `GET`；`catalog` 与 `playback` 走带 `limit + start_time + end_time` 的 `GET`
+  - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff`、`risk`、`diagnostics` 走无参 `GET`；`orders`、`fills`、`positions`、`accounts`、`logs`、`backtests`、`reports` 走带 `limit` 的 `GET`；`catalog` 与 `playback` 走带 `limit + start_time + end_time` 的 `GET`
   - 固定浏览器到后端的低风险 command 契约：策略与适配器控制通过 `POST /api/admin/commands/*` 返回 typed `CommandReceipt`
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`；`CATALOG_DEFAULT_START_TIME/END_TIME` 与 `PLAYBACK_DEFAULT_START_TIME/END_TIME` 固定了浏览器默认 bounded query window
 - `apps/admin-web/src/features/orders/orders-page.tsx`
@@ -92,6 +94,9 @@
 - `Phase 3` close-out contract
   - `Blotter`、`Fills`、`Positions`、`Accounts`、`Risk center`、`Catalog`、`Playback` 与 `Diagnostics` 当前共同构成日常运维读工作台，但仍只暴露 bounded read-only snapshot / preview 契约，不引入任何新的交易写接口
   - `Catalog` / `Playback` 的 UTC window、`operator_notes` 与 `errors`，以及 `Diagnostics` 的 link health / query timing / partial error 都必须作为浏览器可见 DTO 字段返回，避免大查询、慢查询或链路退化时静默卡死 UI
+- `Phase 4A` analysis contract
+  - `Backtests` 与 `Reports` 当前把 analysis workflow 接入同一 admin workbench，但仍只暴露 bounded read-only task/report snapshot；后端不提供 backtest start/stop、report regeneration 或策略编辑类写接口
+  - `Backtests` 通过 `report_id` 把 task summary 与已生成报告建立松耦合关联；`Reports` 通过 `artifacts` 列表声明浏览器可见的只读结果族，供操作员回看 orders/fills/positions/account 报告，但不直接跨页调用内部分析对象
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`

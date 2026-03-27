@@ -2,6 +2,7 @@ import type {
   AccountsSnapshot,
   AdaptersSnapshot,
   AuditSnapshot,
+  BacktestsSnapshot,
   CatalogSnapshot,
   CommandReceipt,
   ConfigDiffSnapshot,
@@ -13,6 +14,7 @@ import type {
   OverviewSnapshot,
   PlaybackSnapshot,
   PositionsSnapshot,
+  ReportsSnapshot,
   RiskSnapshot,
   StrategiesSnapshot
 } from "../types/admin";
@@ -153,6 +155,18 @@ export async function getPlaybackSnapshot(
 export async function getDiagnosticsSnapshot(): Promise<DiagnosticsSnapshot> {
   const response = await fetch("/api/admin/diagnostics");
   return parseJson<DiagnosticsSnapshot>(response);
+}
+
+
+export async function getBacktestsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<BacktestsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/backtests", limit));
+  return parseJson<BacktestsSnapshot>(response);
+}
+
+
+export async function getReportsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<ReportsSnapshot> {
+  const response = await fetch(buildLimitedPath("/api/admin/reports", limit));
+  return parseJson<ReportsSnapshot>(response);
 }
 
 

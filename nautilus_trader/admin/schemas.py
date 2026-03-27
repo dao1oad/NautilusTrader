@@ -212,6 +212,36 @@ class QueryTiming(BaseModel):
     detail: str
 
 
+class BacktestTaskSummary(BaseModel):
+    task_id: str
+    run_id: str
+    strategy_id: str
+    catalog_id: str
+    instrument_id: str
+    status: Literal["queued", "running", "completed", "failed"]
+    requested_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    progress_pct: int = Field(ge=0, le=100)
+    report_id: str | None = None
+    result_summary: str
+
+
+class ReportSummary(BaseModel):
+    report_id: str
+    run_id: str
+    strategy_id: str
+    instrument_id: str
+    generated_at: datetime
+    net_pnl: str
+    return_pct: str
+    max_drawdown: str
+    sharpe_ratio: str
+    win_rate: str
+    artifacts: list[str] = Field(default_factory=list)
+    summary: str
+
+
 class CommandErrorCode(str, Enum):
     INVALID_REQUEST = "invalid_request"
     NOT_FOUND = "not_found"
@@ -402,4 +432,20 @@ class DiagnosticsSnapshot(BaseModel):
     partial: bool = False
     links: list[LinkHealth] = Field(default_factory=list)
     query_timings: list[QueryTiming] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class BacktestsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[BacktestTaskSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class ReportsSnapshot(BaseModel):
+    generated_at: datetime
+    limit: int
+    partial: bool = False
+    items: list[ReportSummary] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)
