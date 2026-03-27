@@ -1,12 +1,12 @@
 import { Outlet } from "@tanstack/react-router";
 
-import { ConsoleShell } from "../layouts/console-shell";
+import { WorkbenchShell } from "../layouts/workbench-shell";
 
 
 export function RootRouteComponent() {
   return (
-    <ConsoleShell>
+    <WorkbenchShell>
       <Outlet />
-    </ConsoleShell>
+    </WorkbenchShell>
   );
 }

@@ -64,9 +64,58 @@ body {
 }
 
 .console-sidebar-copy,
-.page-state-copy {
+.page-state-copy,
+.console-toolbar-copy {
   margin: 0;
   color: #42566d;
+}
+
+.console-workbench-switcher,
+.console-recent-routes {
+  display: grid;
+  gap: 12px;
+}
+
+.console-workbench-entry-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.console-workbench-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: #112033;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(17, 32, 51, 0.1);
+  background: rgba(238, 243, 248, 0.75);
+  font-weight: 700;
+}
+
+.console-workbench-link[data-active="true"] {
+  background: linear-gradient(180deg, #dbe9ff, #eff5ff);
+  border-color: rgba(28, 77, 166, 0.2);
+  color: #1c4da6;
+}
+
+.console-nav-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.console-nav-group {
+  display: grid;
+  gap: 10px;
+}
+
+.console-nav-group-title {
+  margin: 0;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #36506c;
 }
 
 .console-nav-list {
@@ -90,6 +139,33 @@ body {
 
 .console-nav-link:hover {
   background: rgba(221, 234, 247, 0.9);
+}
+
+.console-recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.console-recent-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(238, 243, 248, 0.55);
+  border: 1px solid rgba(17, 32, 51, 0.06);
+  color: #42566d;
+  font-size: 0.95rem;
+}
+
+.console-recent-workbench {
+  text-transform: capitalize;
+  font-weight: 700;
+  color: #112033;
 }
 
 .console-panel {

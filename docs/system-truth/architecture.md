@@ -9,7 +9,7 @@
 - `crates/`: Rust workspace，承载核心领域模型、回测、实盘、网络、持久化、风险、组合管理、CLI 与各交易所/数据源适配器。
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
 - `nautilus_trader/admin/`: 管理控制面后端；负责把运行态状态、控制命令契约、审计记录以及 `Phase 4A` 的 backtest/report 摘要投影成稳定的 admin DTO，而不是把内部 `live`/`execution` object 直接暴露给浏览器。
-- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime，以及 bounded trading ops / analysis 页面，而不是直接接入底层 venue/runtime object。
+- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime、bounded trading ops / analysis 页面，以及浏览器本地 workbench/workspace 状态，而不是直接接入底层 venue/runtime object。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
@@ -41,5 +41,6 @@
 - `Phase 3C` 的 `Catalog` 与 `Playback` surface 必须在 HTTP 契约上同时绑定 `limit + UTC time range`，并把这些边界原样回显到浏览器可见 DTO；`Diagnostics` surface 必须显式暴露 link health、query timing 与 partial error，而不是把慢查询/链路失败静默吞掉。
 - `Phase 3C` 新引入的图表依赖只能落在 `apps/admin-web/src/features/playback/*`，用于 bounded playback preview；其余页面继续复用通用表格/metric/card 组件，不扩散出新的 chart runtime。
 - `Phase 4A` 的 `Backtests` 与 `Reports` surface 必须继续保持 bounded read-only analysis workflow：`/api/admin/backtests` 与 `/api/admin/reports` 只接受 `limit` 约束读取，后端只投影任务/报告摘要与关联 artifact，浏览器只允许浏览、过滤和 drill-down 已有结果，不引入回测启动、调度编辑或策略编辑器。
+- `Phase 4B` 的 unified workbench shell 必须把现有 route tree 分成 `Operations` 与 `Analysis` 两个浏览器入口，并把 active workbench、每个 workbench 的最近路由、recent views，以及每个 route 的 layout/filter 偏好保存在浏览器本地存储中；该状态不能升级成服务端 session、多用户同步或新的后端 API。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

@@ -134,10 +134,20 @@
   - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
   - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk`、`diagnostics` 八组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs`、`backtests`、`reports` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key；`catalog` 与 `playback` 额外带 `limit/start/end` 维度，确保 bounded window 是 cache key 的一部分
+- `apps/admin-web/src/shared/workspaces/workspace-store.ts`
+  - 数据职责：浏览器本地 workspace model；固定保存 active workbench、每个 workbench 的最近 route、recent route 列表，以及 per-route 的 layout/filter 偏好
+- `WorkspaceState`
+  - 数据职责：统一工作台根状态；包含 `activeWorkbench`、`lastRouteByWorkbench`、`recentRoutes`、`routePreferences`
+- `WorkspaceRecentRoute`
+  - 数据职责：最近访问 route 投影；表达 `to`、`label`、`workbench` 与 `visitedAt`
+- `WorkspaceRoutePreference`
+  - 数据职责：per-route 的本地工作偏好；当前表达 `filterText` 与 `layout`
 - `Phase 3` close-out guardrail
   - 数据职责：当前 trading-ops / diagnostics DTO 同时表达 bounded query window、timeline preview、operator_notes、partial 与 errors；浏览器不得构造无界历史读取，也不得把慢查询/partial failure 降级成只写 console 的隐式状态
 - `Phase 4A` close-out guardrail
   - 数据职责：当前 analysis DTO 只表达 bounded backtest/report 浏览所需的任务、收益摘要和 artifact family 投影；浏览器不得把这些 DTO 误用成回测编排请求体，也不得绕过 admin DTO 直接拼接内部分析对象
+- `Phase 4B` close-out guardrail
+  - 数据职责：workspace state 只表达浏览器导航与本地偏好，不是后端 DTO、不是 review gate 输入、也不是多用户共享配置；recent route 和记忆化入口都必须能在本地存储缺失时退回默认路径
 
 ## Governance Data
 

@@ -7,9 +7,10 @@
 - `nautilus_trader/*`: Python/Cython 域层，向策略、回测、实盘和工具使用者暴露统一包结构。
 - `nautilus_trader/admin/*`: 管理控制面边界；负责把 `live`、`execution`、`portfolio`、`accounting`、`persistence/catalog`、日志 runtime 以及 `Phase 4A` 的 backtest/report 结果投影到稳定的只读 snapshot、控制命令 request/receipt 与 audit record，不暴露内部 runtime object，也不在 `Phase 2A` 直接承载高风险交易命令。`Phase 3A` 的 fills snapshot builder / position drill-down 字段、`Phase 3B` 的 account balance / margin / exposure projection 与 `risk` snapshot、`Phase 3C` 的 catalog / playback / diagnostics snapshot，以及 `Phase 4A` 的 backtests / reports snapshot，都仍属于这种只读 projection。
 - `python/nautilus_trader/*`: PyO3 输出层与类型桩；职责是稳定 Python import surface，而不是重新实现业务逻辑。
-- `apps/admin-web/src/app/*`: 管理控制台壳层、路由树与运行态上下文；负责组合 `Overview/Nodes/.../Audit/Config/Blotter/Fills/Positions/Accounts/Risk Center/Catalog/Playback/Diagnostics/Backtests/Reports` 页面与 shared websocket runtime，而不是直接读取底层 runtime object。
+- `apps/admin-web/src/app/*`: 管理控制台壳层、路由树与运行态上下文；负责组合 `Overview/Nodes/.../Audit/Config/Blotter/Fills/Positions/Accounts/Risk Center/Catalog/Playback/Diagnostics/Backtests/Reports` 页面、统一 workbench 导航，以及 shared websocket runtime，而不是直接读取底层 runtime object。
 - `apps/admin-web/src/features/*`: 按页面切分的 route surface；`strategies`、`adapters` 可以通过 shared command hook 触发低风险 POST，但 feature 本身只负责编排确认 UI、receipt 展示与 query-backed 页面逻辑。`orders`、`fills`、`positions`、`accounts`、`risk`、`catalog`、`playback`、`diagnostics`、`backtests` 与 `reports` 页面仍保持只读，只能在 bounded snapshot 上做筛选、分页、summary render、drill-down 与 bounded preview render。
 - `apps/admin-web/src/shared/*`: admin DTO 类型镜像、API client、query key、realtime invalidation、command receipt bus 与 shared page-state primitive；是前端跨页面共享层，不得越界成 runtime orchestration layer。
+- `apps/admin-web/src/shared/workspaces/*`: 浏览器本地 workspace model 边界；负责记录 active workbench、per-workbench last route、recent views 与 per-route layout/filter 偏好，只能使用本地存储，不能越界成服务端会话或多用户同步层。
 - `schema/sql/*`: 数据库持久化对象定义；其边界与 `crates/persistence`、`nautilus_trader/persistence` 对齐。
 - `examples/*`: 示例与演示流，不作为产品真值来源。
 - `tests/*`: 验证层，不作为产品真值来源。
@@ -34,6 +35,7 @@
 - `Phase 3B` 的 `Accounts` 页面可以在 `AdminListPage` 之上追加 summary metric 和 account drill-down，但仍只能消费 `AccountsSnapshot` 中已投影的 balances / exposure / alert 字段；`Risk center` 页面只能消费 `RiskSnapshot`，不能越界成真实风险引擎操作台。
 - `Phase 3C` 的 `Catalog` 页面只能消费 `CatalogSnapshot` 中的 browse item、history query 和 operator note；`Playback` 页面只能消费 `PlaybackSnapshot` 中已投影的 request、timeline 与 event preview，图表依赖只允许封装在 `apps/admin-web/src/features/playback/playback-preview-chart.tsx`；`Diagnostics` 页面只能消费 `DiagnosticsSnapshot` 中的 summary / links / query timings / errors，不得越界成真实链路控制台。
 - `Phase 4A` 的 `Backtests` 页面只能消费 `BacktestsSnapshot` 中已投影的 task/progress/report-link 字段；`Reports` 页面只能消费 `ReportsSnapshot` 中已投影的 performance summary 与 artifact family 字段，二者都不得越界成真实回测编排器、报告生成管线或策略编辑器。
+- `Phase 4B` 的 `WorkbenchShell` 只能在浏览器侧重组既有 route tree、切换 `Operations/Analysis` 入口并持久化本地 workspace 偏好；它不能创建新后端契约，也不能把 local storage state 演化成远端同步配置中心。
 - `nautilus_trader/admin/services/commands.py` 只负责命令 receipt/failure 组装与审计/事件联动；`nautilus_trader/admin/services/audit.py` 只负责 append-only 审计记录投影；`nautilus_trader/admin/services/config.py` 只负责 control-plane config diff / runbook snapshot。三者都不能越界成完整的运行时控制编排器。
 - `nautilus_trader/admin/services/fills.py` 只负责把既有 fills runtime 状态投影成浏览器可见 DTO；`PositionSummary` 的 drill-down 字段只表达读取投影，不得借机承载持仓变更或交易命令。`nautilus_trader/admin/services/accounts.py` 只负责 account summary / drill-down 投影；`nautilus_trader/admin/services/risk.py` 只负责 risk summary / events / blocks 投影。
 - `nautilus_trader/admin/services/catalog.py` 只负责 catalog browse / history query / playback preview 的 DTO 投影与 bounded 默认窗口，不直接调度真实回放任务；`nautilus_trader/admin/services/diagnostics.py` 只负责 link health / query timing / partial error 投影，不直接修改链路状态。
