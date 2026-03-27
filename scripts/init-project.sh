@@ -10,7 +10,7 @@ repository=""
 skip_remote_checks=0
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/init-project.sh [--project-name NAME] [--repository SLUG] [--skip-remote-checks]
 EOF
 }
@@ -22,7 +22,7 @@ fail() {
 
 assert_command() {
   local name=$1
-  command -v "$name" >/dev/null 2>&1 || fail "Required command not found: $name"
+  command -v "$name" > /dev/null 2>&1 || fail "Required command not found: $name"
 }
 
 append_section_if_missing() {
@@ -34,7 +34,7 @@ append_section_if_missing() {
   [[ -f "$file" ]] || return 0
 
   if ! grep -Fq "$needle" "$file"; then
-    printf '\n## %s\n\n- %s\n' "$header" "$value" >>"$file"
+    printf '\n## %s\n\n- %s\n' "$header" "$value" >> "$file"
   fi
 }
 
@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
       skip_remote_checks=1
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -68,7 +68,7 @@ done
 assert_command git
 assert_command gh
 
-gh auth status >/dev/null
+gh auth status > /dev/null
 
 printf 'Bootstrap checks passed.\n'
 

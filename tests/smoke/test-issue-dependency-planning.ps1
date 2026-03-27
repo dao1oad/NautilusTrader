@@ -58,6 +58,15 @@ $fixture = @'
     "assignees": [],
     "milestone": "",
     "body": "## Child issues`n`n- #101`n- #102"
+  },
+  {
+    "number": 105,
+    "title": "Umbrella close-out issue",
+    "url": "https://example.com/105",
+    "labels": [],
+    "assignees": [],
+    "milestone": "",
+    "body": "## Child issues`n`n- #101`n- #102`n`n## Phase Close-Out Owned By This Umbrella`n`n- Confirm #101 and #102 merge before close-out."
   }
 ]
 '@
@@ -86,6 +95,12 @@ try {
     exit 1
   }
 
+  $expectedUmbrellaCloseOutRow = '| #105 | Umbrella close-out issue | Medium | 101, 102 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |'
+  if (-not $ledger.Contains($expectedUmbrellaCloseOutRow)) {
+    Write-Error 'Phase close-out umbrella issues must be blocked until their child issues are closed.'
+    exit 1
+  }
+
   if ($IsLinux -or $IsMacOS) {
     & bash scripts/build-workset.sh --input-path $shellFixturePath
     if ($LASTEXITCODE -ne 0) {
@@ -106,6 +121,11 @@ try {
 
     if ($shellLedger -notmatch '\| #104 \| Umbrella issue \| .* \| None \| ready \|') {
       Write-Error 'Shell build-workset must ignore Child issues references when planning dependencies.'
+      exit 1
+    }
+
+    if (-not $shellLedger.Contains($expectedUmbrellaCloseOutRow)) {
+      Write-Error 'Shell build-workset must block phase close-out umbrella issues until their child issues are closed.'
       exit 1
     }
   }

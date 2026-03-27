@@ -1,4 +1,4 @@
-<!-- codex:instruction-stamp 07bf18366fb0ff50dd9ff9ec77aa2378853994c8e8b5a7c304ae0edd617b49d8 -->
+<!-- codex:instruction-stamp bde77340436a7398000acfd5bdeb2844334a96d8b36a72378924047e7713a4fa -->
 # AGENTS
 
 ## Default Models
@@ -24,7 +24,7 @@ The main agent must read these files before orchestration:
 
 ## Default Startup Behavior
 
-- When the user starts Codex in the repository root and gives a generic continuation request such as `continue`, `继续`, `start`, or `启动主agent`, treat that as permission to bootstrap the main agent loop.
+- When the user starts Codex in the repository root and gives a generic continuation request such as `continue`, `start`, or an equivalent localized continue alias, treat that as permission to bootstrap the main agent loop.
 - In that case, read the Startup Read Order, then run `pwsh -NoProfile -File scripts/check-governance.ps1` followed by `pwsh -NoProfile -File scripts/start-main-agent.ps1 -AutoDispatch`.
 - If the ledger shows a ready issue whose previous local run failed, treat the same generic continuation request as permission to retry that failed local issue run through the recovery path.
 - If the ledger already shows a running local issue, keep the generic continuation request non-failing: report the active run and stay in observation mode instead of starting a duplicate dispatch.

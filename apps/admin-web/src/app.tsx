@@ -77,6 +77,11 @@ export function App() {
         return;
       }
 
+      if (topic === "fills") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.fills(READ_ONLY_DEFAULT_LIMIT) });
+        return;
+      }
+
       if (topic === "positions") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.positions(READ_ONLY_DEFAULT_LIMIT) });
         return;
@@ -113,6 +118,7 @@ export function App() {
           resource !== "audit" &&
           resource !== "config" &&
           resource !== "orders" &&
+          resource !== "fills" &&
           resource !== "positions" &&
           resource !== "accounts" &&
           resource !== "logs")

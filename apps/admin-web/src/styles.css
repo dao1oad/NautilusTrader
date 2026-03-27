@@ -187,6 +187,11 @@ body {
   background: linear-gradient(180deg, rgba(250, 252, 255, 0.95), #ffffff);
 }
 
+.resource-stack {
+  display: grid;
+  gap: 20px;
+}
+
 .command-receipt-card {
   margin-top: 20px;
   border: 1px solid rgba(17, 32, 51, 0.1);
@@ -255,6 +260,31 @@ body {
   color: #7b2d2d;
 }
 
+.resource-filter-toolbar {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.resource-filter-label {
+  color: #36506c;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.resource-filter-input {
+  width: min(100%, 360px);
+  border: 1px solid rgba(17, 32, 51, 0.14);
+  border-radius: 12px;
+  font: inherit;
+  padding: 10px 14px;
+}
+
+.resource-filter-empty {
+  margin: 0;
+  color: #42566d;
+}
+
 .resource-table {
   width: 100%;
   border-collapse: collapse;
@@ -272,6 +302,54 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #36506c;
+}
+
+.resource-table-action {
+  min-width: 120px;
+}
+
+.resource-pagination-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resource-pagination-summary {
+  margin: 0;
+  color: #36506c;
+  font-size: 0.95rem;
+}
+
+.resource-pagination-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.resource-detail-card h3 {
+  margin: 0;
+}
+
+.resource-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.resource-detail-grid dt {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #36506c;
+}
+
+.resource-detail-grid dd {
+  margin: 0;
+  color: #112033;
+  font-weight: 600;
 }
 
 .command-action-group {
@@ -467,8 +545,15 @@ body {
     flex-direction: column;
   }
 
+  .resource-pagination-toolbar,
+  .resource-pagination-actions,
   .audit-item-header,
   .confirm-dialog-actions {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resource-pagination-actions {
+    width: 100%;
   }
 }

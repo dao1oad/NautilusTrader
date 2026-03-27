@@ -188,18 +188,18 @@ function Get-RecommendedIssue {
     return New-IssueSelection -Row $explicitIssue -RecoverFailedRun $recoverFailedRun -RecommendedNextStep $recommendedNextStep
   }
 
-  $dispatchableIssue = $Rows |
-    Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'idle' -and $_.Next -eq 'Dispatch subagent' } |
-    Select-Object -First 1
-  if ($dispatchableIssue) {
-    return New-IssueSelection -Row $dispatchableIssue -RecoverFailedRun $false -RecommendedNextStep 'Dispatch subagent'
-  }
-
   $recoverableFailedIssue = $Rows |
     Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'failed' -and $_.Next -eq 'Inspect local job' } |
     Select-Object -First 1
   if ($recoverableFailedIssue) {
     return New-IssueSelection -Row $recoverableFailedIssue -RecoverFailedRun $true -RecommendedNextStep 'Retry failed local issue'
+  }
+
+  $dispatchableIssue = $Rows |
+    Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'idle' -and $_.Next -eq 'Dispatch subagent' } |
+    Select-Object -First 1
+  if ($dispatchableIssue) {
+    return New-IssueSelection -Row $dispatchableIssue -RecoverFailedRun $false -RecommendedNextStep 'Dispatch subagent'
   }
 
   return $null
@@ -225,7 +225,11 @@ $readyIssues = @($ledgerRows | Where-Object { $_.State -eq 'ready' -and $_.Execu
 $recoverableFailedIssues = @($ledgerRows | Where-Object { $_.State -eq 'ready' -and $_.Execution -eq 'failed' -and $_.Next -eq 'Inspect local job' })
 $blockedIssues = @($ledgerRows | Where-Object { $_.State -eq 'blocked' })
 $runningIssues = @($ledgerRows | Where-Object { $_.Execution -in @('running', 'dispatching', 'awaiting-local-review') })
-$recommendedIssue = Get-RecommendedIssue -Rows $ledgerRows -ExplicitIssueNumber $IssueNumber
+$recommendedIssue = if ($IssueNumber -le 0 -and $runningIssues.Count -gt 0) {
+  $null
+} else {
+  Get-RecommendedIssue -Rows $ledgerRows -ExplicitIssueNumber $IssueNumber
+}
 
 Write-Host 'Issue Ledger summary'
 Write-Host ("Ready issues: {0}" -f (Format-IssueList -Rows $readyIssues))

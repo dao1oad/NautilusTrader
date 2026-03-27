@@ -9,6 +9,7 @@
 - `crates/`: Rust workspace，承载核心领域模型、回测、实盘、网络、持久化、风险、组合管理、CLI 与各交易所/数据源适配器。
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
 - `nautilus_trader/admin/`: 管理控制面后端；负责把运行态状态、控制命令契约与审计记录投影成稳定的 admin DTO，而不是把内部 `live`/`execution` object 直接暴露给浏览器。
+- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime，以及 bounded trading ops 页面，而不是直接接入底层 venue/runtime object。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
@@ -35,5 +36,6 @@
 - `Phase 2A` 的命令契约保持本机单人操作模式：`CommandRequest` 默认 `requested_by=local-operator`，所有控制结果都必须先落到 typed receipt 和 append-only audit record，再由后续 phase 绑定到真实控制 endpoint。
 - `Phase 2B` 只开放低风险控制面：策略启停、适配器连接控制、行情订阅控制；HTTP route 必须返回 typed receipt，WS 只流出 receipt 事件，不引入任何交易类命令。
 - `Phase 2C` 把低风险 command flow 接到浏览器：所有 mutating action 都必须先经过显式确认，对应页面持续显示最新 receipt，并新增 `Audit` 与 `Config` 恢复面用于追溯本机 control-plane 状态。
+- `Phase 3A` 的 `Blotter`、`Fills` 与 `Positions` surface 必须保持 bounded read-only 工作流：`orders`、`fills`、`positions` 都通过 `limit` 约束读取，浏览器 drill-down 只消费已投影到 `OrderSummary`、`FillSummary`、`PositionSummary` 的字段，不绕过 admin DTO，也不引入任何交易写接口。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

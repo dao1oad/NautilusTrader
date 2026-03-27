@@ -51,33 +51,55 @@ function Get-Dependencies {
     return @()
   }
 
-  $dependencies = New-Object System.Collections.Generic.List[string]
-  $lines = $Body -split "\r?\n"
-  $inDependsSection = $false
+  $normalizedBody = $Body -replace '`r`n', "`r`n" -replace '`n', "`n" -replace '`r', "`r"
 
-  foreach ($line in $lines) {
-    $trimmed = $line.Trim()
+  function Get-SectionIssueReferences {
+    param(
+      [string]$Text,
+      [string]$SectionPattern
+    )
 
-    if (-not $inDependsSection) {
-      if ($trimmed -match '^(#+\s*)?Depends on\b') {
-        $inDependsSection = $true
-      } else {
+    $references = New-Object System.Collections.Generic.List[string]
+    $lines = $Text -split "\r?\n"
+    $inSection = $false
+
+    foreach ($line in $lines) {
+      $trimmed = $line.Trim()
+
+      if (-not $inSection) {
+        if ($trimmed -match $SectionPattern) {
+          $inSection = $true
+        } else {
+          continue
+        }
+      } elseif ($trimmed -match '^#+\s+\S+') {
+        break
+      }
+
+      if (-not $trimmed) {
         continue
       }
-    } elseif ($trimmed -match '^#+\s+\S+') {
-      break
+
+      foreach ($match in [regex]::Matches($trimmed, '#(\d+)')) {
+        $references.Add($match.Groups[1].Value)
+      }
     }
 
-    if (-not $trimmed) {
-      continue
-    }
+    return @($references)
+  }
 
-    foreach ($match in [regex]::Matches($trimmed, '#(\d+)')) {
-      $dependencies.Add($match.Groups[1].Value)
+  $dependencies = New-Object System.Collections.Generic.List[string]
+  foreach ($reference in @(Get-SectionIssueReferences -Text $normalizedBody -SectionPattern '^(#+\s*)?Depends on\b')) {
+    $dependencies.Add($reference)
+  }
+
+  if ($normalizedBody -match '(?im)^(#+\s*)?Phase Close-Out Owned By This Umbrella\b') {
+    foreach ($reference in @(Get-SectionIssueReferences -Text $normalizedBody -SectionPattern '^(#+\s*)?Child issues\b')) {
+      $dependencies.Add($reference)
     }
   }
 
-  return @($dependencies | Select-Object -Unique)
+  return @($dependencies | Sort-Object {[int]$_} -Unique)
 }
 
 function Get-RemoteJobsRegistry {

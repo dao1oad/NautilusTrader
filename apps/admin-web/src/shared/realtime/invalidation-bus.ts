@@ -10,6 +10,7 @@ export type InvalidationTopic =
   | "audit"
   | "config"
   | "orders"
+  | "fills"
   | "positions"
   | "accounts"
   | "logs";
@@ -28,7 +29,7 @@ function getInvalidationTopics(event: AdminEvent): InvalidationTopic[] {
   }
 
   if (event.type === "overview.updated" || event.type === "snapshot.invalidate") {
-    return ["overview", "nodes", "strategies", "adapters", "orders", "positions", "accounts", "logs"];
+    return ["overview", "nodes", "strategies", "adapters", "orders", "fills", "positions", "accounts", "logs"];
   }
 
   return [];

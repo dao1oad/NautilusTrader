@@ -31,6 +31,14 @@ if ($start -notmatch "Execution -eq 'failed'" -or $start -notmatch 'RecoverFaile
   exit 1
 }
 
+$startCompact = $start -replace '\s+', ''
+$failedSelectionIndex = $startCompact.IndexOf('Where-Object{$_.State-eq''ready''-and$_.Execution-eq''failed''-and$_.Next-eq''Inspectlocaljob''}|')
+$idleSelectionIndex = $startCompact.IndexOf('Where-Object{$_.State-eq''ready''-and$_.Execution-eq''idle''-and$_.Next-eq''Dispatchsubagent''}|')
+if ($failedSelectionIndex -lt 0 -or $idleSelectionIndex -lt 0 -or $failedSelectionIndex -gt $idleSelectionIndex) {
+  Write-Error 'start-main-agent.ps1 must prefer retrying a failed ready issue before dispatching a fresh idle ready issue.'
+  exit 1
+}
+
 if ($dispatch -notmatch '\[switch\]\$RecoverFailedRun' -or $dispatch -notmatch 'worktree remove --force' -or $dispatch -notmatch 'failed local run') {
   Write-Error 'dispatch-issue.ps1 must expose an explicit recovery path that recreates a stale failed worktree before re-dispatch.'
   exit 1

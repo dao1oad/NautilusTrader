@@ -8,6 +8,7 @@ from nautilus_trader.admin.schemas import AuditSnapshot
 from nautilus_trader.admin.schemas import CommandReceipt
 from nautilus_trader.admin.schemas import CommandRequest
 from nautilus_trader.admin.schemas import ConfigDiffSnapshot
+from nautilus_trader.admin.schemas import FillsSnapshot
 from nautilus_trader.admin.schemas import HealthStatus
 from nautilus_trader.admin.schemas import LogsSnapshot
 from nautilus_trader.admin.schemas import NodesSnapshot
@@ -22,6 +23,7 @@ from nautilus_trader.admin.services.audit import reset_audit_sink
 from nautilus_trader.admin.services.commands import reset_command_event_stream
 from nautilus_trader.admin.services.commands import submit_command
 from nautilus_trader.admin.services.config import build_config_diff_snapshot
+from nautilus_trader.admin.services.fills import build_fills_snapshot
 from nautilus_trader.admin.services.logs import build_logs_snapshot
 from nautilus_trader.admin.services.nodes import build_nodes_snapshot
 from nautilus_trader.admin.services.orders import build_orders_snapshot
@@ -63,6 +65,12 @@ def _register_read_only_surface_routes(app: FastAPI) -> None:
         limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
     ) -> OrdersSnapshot:
         return build_orders_snapshot(limit=limit)
+
+    @app.get("/api/admin/fills", response_model=FillsSnapshot)
+    def fills(
+        limit: int = Query(default=DEFAULT_READ_ONLY_LIMIT, ge=1, le=MAX_READ_ONLY_LIMIT),
+    ) -> FillsSnapshot:
+        return build_fills_snapshot(limit=limit)
 
     @app.get("/api/admin/positions", response_model=PositionsSnapshot)
     def positions(

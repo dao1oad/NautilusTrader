@@ -9,7 +9,7 @@ output_path="workspace/runbooks/issues-snapshot.json"
 limit=100
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/sync-issues.sh [--output-path PATH] [--limit N]
 EOF
 }
@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
       limit=$2
       shift 2
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -51,22 +51,23 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-command -v gh >/dev/null 2>&1 || fail "GitHub CLI is required for issue sync."
+command -v gh > /dev/null 2>&1 || fail "GitHub CLI is required for issue sync."
 [[ "$limit" =~ ^[0-9]+$ ]] || fail "--limit must be an integer."
 
 resolved_output_path=$(resolve_repo_path "$output_path")
 mkdir -p -- "$(dirname -- "$resolved_output_path")"
 
-raw_json=$(gh issue list --limit "$limit" --state open --json number,title,labels,assignees,milestone,url,body 2>/dev/null || true)
+raw_json=$(gh issue list --limit "$limit" --state open --json number,title,labels,assignees,milestone,url,body 2> /dev/null || true)
 if [[ -z "$raw_json" ]]; then
   raw_json='[]'
 fi
 
 tmp_raw_json=$(mktemp)
 trap 'rm -f "$tmp_raw_json"' EXIT
-printf '%s' "$raw_json" >"$tmp_raw_json"
+printf '%s' "$raw_json" > "$tmp_raw_json"
 
-payload=$(python3 - "$tmp_raw_json" <<'PY'
+payload=$(
+  python3 - "$tmp_raw_json" << 'PY'
 import json
 import sys
 from pathlib import Path
@@ -92,9 +93,10 @@ json.dump(normalized, sys.stdout, indent=2)
 PY
 )
 
-printf '%s\n' "$payload" >"$resolved_output_path"
+printf '%s\n' "$payload" > "$resolved_output_path"
 
-count=$(python3 - "$resolved_output_path" <<'PY'
+count=$(
+  python3 - "$resolved_output_path" << 'PY'
 import json
 import sys
 from pathlib import Path

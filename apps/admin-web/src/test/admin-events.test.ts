@@ -92,6 +92,7 @@ test("publishes overview invalidations to the shared bus", () => {
     "strategies",
     "adapters",
     "orders",
+    "fills",
     "positions",
     "accounts",
     "logs"

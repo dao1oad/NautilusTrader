@@ -1,0 +1,23 @@
+# Local PR Review
+
+- Issue: #19
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 3A backend fills route and schemas, bounded blotter/fills/positions trading surfaces, shared keyword filters, position drill-down UX, truth docs, and issue execution bookkeeping.
+- Findings:
+  - No blocking product defects remained after the fills route, bounded trading surfaces, shared keyword filters, and position drill-down workflow were verified together.
+  - A late frontend regression check confirmed the position drill-down now stays selected across snapshot reordering even when the backend omits the optional `position_id` field.
+  - `vite build` still prints the existing `@tanstack/react-query` `"use client"` directive warnings, but the production build completed successfully and no new bundling regressions were introduced by this slice.
+- Resolution:
+  - Added the bounded `GET /api/admin/fills` contract plus the `FillsSnapshot` and `FillSummary` DTOs required for the new fills surface.
+  - Extended the shared admin-web trading surfaces with a `Fills` route, client/query wiring, bounded client-side pagination, shared keyword filters, and position detail drill-down support inside the generic read-only list page.
+  - Stabilized the fallback row key for position drill-down selection so snapshot refreshes do not drop the operator's selected position when rows reorder without `position_id`.
+  - Updated the mapped truth docs and issue execution artifacts so the branch description matches the latest Phase 3A trading-surface diff before the local pre-PR review rerun.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/issue-19/apps/admin-web && npm test -- --run src/test/trading-read-only-surfaces.test.tsx`
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin/test_fills_api.py tests/unit_tests/admin/test_positions_api.py -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-19/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-19/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-19 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-19 diff --check`
+- Status: approved

@@ -12,8 +12,9 @@
 
 ## Admin Control Plane Integrations
 
-- `apps/admin-web` 通过浏览器 `fetch` 代理到本机 FastAPI admin surface：低风险 command flow 当前消费 `POST /api/admin/commands/strategies/*`、`POST /api/admin/commands/adapters/*`，恢复面消费 `GET /api/admin/audit` 与 `GET /api/admin/config/diff`
-- `apps/admin-web/src/shared/realtime/admin-events.ts` 通过 `/ws/admin/events` 同时订阅 `overview` 与 `commands` channel，并把 `command.*` 事件桥接到 shared invalidation / receipt bus
+- `apps/admin-web` 通过浏览器 `fetch` 代理到本机 FastAPI admin surface：trading ops 当前消费 bounded `GET /api/admin/orders|fills|positions?limit=<n>`，其中 `/orders` 在 UI 上以 `Blotter` 呈现；低风险 command flow 继续消费 `POST /api/admin/commands/strategies/*`、`POST /api/admin/commands/adapters/*`，恢复面消费 `GET /api/admin/audit` 与 `GET /api/admin/config/diff`
+- `apps/admin-web/src/shared/realtime/admin-events.ts` 通过 `/ws/admin/events` 同时订阅 `overview` 与 `commands` channel，并把 `snapshot.invalidate` / `command.*` 事件桥接到 shared invalidation / receipt bus；`fills`、`positions` 与 `orders` surface 依赖同一 invalidation 语义刷新 bounded snapshot
+- `nautilus_trader/admin/services/fills.py` 当前把 execution/cache 中已有的 fills 数据投影成 `FillSummary` / `FillsSnapshot`，供浏览器只读消费；它不直接接入交易 venue，也不承担命令执行职责
 - `nautilus_trader/admin/services/config.py` 当前把本机 control-plane guardrail 与 recovery runbook 作为浏览器只读 projection 暴露，不直接接入交易 venue 或远端配置中心
 
 ## Repository Governance Integrations

@@ -65,8 +65,13 @@ if ($agents -notmatch 'Default Startup Behavior' -or $agents -notmatch 'continue
 }
 
 $readme = Get-Content 'README.md' -Raw
-if ($readme -notmatch 'main-agent-startup-prompt.md' -or $readme -notmatch 'scripts/start-main-agent.ps1' -or $readme -notmatch 'codex' -or $readme -notmatch '继续') {
-  Write-Error 'README.md must explain the simplified current-project startup path using Codex and scripts/start-main-agent.ps1.'
+if ($readme -notmatch 'main-agent-startup-prompt.md' -or $readme -notmatch 'scripts/start-main-agent.ps1' -or $readme -notmatch 'codex' -or $readme -notmatch 'continue') {
+  Write-Error 'README.md must explain the simplified current-project startup path using Codex, scripts/start-main-agent.ps1, and the English `continue` entrypoint.'
+  exit 1
+}
+
+if ($readme -match '继续') {
+  Write-Error 'README.md must keep the simplified startup path English-only so it passes the repository non-Latin governance hook.'
   exit 1
 }
 

@@ -24,3 +24,11 @@ def test_positions_endpoint_honors_requested_limit():
 
     assert response.status_code == 200
     assert response.json()["limit"] == 10
+
+
+def test_positions_endpoint_rejects_out_of_range_limit():
+    client = TestClient(create_admin_app())
+
+    response = client.get("/api/admin/positions?limit=501")
+
+    assert response.status_code == 422

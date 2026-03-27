@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { to: "/adapters", label: "Adapters" },
   { to: "/audit", label: "Audit" },
   { to: "/config", label: "Config" },
-  { to: "/orders", label: "Orders" },
+  { to: "/orders", label: "Blotter" },
+  { to: "/fills", label: "Fills" },
   { to: "/positions", label: "Positions" },
   { to: "/accounts", label: "Accounts" },
   { to: "/logs", label: "Logs" }

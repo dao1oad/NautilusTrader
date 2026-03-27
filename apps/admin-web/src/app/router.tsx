@@ -8,6 +8,7 @@ import { NodesRoutePage } from "./routes/nodes";
 import { StrategiesRoutePage } from "./routes/strategies";
 import { AdaptersRoutePage } from "./routes/adapters";
 import { OrdersRoutePage } from "./routes/orders";
+import { FillsRoutePage } from "./routes/fills";
 import { PositionsRoutePage } from "./routes/positions";
 import { AccountsRoutePage } from "./routes/accounts";
 import { LogsRoutePage } from "./routes/logs";
@@ -59,6 +60,12 @@ const ordersRoute = createRoute({
   component: OrdersRoutePage
 });
 
+const fillsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/fills",
+  component: FillsRoutePage
+});
+
 const positionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/positions",
@@ -85,6 +92,7 @@ const routeTree = rootRoute.addChildren([
   auditRoute,
   configRoute,
   ordersRoute,
+  fillsRoute,
   positionsRoute,
   accountsRoute,
   logsRoute

@@ -8,7 +8,7 @@ cd "$repo_root"
 skip_remote_checks=0
 
 usage() {
-  cat <<'EOF'
+  cat << 'EOF'
 Usage: scripts/check-governance.sh [--skip-remote-checks]
 EOF
 }
@@ -18,8 +18,30 @@ fail() {
   exit 1
 }
 
+validate_instruction_stamp() {
+  python3 - "$1" << 'PY'
+import hashlib
+import re
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as fh:
+    raw = fh.read()
+
+match = re.match(r"^(?:\ufeff)?<!--\s*codex:instruction-stamp\s+([a-f0-9]{64})\s*-->(?:\r?\n)?", raw, re.IGNORECASE)
+if not match:
+    raise SystemExit(f"{path} must declare a codex:instruction-stamp header.")
+
+body = raw[match.end():]
+computed = hashlib.sha256(body.encode("utf-8")).hexdigest()
+declared = match.group(1)
+if declared != computed:
+    raise SystemExit(f"{path} instruction stamp mismatch. Expected {computed} but found {declared}.")
+PY
+}
+
 get_config_value() {
-  python3 - "$1" "$2" <<'PY'
+  python3 - "$1" "$2" << 'PY'
 import re
 import sys
 
@@ -59,7 +81,7 @@ get_config_int() {
 }
 
 get_config_list() {
-  python3 - "$1" "$2" <<'PY'
+  python3 - "$1" "$2" << 'PY'
 import re
 import sys
 
@@ -82,7 +104,7 @@ PY
 }
 
 get_required_truth_paths() {
-  python3 - "$1" <<'PY'
+  python3 - "$1" << 'PY'
 import re
 import sys
 
@@ -120,7 +142,7 @@ PY
 }
 
 get_truth_map_rule_count() {
-  python3 - "$1" <<'PY'
+  python3 - "$1" << 'PY'
 import re
 import sys
 
@@ -147,7 +169,7 @@ while [[ $# -gt 0 ]]; do
       skip_remote_checks=1
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -182,6 +204,8 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   fail "Missing governance files: ${missing[*]}"
 fi
 
+validate_instruction_stamp "AGENTS.md"
+
 policy_path="ops/project-policy.yaml"
 [[ $(get_config_boolean "$policy_path" "enforce_pull_request_only") == "true" ]] || fail "project-policy.yaml must enable PR-only merge."
 [[ $(get_config_boolean "$policy_path" "require_local_pre_pr_review") == "true" ]] || fail "project-policy.yaml must require local pre-PR review."
@@ -215,7 +239,7 @@ if [[ $(get_config_boolean "$policy_path" "require_truth_docs") == "true" ]]; th
 
   truth_map_rule_count=$(get_truth_map_rule_count "ops/doc-truth-map.yaml")
   [[ "$truth_map_rule_count" =~ ^[0-9]+$ ]] || fail "doc-truth-map.yaml must declare at least one mapping rule."
-  (( truth_map_rule_count > 0 )) || fail "doc-truth-map.yaml must declare at least one mapping rule."
+  ((truth_map_rule_count > 0)) || fail "doc-truth-map.yaml must declare at least one mapping rule."
 
   [[ $(get_config_boolean "$policy_path" "fail_on_unmapped_production_paths") == "true" ]] || fail "Truth-doc governance must fail on unmapped production paths by default."
 fi
@@ -225,16 +249,16 @@ if [[ "$skip_remote_checks" -eq 1 ]]; then
   exit 0
 fi
 
-remote_url=$(git remote get-url origin 2>/dev/null || true)
+remote_url=$(git remote get-url origin 2> /dev/null || true)
 [[ -n "$remote_url" ]] || fail "Git remote origin is not configured. Cannot verify branch protection."
 
-command -v gh >/dev/null 2>&1 || fail "GitHub CLI is required to verify remote branch protection."
+command -v gh > /dev/null 2>&1 || fail "GitHub CLI is required to verify remote branch protection."
 
-repo_slug=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2>/dev/null || true)
+repo_slug=$(gh repo view --json nameWithOwner --jq '.nameWithOwner' 2> /dev/null || true)
 [[ -n "$repo_slug" ]] || fail "Unable to resolve repository slug via gh."
 
 branch_protection_endpoint="repos/$repo_slug/branches/main/protection"
-if ! gh api "$branch_protection_endpoint" >/dev/null 2>&1; then
+if ! gh api "$branch_protection_endpoint" > /dev/null 2>&1; then
   fail "Remote branch protection is not configured or cannot be read. Verify branch protection on main."
 fi
 
@@ -242,19 +266,19 @@ required_pr_reviews_present=$(gh api "$branch_protection_endpoint" --jq '.requir
 [[ "$required_pr_reviews_present" == "true" ]] || fail "Remote protection must require pull request reviews."
 
 expected_approving_review_count=$(get_config_int "ops/review-gates.yaml" "required_approving_review_count" "1")
-(( expected_approving_review_count >= 0 )) || fail "Configured required_approving_review_count must be 0 or greater."
+((expected_approving_review_count >= 0)) || fail "Configured required_approving_review_count must be 0 or greater."
 
 actual_approving_review_count=$(gh api "$branch_protection_endpoint" --jq '.required_pull_request_reviews.required_approving_review_count // -1')
 [[ "$actual_approving_review_count" =~ ^-?[0-9]+$ ]] || fail "Unable to read remote required approving review count."
-(( actual_approving_review_count >= expected_approving_review_count )) || fail "Remote protection must require at least $expected_approving_review_count approving review(s)."
+((actual_approving_review_count >= expected_approving_review_count)) || fail "Remote protection must require at least $expected_approving_review_count approving review(s)."
 
 required_status_checks_present=$(gh api "$branch_protection_endpoint" --jq '.required_status_checks != null')
 [[ "$required_status_checks_present" == "true" ]] || fail "Remote protection must require status checks."
 
 mapfile -t actual_status_checks < <(
   {
-    gh api "$branch_protection_endpoint" --jq '.required_status_checks.contexts[]?' 2>/dev/null || true
-    gh api "$branch_protection_endpoint" --jq '.required_status_checks.checks[]? | (.context // .name // empty)' 2>/dev/null || true
+    gh api "$branch_protection_endpoint" --jq '.required_status_checks.contexts[]?' 2> /dev/null || true
+    gh api "$branch_protection_endpoint" --jq '.required_status_checks.checks[]? | (.context // .name // empty)' 2> /dev/null || true
   } | awk 'NF' | sort -u
 )
 
@@ -270,7 +294,7 @@ for expected_check in "${expected_status_checks[@]}"; do
     fi
   done
 
-  (( found == 1 )) || fail "Remote protection is missing required status check '$expected_check'."
+  ((found == 1)) || fail "Remote protection is missing required status check '$expected_check'."
 done
 
 required_conversation_resolution=$(gh api "$branch_protection_endpoint" --jq '.required_conversation_resolution.enabled // false')
@@ -284,6 +308,6 @@ enforce_admins=$(gh api "$branch_protection_endpoint" --jq '.enforce_admins.enab
 
 bypass_count=$(gh api "$branch_protection_endpoint" --jq '[.required_pull_request_reviews.bypass_pull_request_allowances.users // [], .required_pull_request_reviews.bypass_pull_request_allowances.teams // [], .required_pull_request_reviews.bypass_pull_request_allowances.apps // []] | flatten | length')
 [[ "$bypass_count" =~ ^[0-9]+$ ]] || fail "Unable to read remote bypass allowances."
-(( bypass_count == 0 )) || fail "Remote protection must not grant bypass_pull_request_allowances."
+((bypass_count == 0)) || fail "Remote protection must not grant bypass_pull_request_allowances."
 
 printf 'Local governance files and remote branch protection checks passed.\n'
