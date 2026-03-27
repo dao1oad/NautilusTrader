@@ -1,5 +1,4 @@
 :root {
-  color-scheme: dark;
   font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -533,7 +532,10 @@ a {
   width: min(100%, 360px);
   border: 1px solid rgba(17, 32, 51, 0.14);
   border-radius: 12px;
+  color: #112033;
+  color-scheme: light;
   font: inherit;
+  background: #ffffff;
   padding: 10px 14px;
 }
 
@@ -705,7 +707,10 @@ a {
   width: 100%;
   border: 1px solid rgba(17, 32, 51, 0.14);
   border-radius: 12px;
+  color: #112033;
+  color-scheme: light;
   font: inherit;
+  background: #ffffff;
   padding: 12px 14px;
 }
 

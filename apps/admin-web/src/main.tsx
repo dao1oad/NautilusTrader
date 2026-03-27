@@ -1,27 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { Theme } from "@radix-ui/themes/components/theme";
 
 import { App } from "./app";
 import "@radix-ui/themes/layout/tokens.css";
 import "./styles.css";
 
-const root = ReactDOM.createRoot(document.getElementById("root")!);
-const app = (
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <Theme accentColor="amber" appearance="dark" grayColor="slate" panelBackground="solid" radius="medium" scaling="95%">
+      <App />
+    </Theme>
   </React.StrictMode>
 );
-
-void import("@radix-ui/themes/components/theme")
-  .then(({ Theme }) => {
-    root.render(
-      <React.StrictMode>
-        <Theme accentColor="amber" appearance="dark" grayColor="slate" panelBackground="solid" radius="medium" scaling="95%">
-          <App />
-        </Theme>
-      </React.StrictMode>
-    );
-  })
-  .catch(() => {
-    root.render(app);
-  });
