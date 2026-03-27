@@ -25,6 +25,7 @@
 - `Phase 4A` integration boundary 当前要求 `Backtests` / `Reports` workflow 继续通过 bounded snapshot DTO 协作；`report_id` 与 `artifacts` 只作为浏览器可见导航线索，不直接把 admin-web 绑定到内部 backtest scheduler 或 analysis runtime object
 - `Phase 4B` integration boundary 当前要求 unified workbench 只接入浏览器 `localStorage` 这一条本地状态链路；它不能引入新的后端偏好持久化、远端用户配置同步或 CI/merge gate 对 workspace state 的依赖
 - `Phase 4C` integration boundary 当前要求 backend-hosted bundle、Playwright smoke、bundle budget gate 与轻量 Python WebSocket support 一起闭环；Tauri 结论只落在评估文档中，不引入新的桌面运行时集成
+- `Phase 4` close-out integration boundary 当前要求运维与分析 workflow 通过同一个同源 FastAPI + admin-web bundle 集成闭环，并由同一套 build/bundle-budget/Playwright 验证最终交付路径；不再保留独立桌面 runtime、Vite-only 生产路径或第二套发布入口
 
 ## Repository Governance Integrations
 

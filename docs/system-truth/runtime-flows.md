@@ -72,6 +72,8 @@
 
 `Phase 4C` implementation gate 当前要求 `#24` 保持“前端入口由 backend-hosted bundle 提供 + bundle budget 进入可执行门禁 + Playwright smoke 覆盖 overview 与 operations deep-link path + Tauri 仅保留评估结论不进入实现面”四项约束成立。
 
+`Phase 4` exit gate 当前要求 `#22/#23/#24` 全部合并、Phase 级验收命令通过，并同时保持“Operations + Analysis 进入同一个 unified workbench + backend-hosted bundle 成为唯一交付路径 + build/bundle-budget/Playwright 成为可执行 release gate + Tauri 保持 deferred/not implemented”四项约束成立。
+
 ## Repository Operational Flow
 
 `GitHub issue -> 主 agent 编排 -> 本机 codex-orchestrator 执行 -> 本地 pre-PR review -> PR -> review 闭环 -> merge -> memory/system-truth 回写`

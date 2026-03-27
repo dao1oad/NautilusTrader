@@ -112,6 +112,9 @@
 - `Phase 4B` workbench contract
   - unified workbench 只重组现有浏览器路由，不引入新的 HTTP / WS surface；`Operations` 与 `Analysis` entry link 的落点始终解析到已有 route path
   - workspace model 只在浏览器本地维护 workbench 最近访问、route 偏好和入口跳转目的地；任何 review、merge 或运行时自动化都不能依赖它作为仓库级真值
+- `Phase 4` close-out contract
+  - 当前主线管理台固定为单一浏览器 workbench：`Operations` 与 `Analysis` 共享同一个 route tree、同一个同源 REST/WS surface，以及同一份浏览器本地 workspace 状态；不存在独立桌面契约或第二套前端入口
+  - 当前交付契约固定为 backend-hosted bundle，并以 `npm run build`、bundle budget gate 与 Playwright smoke 作为可执行 release gate；Tauri 只保留 deferred 评估结论，不构成实现或发布契约
 - `apps/admin-web/src/shared/realtime/admin-events.ts`
   - 固定浏览器侧 WS 入口为 `/ws/admin/events`
   - 当前识别的事件类型是 `subscribed`、`connection.state`、`overview.updated`、`snapshot.invalidate`、`command.accepted`、`command.completed`、`command.failed`、`server.error`
