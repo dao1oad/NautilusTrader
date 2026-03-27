@@ -1,0 +1,29 @@
+# Issue #12 Local Execution Output
+
+- Issue: #12
+- Worker: localhost
+- Branch: `codex/issue-12-phase-4-close-out`
+- Job Id: `manual-2026-03-27-phase4-close-out`
+- Summary: Finalized the Phase 4 umbrella close-out after `#22`, `#23`, and `#24` merged by documenting the unified workbench mainline, the backend-hosted bundle delivery model, and the executable release gates.
+- Notes:
+  - This umbrella slice does not introduce new product surfaces; it records the final Phase 4 operating model after the backtests/reports slice, unified workbench shell, and delivery-hardening slice were all merged to `main`.
+  - The shipped admin-console mainline is now a single browser workbench that groups `Operations` and `Analysis` while continuing to reuse the same read-only REST/WS contracts documented by the child slices.
+  - The delivery path is fixed to the same-origin FastAPI-hosted bundle, with `npm run build`, bundle-budget enforcement, and Playwright smoke coverage acting as executable release gates.
+  - Tauri remains a deferred evaluation outcome only and is not part of the current implementation or release path.
+- Files:
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `docs/system-truth/integrations.md`
+  - `memory/progress-log.md`
+  - `workspace/runbooks/remote-output-issue-12.md`
+  - `workspace/handoffs/local-review-issue-12.md`
+  - `workspace/handoffs/review-resolution-issue-12.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-12 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-12 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm run check:bundle`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npx playwright test`
+  - `git -C /root/NautilusTrader/.worktrees/issue-12 diff --check`

@@ -1,0 +1,22 @@
+# Local PR Review
+
+- Issue: #12
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 4 umbrella close-out truth docs, progress-log memory update, and local review artifacts after `#22`, `#23`, and `#24` merged.
+- Findings:
+  - No blocking product defects were found; the umbrella diff only records the final Phase 4 guardrails and release-model decisions after the child implementation PRs shipped.
+  - The review confirmed that the current mainline admin console is a single browser workbench spanning `Operations` and `Analysis`, while the read-only operations and analysis surfaces from the child slices remain unchanged.
+  - The final delivery model is now explicit and executable: FastAPI-hosted bundle delivery is the only production path, bundle budget checks are mandatory, Playwright smoke validates the hosted shell, and Tauri remains deferred rather than half-implemented.
+- Resolution:
+  - Updated the phase-level truth docs to state the final unified workbench and backend-hosted delivery model for Phase 4.
+  - Recorded the Phase 4 close-out in `memory/progress-log.md` and added the umbrella runbook/review artifacts required for the local PR gate.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/issue-12 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-12 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npm run check:bundle`
+  - `cd /root/NautilusTrader/.worktrees/issue-12/apps/admin-web && npx playwright test`
+  - `git -C /root/NautilusTrader/.worktrees/issue-12 diff --check`
+- Status: approved

@@ -45,5 +45,6 @@
 - `Phase 4B` 的 unified workbench shell 必须把现有 route tree 分成 `Operations` 与 `Analysis` 两个浏览器入口，并把 active workbench、每个 workbench 的最近路由、recent views，以及每个 route 的 layout/filter 偏好保存在浏览器本地存储中；该状态不能升级成服务端 session、多用户同步或新的后端 API。
 - `Phase 4C` 的最终交付模型固定为“同源 backend-hosted web bundle”：FastAPI 在不遮蔽 `/api/admin/*` 与 `/ws/admin/events` 的前提下托管构建后的 admin-web `index.html` 与静态资产；bundle 查找顺序固定为 `NAUTILUS_ADMIN_FRONTEND_DIR` -> `nautilus_trader/admin/static` -> `apps/admin-web/dist`。
 - `Phase 4C` 的 CI/交付硬化固定包含三条门禁：前端生产构建、bundle budget 检查、以及针对 backend-hosted bundle 的 Playwright smoke；桌面壳只保留评估结论，不进入当前实现面。
+- `Phase 4` 当前已经收敛为单一主线路径：操作员通过同一个浏览器 workbench 在 `Operations` 与 `Analysis` 间切换，并始终命中 FastAPI 同源托管的 admin-web bundle；不存在并行的桌面壳、独立前端部署真值或第二套导航/runtime 模型。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力
