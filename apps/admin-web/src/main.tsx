@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Theme } from "@radix-ui/themes";
 
 import { App } from "./app";
-import "@radix-ui/themes/styles.css";
+import "@radix-ui/themes/tokens/base.css";
 import "./styles.css";
 
 

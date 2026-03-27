@@ -9,13 +9,17 @@ export type WorkbenchShellMetaValue = {
   statusSummary: string | null;
 };
 
-export type WorkbenchShellMetaInput = Partial<WorkbenchShellMetaValue> & {
+type WorkbenchShellMetaSelection = {
+  [K in keyof WorkbenchShellMetaValue]?: WorkbenchShellMetaValue[K];
+};
+
+export type WorkbenchShellMetaInput = WorkbenchShellMetaSelection & {
   priority?: number;
 };
 
 type WorkbenchShellMetaEntry = {
   id: symbol;
-  meta: WorkbenchShellMetaValue;
+  meta: WorkbenchShellMetaSelection;
   priority: number;
 };
 
@@ -29,23 +33,42 @@ type WorkbenchShellMetaAction =
     id: symbol;
   };
 
-const EMPTY_WORKBENCH_SHELL_META: WorkbenchShellMetaValue = {
-  pageTitle: null,
-  workbenchCopy: null,
-  lastUpdated: null,
-  statusSummary: null
-};
+const EMPTY_WORKBENCH_SHELL_META: WorkbenchShellMetaSelection = {};
 
-const WorkbenchShellMetaValueContext = createContext<WorkbenchShellMetaValue>(EMPTY_WORKBENCH_SHELL_META);
+const WorkbenchShellMetaValueContext = createContext<WorkbenchShellMetaSelection>(EMPTY_WORKBENCH_SHELL_META);
 const WorkbenchShellMetaDispatchContext = createContext<Dispatch<WorkbenchShellMetaAction> | null>(null);
 
-function normalizeWorkbenchShellMeta(meta: Partial<WorkbenchShellMetaValue> | null | undefined): WorkbenchShellMetaValue {
-  return {
-    pageTitle: meta?.pageTitle ?? null,
-    workbenchCopy: meta?.workbenchCopy ?? null,
-    lastUpdated: meta?.lastUpdated ?? null,
-    statusSummary: meta?.statusSummary ?? null
-  };
+function hasMetaValue<Key extends keyof WorkbenchShellMetaSelection>(
+  meta: WorkbenchShellMetaSelection,
+  key: Key,
+): meta is WorkbenchShellMetaSelection & Required<Pick<WorkbenchShellMetaSelection, Key>> {
+  return Object.prototype.hasOwnProperty.call(meta, key);
+}
+
+function normalizeWorkbenchShellMeta(meta: WorkbenchShellMetaSelection | null | undefined): WorkbenchShellMetaSelection {
+  if (!meta) {
+    return EMPTY_WORKBENCH_SHELL_META;
+  }
+
+  const nextMeta: WorkbenchShellMetaSelection = {};
+
+  if (hasMetaValue(meta, "pageTitle") && meta.pageTitle !== undefined) {
+    nextMeta.pageTitle = meta.pageTitle;
+  }
+
+  if (hasMetaValue(meta, "workbenchCopy") && meta.workbenchCopy !== undefined) {
+    nextMeta.workbenchCopy = meta.workbenchCopy;
+  }
+
+  if (hasMetaValue(meta, "lastUpdated") && meta.lastUpdated !== undefined) {
+    nextMeta.lastUpdated = meta.lastUpdated;
+  }
+
+  if (hasMetaValue(meta, "statusSummary") && meta.statusSummary !== undefined) {
+    nextMeta.statusSummary = meta.statusSummary;
+  }
+
+  return nextMeta;
 }
 
 function workbenchShellMetaReducer(
@@ -64,7 +87,7 @@ function workbenchShellMetaReducer(
   return state.map((entry, index) => (index === existingIndex ? action.entry : entry));
 }
 
-function resolveWorkbenchShellMetaValue(entries: WorkbenchShellMetaEntry[]): WorkbenchShellMetaValue {
+function resolveWorkbenchShellMetaValue(entries: WorkbenchShellMetaEntry[]): WorkbenchShellMetaSelection {
   let activeEntry: WorkbenchShellMetaEntry | null = null;
 
   for (const entry of entries) {
@@ -121,10 +144,14 @@ export function useCurrentWorkbenchShellMeta(fallback?: Partial<WorkbenchShellMe
   const normalizedFallback = normalizeWorkbenchShellMeta(fallback);
 
   return {
-    pageTitle: value.pageTitle ?? normalizedFallback.pageTitle,
-    workbenchCopy: value.workbenchCopy ?? normalizedFallback.workbenchCopy,
-    lastUpdated: value.lastUpdated ?? normalizedFallback.lastUpdated,
-    statusSummary: value.statusSummary ?? normalizedFallback.statusSummary
+    pageTitle: hasMetaValue(value, "pageTitle") ? value.pageTitle ?? null : normalizedFallback.pageTitle ?? null,
+    workbenchCopy: hasMetaValue(value, "workbenchCopy")
+      ? value.workbenchCopy ?? null
+      : normalizedFallback.workbenchCopy ?? null,
+    lastUpdated: hasMetaValue(value, "lastUpdated") ? value.lastUpdated ?? null : normalizedFallback.lastUpdated ?? null,
+    statusSummary: hasMetaValue(value, "statusSummary")
+      ? value.statusSummary ?? null
+      : normalizedFallback.statusSummary ?? null
   };
 }
 

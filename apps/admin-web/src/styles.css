@@ -292,6 +292,7 @@ a {
 }
 
 .console-nav-toggle {
+  display: none;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: rgba(7, 17, 29, 0.92);
@@ -881,6 +882,10 @@ a {
   .console-panel {
     min-height: calc(100vh - 24px);
     padding: 18px;
+  }
+
+  .console-nav-toggle {
+    display: inline-flex;
   }
 
   .console-toolbar-actions {

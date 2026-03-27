@@ -5,7 +5,6 @@ import { useRouterState } from "@tanstack/react-router";
 import {
   ConsoleShell,
   type ConsoleNavGroup,
-  type ConsoleRuntimeMeta,
   type ConsoleRecentRoute,
   type ConsoleWorkbenchEntry,
   type ConsoleWorkbenchId
@@ -123,7 +122,7 @@ export function WorkbenchShell({ children }: Props) {
     workbenchCopy: WORKBENCH_COPY[currentRoute.workbench],
     lastUpdated: null,
     statusSummary: `${getWorkbenchLabel(currentRoute.workbench)} workbench ready. ${WORKBENCH_STATUS_SUMMARY[currentRoute.workbench]}`
-  }) as ConsoleRuntimeMeta;
+  });
 
   return (
     <ConsoleShell

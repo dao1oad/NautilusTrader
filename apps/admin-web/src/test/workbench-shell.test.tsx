@@ -56,6 +56,12 @@ function ShellMetaTitleProbe({ fallbackTitle }: { fallbackTitle: string }) {
   return <p>{meta.pageTitle}</p>;
 }
 
+function ShellMetaSummaryProbe({ fallbackSummary }: { fallbackSummary: string }) {
+  const meta = useCurrentWorkbenchShellMeta({ statusSummary: fallbackSummary });
+
+  return <p>{meta.statusSummary ?? "No status"}</p>;
+}
+
 function ShellMetaHarness({ active }: { active: boolean }) {
   return (
     <WorkbenchShellMetaProvider>
@@ -119,4 +125,16 @@ test("replaces removed route metadata with the current fallback immediately", as
     root.unmount();
     container.remove();
   }
+});
+
+test("allows a route owner to clear the fallback status summary explicitly", () => {
+  render(
+    <WorkbenchShellMetaProvider>
+      <ShellMetaSummaryProbe fallbackSummary="Operations workbench ready." />
+      <WorkbenchShellMeta statusSummary={null} />
+    </WorkbenchShellMetaProvider>
+  );
+
+  expect(screen.getByText("No status")).toBeInTheDocument();
+  expect(screen.queryByText("Operations workbench ready.")).not.toBeInTheDocument();
 });
