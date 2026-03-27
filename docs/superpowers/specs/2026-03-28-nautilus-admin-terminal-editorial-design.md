@@ -62,6 +62,7 @@ This redesign follows that direction without chasing trend noise.
 `Radix Themes`
 
 Use Radix Themes as the base layer for layout and semantic UI primitives, then apply project-owned styling on top.
+This is the default implementation choice for the redesign and should be treated as the planned library unless a concrete technical incompatibility appears during implementation.
 
 #### Why
 
@@ -176,6 +177,14 @@ The overview page should become the operational landing surface.
 - execution health panel
 - risk snapshot panel
 - recent activity or event rail
+
+#### Data Sources
+
+The redesign should prefer already available data and client state:
+
+- runtime strip summary should be sourced from existing connection state, page-level last-updated signals, and current workbench / route context
+- recent activity or event rail should reuse existing audit or log snapshot data where already available on the frontend
+- if a page does not already expose a suitable activity source, the planner should prefer a local recent-route or recent-surface summary over introducing new backend endpoints
 
 #### Outcome
 
@@ -389,3 +398,8 @@ The redesign is successful if:
 - data pages are denser and easier to scan
 - state handling feels like part of the product, not generic fallback UI
 - the redesign remains compatible with the current bounded local-admin workflow
+
+Examples of acceptable evidence:
+
+- the shell no longer presents as soft light cards on a marketing-like canvas, and instead uses a darker workstation layout with explicit runtime context and denser navigation
+- list pages expose more rows per viewport, stronger header hierarchy, and clearer state/status scanning without adding new backend capabilities
