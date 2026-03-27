@@ -339,37 +339,60 @@ a {
   display: none;
 }
 
-.connection-banner {
+.signal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 9px 12px;
   border-radius: 999px;
-  border: 1px solid transparent;
-  padding: 10px 14px;
-  font-size: 0.92rem;
+  border: 1px solid var(--border-subtle);
+  background: rgba(8, 16, 27, 0.92);
+  color: var(--text-strong);
+  font-size: 0.82rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.signal-pill-label,
+.signal-pill-detail {
   white-space: nowrap;
 }
 
-.connection-banner[data-state="connected"] {
-  background: rgba(20, 56, 41, 0.84);
+.signal-pill-detail {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signal-pill[data-tone="positive"] {
   border-color: rgba(115, 224, 171, 0.28);
+  background: rgba(14, 44, 31, 0.9);
   color: var(--signal-positive);
 }
 
-.connection-banner[data-state="connecting"] {
-  background: rgba(17, 43, 76, 0.84);
+.signal-pill[data-tone="info"] {
   border-color: rgba(132, 184, 255, 0.28);
+  background: rgba(14, 31, 51, 0.92);
   color: var(--signal-info);
 }
 
-.connection-banner[data-state="disconnected"] {
-  background: rgba(62, 24, 24, 0.84);
-  border-color: rgba(255, 157, 147, 0.3);
+.signal-pill[data-tone="warning"] {
+  border-color: rgba(255, 210, 127, 0.28);
+  background: rgba(56, 41, 13, 0.92);
+  color: var(--signal-warning);
+}
+
+.signal-pill[data-tone="danger"] {
+  border-color: rgba(255, 157, 147, 0.28);
+  background: rgba(54, 19, 19, 0.92);
   color: var(--signal-danger);
 }
 
-.connection-banner[data-state="stale"] {
-  background: rgba(74, 54, 18, 0.84);
-  border-color: rgba(255, 210, 127, 0.3);
-  color: var(--signal-warning);
+.connection-banner {
+  white-space: nowrap;
 }
 
 .overview-card {
@@ -494,10 +517,14 @@ a {
   margin-bottom: 20px;
 }
 
-.metric-card {
-  border: 1px solid rgba(17, 32, 51, 0.08);
+.metric-card,
+.metric-tile {
   border-radius: 16px;
   padding: 16px;
+}
+
+.metric-card {
+  border: 1px solid rgba(17, 32, 51, 0.08);
   background: rgba(248, 250, 252, 0.9);
 }
 
@@ -804,48 +831,166 @@ a {
   color: #42566d;
 }
 
+.section-panel,
 .page-state {
-  border: 1px solid rgba(17, 32, 51, 0.1);
-  border-radius: 20px;
-  padding: 24px;
-  background: linear-gradient(180deg, rgba(250, 252, 255, 0.95), #ffffff);
+  border-radius: 22px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(18, 30, 47, 0.96), rgba(10, 17, 28, 0.94));
+  box-shadow: var(--shadow-shell);
 }
 
-.page-state-kicker {
-  margin: 0 0 8px;
+.section-panel {
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.section-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.section-panel-copy-stack {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.section-panel-eyebrow,
+.workbench-header-eyebrow,
+.metric-tile-label {
+  margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.78rem;
-  color: #36506c;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
-.page-state[data-kind="error"] .page-state-kicker {
-  color: #9b2c2c;
+.section-panel-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.page-state[data-kind="stale"] .page-state-kicker {
-  color: #8a5a00;
+.section-panel-title,
+.workbench-header-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  line-height: 1.05;
+  color: var(--text-strong);
 }
 
-.page-state-meta {
-  margin-top: 16px;
+.section-panel-copy,
+.workbench-header-description,
+.workbench-header-summary,
+.metric-tile-detail {
+  margin: 0;
+  color: var(--text-body);
+}
+
+.section-panel-meta,
+.workbench-header-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.section-panel-actions,
+.workbench-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.state-banner[data-kind="loading"] {
+  border-color: rgba(132, 184, 255, 0.22);
+}
+
+.state-banner[data-kind="empty"] {
+  border-color: rgba(184, 199, 219, 0.2);
+}
+
+.state-banner[data-kind="stale"] {
+  border-color: rgba(255, 210, 127, 0.24);
+}
+
+.state-banner[data-kind="error"] {
+  border-color: rgba(255, 157, 147, 0.24);
+}
+
+.page-state .section-panel-copy {
+  max-width: 68ch;
 }
 
 .last-updated-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(238, 243, 248, 0.9);
-  color: #36506c;
-  font-size: 0.88rem;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.last-updated-badge[data-stale="true"] {
-  background: #fff4d6;
-  color: #8a5a00;
+.last-updated-value {
+  color: var(--text-body);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.84rem;
+  letter-spacing: 0.03em;
+}
+
+.last-updated-badge[data-stale="true"] .last-updated-value {
+  color: var(--signal-warning);
+}
+
+.metric-tile {
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(18, 29, 45, 0.94), rgba(10, 17, 28, 0.94));
+  display: grid;
+  gap: 8px;
+}
+
+.metric-tile-value {
+  color: var(--text-strong);
+  font-size: 1.18rem;
+}
+
+.metric-tile[data-tone="positive"] {
+  border-color: rgba(115, 224, 171, 0.24);
+}
+
+.metric-tile[data-tone="info"] {
+  border-color: rgba(132, 184, 255, 0.24);
+}
+
+.metric-tile[data-tone="warning"] {
+  border-color: rgba(255, 210, 127, 0.24);
+}
+
+.metric-tile[data-tone="danger"] {
+  border-color: rgba(255, 157, 147, 0.24);
+}
+
+.workbench-header {
+  display: grid;
+  gap: 18px;
+}
+
+.workbench-header-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.workbench-header-copy {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
 }
 
 @media (max-width: 720px) {
@@ -899,6 +1044,11 @@ a {
   }
 
   .connection-banner {
+    white-space: normal;
+  }
+
+  .connection-banner .signal-pill-label,
+  .connection-banner .signal-pill-detail {
     white-space: normal;
   }
 

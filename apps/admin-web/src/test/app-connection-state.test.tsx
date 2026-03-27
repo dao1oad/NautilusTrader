@@ -43,7 +43,7 @@ test("keeps stale connection state after a pending overview refresh resolves", a
 
   render(<App />);
 
-  expect((await screen.findAllByText("Connection stale")).length).toBeGreaterThan(0);
+  expect((await screen.findAllByText("Snapshot delayed")).length).toBeGreaterThan(0);
 
   deferred.resolve({
     generated_at: "2026-03-23T00:00:00Z",
@@ -58,10 +58,10 @@ test("keeps stale connection state after a pending overview refresh resolves", a
   });
 
   await waitFor(() => {
-    expect(screen.getAllByText("Connection stale").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Snapshot delayed").length).toBeGreaterThan(0);
   });
 
-  expect(screen.queryByText("Connected")).not.toBeInTheDocument();
+  expect(screen.queryByText("Link healthy")).not.toBeInTheDocument();
 });
 
 
@@ -84,11 +84,11 @@ test("does not force disconnected state when overview refresh fails but websocke
   render(<App />);
 
   await waitFor(() => {
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Link healthy")).toBeInTheDocument();
     expect(screen.getByText("Transient overview failure")).toBeInTheDocument();
   });
 
-  expect(screen.queryByText("Disconnected")).not.toBeInTheDocument();
+  expect(screen.queryByText("Link offline")).not.toBeInTheDocument();
 });
 
 
@@ -138,11 +138,11 @@ test("clears transient server errors once a fresh overview snapshot arrives", as
   });
 
   await waitFor(() => {
-    expect(screen.getByText("Connected")).toBeInTheDocument();
+    expect(screen.getByText("Link healthy")).toBeInTheDocument();
     expect(screen.getByText("No live node configured")).toBeInTheDocument();
   });
 
-  expect(screen.queryByText("Connection stale")).not.toBeInTheDocument();
+  expect(screen.queryByText("Snapshot delayed")).not.toBeInTheDocument();
 });
 
 
