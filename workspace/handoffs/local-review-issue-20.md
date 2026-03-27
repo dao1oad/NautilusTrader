@@ -1,0 +1,21 @@
+# Local PR Review
+
+- Issue: #20
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 3B backend risk snapshot contract and accounts enrichments, routed admin-web risk/accounts surfaces, mapped truth docs, and local execution review artifacts.
+- Findings:
+  - No blocking product defects remained after verifying the `/api/admin/accounts` and `/api/admin/risk` snapshots together with the new account drill-down and risk center routes in `apps/admin-web`.
+  - The account summary cards and per-account balance, exposure, and alert drill-down tables fit the shared read-only list workflow without breaking the existing query invalidation or console shell navigation.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` directive warnings, but the production build completed successfully and no new bundling regressions were introduced by this slice.
+- Resolution:
+  - Added typed `RiskSummary`, `RiskEvent`, `RiskBlock`, and `RiskSnapshot` contracts plus the `/api/admin/risk` route and service for margin, exposure, and operator guardrail monitoring.
+  - Expanded the accounts surface with summary metrics, richer account DTOs, and frontend drill-down panels for balances, exposures, and alerts, then wired a dedicated risk center page into the routed admin console.
+  - Synced the mapped truth docs and recorded fresh local review evidence for the Phase 3B branch before opening the PR.
+- Evidence:
+  - `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin/test_accounts_api.py tests/unit_tests/admin/test_risk_api.py -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-20/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-20/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-20 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-20 diff --check`
+- Status: approved

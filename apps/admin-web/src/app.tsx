@@ -92,6 +92,11 @@ export function App() {
         return;
       }
 
+      if (topic === "risk") {
+        void queryClient.invalidateQueries({ queryKey: adminQueryKeys.risk() });
+        return;
+      }
+
       if (topic === "logs") {
         void queryClient.invalidateQueries({ queryKey: adminQueryKeys.logs(READ_ONLY_DEFAULT_LIMIT) });
       }
@@ -121,6 +126,7 @@ export function App() {
           resource !== "fills" &&
           resource !== "positions" &&
           resource !== "accounts" &&
+          resource !== "risk" &&
           resource !== "logs")
       ) {
         return;

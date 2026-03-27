@@ -32,7 +32,15 @@
 - `PositionsSnapshot`
   - 数据职责：`Positions` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
 - `AccountsSnapshot`
-  - 数据职责：`Accounts` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
+  - 数据职责：`Accounts` 只读列表快照；包含 `generated_at`、`limit`、跨账户 `summary`、`partial`、`items`、`errors`
+- `RiskSnapshot`
+  - 数据职责：`Risk center` 根对象；包含 `generated_at`、`summary`、`partial`、`events`、`blocks`、`errors`
+- `AccountsSummary`
+  - 数据职责：跨账户资金与保证金摘要；表达 `active_accounts`、`total_equity`、`available_cash`、`margin_used`、`margin_available`、`gross_exposure`、`net_exposure`
+- `AccountBalanceSummary`
+  - 数据职责：账户 drill-down 中的资产余额投影；表达 asset、total、available、locked
+- `AccountExposureSummary`
+  - 数据职责：账户 drill-down 中的 instrument exposure 投影；表达 instrument、方向、净数量、名义敞口与 leverage
 - `LogsSnapshot`
   - 数据职责：`Logs` 只读列表快照；包含 `generated_at`、`limit`、`partial`、`items`、`errors`
 - `NodeSummary`
@@ -46,7 +54,13 @@
 - `FillSummary`
   - 数据职责：成交摘要；表达浏览器可见的 `fill_id`、关联 `client_order_id`、`instrument_id`、方向、数量、价格、流动性侧与时间戳
 - `AccountSummary`
-  - 数据职责：账户摘要；表达浏览器可见的 account 标识与状态
+  - 数据职责：账户摘要；表达浏览器可见的 account 标识、状态，以及 account drill-down 所需的 venue / account_type / base_currency、余额、保证金、敞口与 alerts
+- `RiskSummary`
+  - 数据职责：风险总览摘要；表达 trading_state、risk_level、margin / exposure utilization、active_alerts 与 blocked_actions
+- `RiskEvent`
+  - 数据职责：风险事件时间线项；表达稳定 event_id、severity、标题、消息与发生时间
+- `RiskBlock`
+  - 数据职责：当前风险阻断投影；表达 block_id、scope、reason、status 与 raised_at
 - `PositionSummary`
   - 数据职责：持仓摘要；表达浏览器可见的 position 标识、instrument、方向、数量，以及 position drill-down 所需的开仓价、已实现/未实现盈亏与时间戳
 - `LogSummary`
@@ -85,11 +99,11 @@
 - `apps/admin-web/src/features/read-only/admin-list-page.tsx`
   - 数据职责：通用只读列表 surface；在 bounded snapshot 之上复用表格渲染、可选 row drill-down，以及 trading ops 页面使用的前端 keyword filter 与分页状态（默认每页 `25` 行）
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
-  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`logs` 十一个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
+  - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs` 十二个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
 - `apps/admin-web/src/shared/realtime/command-receipt-bus.ts`
   - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
-  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config` 六组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
+  - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk` 七组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key
 
 ## Governance Data
 

@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: "/fills", label: "Fills" },
   { to: "/positions", label: "Positions" },
   { to: "/accounts", label: "Accounts" },
+  { to: "/risk", label: "Risk Center" },
   { to: "/logs", label: "Logs" }
 ] as const;
 

@@ -10,6 +10,7 @@ import type {
   OrdersSnapshot,
   OverviewSnapshot,
   PositionsSnapshot,
+  RiskSnapshot,
   StrategiesSnapshot
 } from "../types/admin";
 
@@ -81,6 +82,12 @@ export async function getPositionsSnapshot(limit: number = READ_ONLY_DEFAULT_LIM
 export async function getAccountsSnapshot(limit: number = READ_ONLY_DEFAULT_LIMIT): Promise<AccountsSnapshot> {
   const response = await fetch(buildLimitedPath("/api/admin/accounts", limit));
   return parseJson<AccountsSnapshot>(response);
+}
+
+
+export async function getRiskSnapshot(): Promise<RiskSnapshot> {
+  const response = await fetch("/api/admin/risk");
+  return parseJson<RiskSnapshot>(response);
 }
 
 

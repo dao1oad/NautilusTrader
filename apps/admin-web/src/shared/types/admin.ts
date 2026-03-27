@@ -36,9 +36,73 @@ export type FillSummary = {
   timestamp: string;
 };
 
+export type AccountsSummary = {
+  active_accounts: number;
+  total_equity: string;
+  available_cash: string;
+  margin_used: string;
+  margin_available: string;
+  gross_exposure: string;
+  net_exposure: string;
+};
+
+export type AccountBalanceSummary = {
+  asset: string;
+  total: string;
+  available: string;
+  locked: string;
+};
+
+export type AccountExposureSummary = {
+  instrument_id: string;
+  side: "long" | "short" | "flat";
+  net_quantity: string;
+  notional: string;
+  leverage: string;
+};
+
 export type AccountSummary = {
   account_id: string;
+  venue?: string | null;
+  account_type?: string | null;
   status: string;
+  base_currency?: string | null;
+  total_equity?: string | null;
+  available_cash?: string | null;
+  margin_used?: string | null;
+  margin_available?: string | null;
+  margin_ratio?: string | null;
+  gross_exposure?: string | null;
+  net_exposure?: string | null;
+  updated_at?: string | null;
+  balances: AccountBalanceSummary[];
+  exposures: AccountExposureSummary[];
+  alerts: string[];
+};
+
+export type RiskSummary = {
+  trading_state: string;
+  risk_level: string;
+  margin_utilization: string;
+  exposure_utilization: string;
+  active_alerts: number;
+  blocked_actions: number;
+};
+
+export type RiskEvent = {
+  event_id: string;
+  severity: "info" | "warn" | "critical";
+  title: string;
+  message: string;
+  occurred_at: string;
+};
+
+export type RiskBlock = {
+  block_id: string;
+  scope: string;
+  reason: string;
+  status: "active" | "cleared";
+  raised_at: string;
 };
 
 export type PositionSummary = {
@@ -118,9 +182,17 @@ export type BoundedAdminListSnapshot<T> = AdminListSnapshot<T> & { limit: number
 export type OrdersSnapshot = BoundedAdminListSnapshot<OrderSummary>;
 export type FillsSnapshot = BoundedAdminListSnapshot<FillSummary>;
 export type PositionsSnapshot = BoundedAdminListSnapshot<PositionSummary>;
-export type AccountsSnapshot = BoundedAdminListSnapshot<AccountSummary>;
+export type AccountsSnapshot = BoundedAdminListSnapshot<AccountSummary> & { summary: AccountsSummary };
 export type LogsSnapshot = BoundedAdminListSnapshot<LogSummary>;
 export type AuditSnapshot = AdminListSnapshot<AuditRecord>;
+export type RiskSnapshot = {
+  generated_at: string;
+  summary: RiskSummary;
+  partial: boolean;
+  events: RiskEvent[];
+  blocks: RiskBlock[];
+  errors: SectionError[];
+};
 
 export type ConfigDiffEntry = {
   key: string;

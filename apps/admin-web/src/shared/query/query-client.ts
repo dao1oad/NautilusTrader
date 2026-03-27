@@ -12,6 +12,7 @@ export const adminQueryKeys = {
   fills: (limit: number) => ["admin", "fills", limit] as const,
   positions: (limit: number) => ["admin", "positions", limit] as const,
   accounts: (limit: number) => ["admin", "accounts", limit] as const,
+  risk: () => ["admin", "risk"] as const,
   logs: (limit: number) => ["admin", "logs", limit] as const
 };
 

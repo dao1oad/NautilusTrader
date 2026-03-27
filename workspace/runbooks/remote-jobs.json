@@ -273,6 +273,29 @@
       "remote_status": "completed",
       "output_artifact_path": "workspace/runbooks/remote-output-issue-19.md",
       "review_resolution_path": "workspace/handoffs/review-resolution-issue-19.md"
+    },
+    {
+      "issue_number": 20,
+      "title": "Phase 3B: accounts, margin, and risk center",
+      "packet_path": "workspace/issue-packets/issue-20.md",
+      "worker_host": "localhost",
+      "repo_path": "/root/NautilusTrader",
+      "worktree_path": "/root/NautilusTrader/.worktrees/issue-20",
+      "branch": "codex/issue-20-phase-3b-accounts-margin-and-risk-center",
+      "task_id": "issue-20-phase-3b-accounts-margin-and-risk-center",
+      "job_id": "2026-03-27T03-57-51-435Z-58e38423",
+      "tmux_session": "codex-orchestrator-issue-20-20260327115749",
+      "dispatch_prompt_path": "/root/NautilusTrader/.dispatch/issue-20.prompt.md",
+      "manifest_path": ".runs/issue-20-phase-3b-accounts-margin-and-risk-center/cli/2026-03-27T03-57-51-435Z-58e38423/manifest.json",
+      "artifact_root": "/root/NautilusTrader/.worktrees/issue-20/.runs/issue-20-phase-3b-accounts-margin-and-risk-center/cli/2026-03-27T03-57-51-435Z-58e38423",
+      "log_path": ".runs/issue-20-phase-3b-accounts-margin-and-risk-center/cli/2026-03-27T03-57-51-435Z-58e38423/runner.ndjson",
+      "execution_status": "awaiting-local-review",
+      "summary": "Added the Phase 3B risk center and enriched account diagnostics across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the scoped accounts and risk slice.",
+      "files_modified": [],
+      "last_synced_at": "2026-03-27T12:37:54.0675820+08:00",
+      "remote_status": "in_progress",
+      "output_artifact_path": "workspace/runbooks/remote-output-issue-20.md",
+      "review_resolution_path": "workspace/handoffs/review-resolution-issue-20.md"
     }
   ]
 }

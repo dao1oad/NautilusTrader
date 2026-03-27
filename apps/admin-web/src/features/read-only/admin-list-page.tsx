@@ -20,6 +20,7 @@ type Props<T> = {
   tableLabel: string;
   columns: Column<T>[];
   getRowKey: (item: T, index: number) => string;
+  summary?: ReactNode;
   pagination?: {
     pageSize: number;
   };
@@ -45,6 +46,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   tableLabel,
   columns,
   getRowKey,
+  summary,
   pagination,
   drillDown,
   filter
@@ -191,6 +193,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
               ))}
             </ul>
           ) : null}
+          {summary}
           {filterToolbar}
           <p className="resource-filter-empty">No rows match the current filter.</p>
         </section>
@@ -223,6 +226,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
             ))}
           </ul>
         ) : null}
+        {summary}
         {filterToolbar}
         {pageSummary ? (
           <div className="resource-pagination-toolbar">

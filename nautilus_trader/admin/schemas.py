@@ -49,9 +49,73 @@ class FillSummary(BaseModel):
     timestamp: datetime
 
 
+class AccountsSummary(BaseModel):
+    active_accounts: int
+    total_equity: str
+    available_cash: str
+    margin_used: str
+    margin_available: str
+    gross_exposure: str
+    net_exposure: str
+
+
+class AccountBalanceSummary(BaseModel):
+    asset: str
+    total: str
+    available: str
+    locked: str
+
+
+class AccountExposureSummary(BaseModel):
+    instrument_id: str
+    side: Literal["long", "short", "flat"]
+    net_quantity: str
+    notional: str
+    leverage: str
+
+
 class AccountSummary(BaseModel):
     account_id: str
+    venue: str | None = None
+    account_type: str | None = None
     status: str
+    base_currency: str | None = None
+    total_equity: str | None = None
+    available_cash: str | None = None
+    margin_used: str | None = None
+    margin_available: str | None = None
+    margin_ratio: str | None = None
+    gross_exposure: str | None = None
+    net_exposure: str | None = None
+    updated_at: datetime | None = None
+    balances: list[AccountBalanceSummary] = Field(default_factory=list)
+    exposures: list[AccountExposureSummary] = Field(default_factory=list)
+    alerts: list[str] = Field(default_factory=list)
+
+
+class RiskSummary(BaseModel):
+    trading_state: str
+    risk_level: str
+    margin_utilization: str
+    exposure_utilization: str
+    active_alerts: int
+    blocked_actions: int
+
+
+class RiskEvent(BaseModel):
+    event_id: str
+    severity: Literal["info", "warn", "critical"]
+    title: str
+    message: str
+    occurred_at: datetime
+
+
+class RiskBlock(BaseModel):
+    block_id: str
+    scope: str
+    reason: str
+    status: Literal["active", "cleared"]
+    raised_at: datetime
 
 
 class PositionSummary(BaseModel):
@@ -214,8 +278,18 @@ class PositionsSnapshot(BaseModel):
 class AccountsSnapshot(BaseModel):
     generated_at: datetime
     limit: int
+    summary: AccountsSummary
     partial: bool = False
     items: list[AccountSummary] = Field(default_factory=list)
+    errors: list[SectionError] = Field(default_factory=list)
+
+
+class RiskSnapshot(BaseModel):
+    generated_at: datetime
+    summary: RiskSummary
+    partial: bool = False
+    events: list[RiskEvent] = Field(default_factory=list)
+    blocks: list[RiskBlock] = Field(default_factory=list)
     errors: list[SectionError] = Field(default_factory=list)
 
 

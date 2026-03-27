@@ -260,6 +260,35 @@ body {
   color: #7b2d2d;
 }
 
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  border: 1px solid rgba(17, 32, 51, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.metric-label {
+  margin: 0 0 8px;
+  color: #36506c;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metric-value {
+  margin: 0;
+  color: #112033;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
 .resource-filter-toolbar {
   display: grid;
   gap: 8px;
@@ -350,6 +379,23 @@ body {
   margin: 0;
   color: #112033;
   font-weight: 600;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 20px;
+}
+
+.detail-section h4 {
+  margin: 0 0 12px;
+}
+
+.detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
 }
 
 .command-action-group {

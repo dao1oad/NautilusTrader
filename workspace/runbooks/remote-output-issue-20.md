@@ -1,0 +1,53 @@
+# Issue #20 Local Execution Output
+
+- Issue: #20
+- Worker: localhost
+- Branch: `codex/issue-20-phase-3b-accounts-margin-and-risk-center`
+- Job Id: `2026-03-27T03-57-51-435Z-58e38423`
+- Summary: Added the Phase 3B risk center and enriched account diagnostics across the admin API, admin web, truth docs, and local review artifacts; fresh verification passed for the scoped accounts and risk slice.
+- Notes:
+  - The worktree already contained the scoped Phase 3B backend and frontend implementation when this manual pass started, so this close-out focused on independent verification, local pre-PR review, and execution bookkeeping.
+  - Added the `/api/admin/risk` snapshot surface with summary, events, and active blocks, plus richer accounts DTOs that carry balances, exposures, and alerts for account drill-down workflows.
+  - Routed the admin web shell to a dedicated risk center page and expanded the accounts page with summary metrics and operator drill-down panels without regressing the shared read-only list infrastructure.
+  - Fresh verification covered the targeted admin API tests, the full admin-web Vitest suite, the frontend production build, governance checks, and `git diff --check`.
+  - `vite build` still prints the existing `@tanstack/react-query` `"use client"` directive warnings, but the production bundle completed successfully.
+  - The original local codex-orchestrator loop was manually stopped after it kept iterating beyond the review-ready state; this handoff captures the verified branch state for PR creation.
+- Files:
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/schemas.py`
+  - `nautilus_trader/admin/services/accounts.py`
+  - `nautilus_trader/admin/services/risk.py`
+  - `tests/unit_tests/admin/test_accounts_api.py`
+  - `tests/unit_tests/admin/test_risk_api.py`
+  - `apps/admin-web/src/app.tsx`
+  - `apps/admin-web/src/app/layouts/console-shell.tsx`
+  - `apps/admin-web/src/app/router.tsx`
+  - `apps/admin-web/src/app/routes/risk.tsx`
+  - `apps/admin-web/src/features/accounts/accounts-page.tsx`
+  - `apps/admin-web/src/features/risk/risk-page.tsx`
+  - `apps/admin-web/src/features/read-only/admin-list-page.tsx`
+  - `apps/admin-web/src/shared/api/admin-client.ts`
+  - `apps/admin-web/src/shared/query/query-client.ts`
+  - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
+  - `apps/admin-web/src/shared/types/admin.ts`
+  - `apps/admin-web/src/styles.css`
+  - `apps/admin-web/src/test/admin-events.test.ts`
+  - `apps/admin-web/src/test/console-shell.test.tsx`
+  - `apps/admin-web/src/test/trading-read-only-surfaces.test.tsx`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/progress-log.md`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/handoffs/local-review-issue-20.md`
+  - `workspace/handoffs/review-resolution-issue-20.md`
+  - `workspace/runbooks/remote-output-issue-20.md`
+- Verification:
+  - `/root/NautilusTrader/.venv/bin/python -m pytest tests/unit_tests/admin/test_accounts_api.py tests/unit_tests/admin/test_risk_api.py -v --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-20/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-20/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-20 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/issue-20 diff --check`

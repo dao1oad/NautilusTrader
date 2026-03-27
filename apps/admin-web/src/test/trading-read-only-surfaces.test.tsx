@@ -9,6 +9,7 @@ import { LogsPage } from "../features/logs/logs-page";
 import { OrdersPage } from "../features/orders/orders-page";
 import { PositionsPage } from "../features/positions/positions-page";
 import { AdminListPage } from "../features/read-only/admin-list-page";
+import { RiskPage } from "../features/risk/risk-page";
 import { READ_ONLY_DEFAULT_LIMIT } from "../shared/api/admin-client";
 import { adminQueryKeys } from "../shared/query/query-client";
 import type { AdminListSnapshot } from "../shared/types/admin";
@@ -564,6 +565,169 @@ test("surfaces account request failures through the shared page state", async ()
 
   expect(await screen.findByText("Admin request failed with status 503")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/accounts?limit=100");
+});
+
+
+test("renders account summaries and account drill-down details", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T08:58:00Z",
+      limit: 100,
+      partial: false,
+      summary: {
+        active_accounts: 2,
+        total_equity: "1842500.00",
+        available_cash: "905000.00",
+        margin_used: "612500.00",
+        margin_available: "1140000.00",
+        gross_exposure: "4280000.00",
+        net_exposure: "1525000.00"
+      },
+      items: [
+        {
+          account_id: "BINANCE-UM-FUTURES",
+          venue: "BINANCE",
+          account_type: "margin",
+          status: "healthy",
+          base_currency: "USDT",
+          total_equity: "1250000.00",
+          available_cash: "620000.00",
+          margin_used: "430000.00",
+          margin_available: "820000.00",
+          margin_ratio: "0.34",
+          gross_exposure: "3000000.00",
+          net_exposure: "950000.00",
+          updated_at: "2026-03-27T08:58:00Z",
+          balances: [
+            { asset: "USDT", total: "900000.00", available: "620000.00", locked: "280000.00" },
+            { asset: "BTC", total: "18.40", available: "18.10", locked: "0.30" }
+          ],
+          exposures: [
+            {
+              instrument_id: "BTCUSDT-PERP.BINANCE",
+              side: "long",
+              net_quantity: "12.0",
+              notional: "780000.00",
+              leverage: "2.4"
+            }
+          ],
+          alerts: ["Margin buffer below target threshold."]
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<AccountsPage />);
+
+  expect(await screen.findByRole("heading", { name: "Accounts" })).toBeInTheDocument();
+  expect(await screen.findByText("Total equity")).toBeInTheDocument();
+  expect(screen.getByText("Margin available")).toBeInTheDocument();
+  expect(screen.getByText("BINANCE-UM-FUTURES")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "View details for BINANCE-UM-FUTURES" }));
+
+  expect(await screen.findByRole("heading", { name: "Account details" })).toBeInTheDocument();
+  expect(screen.getByText("Margin buffer below target threshold.")).toBeInTheDocument();
+  expect(screen.getByText("BTCUSDT-PERP.BINANCE")).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledWith("/api/admin/accounts?limit=100");
+});
+
+
+test("renders risk center summaries, events, and active blocks", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T08:57:00Z",
+      partial: false,
+      summary: {
+        trading_state: "reducing",
+        risk_level: "elevated",
+        margin_utilization: "0.54",
+        exposure_utilization: "0.67",
+        active_alerts: 2,
+        blocked_actions: 1
+      },
+      events: [
+        {
+          event_id: "margin-buffer-warning",
+          severity: "warn",
+          title: "Margin buffer narrowing",
+          message: "BTC book is using 54% of the configured margin budget.",
+          occurred_at: "2026-03-27T08:55:00Z"
+        }
+      ],
+      blocks: [
+        {
+          block_id: "reduce-only-btc",
+          scope: "orders/BTCUSDT-PERP.BINANCE",
+          reason: "Reduce-only guard enabled while the margin cushion recovers.",
+          status: "active",
+          raised_at: "2026-03-27T08:57:00Z"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<RiskPage />);
+
+  expect(await screen.findByRole("heading", { name: "Risk center" })).toBeInTheDocument();
+  expect(await screen.findByText("Trading state")).toBeInTheDocument();
+  expect(screen.getByText("Margin buffer narrowing")).toBeInTheDocument();
+  expect(screen.getByText("Reduce-only guard enabled while the margin cushion recovers.")).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledWith("/api/admin/risk");
+});
+
+
+test("shows degraded risk snapshots explicitly", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T09:00:00Z",
+      partial: true,
+      summary: {
+        trading_state: "active",
+        risk_level: "monitoring",
+        margin_utilization: "0.41",
+        exposure_utilization: "0.52",
+        active_alerts: 1,
+        blocked_actions: 0
+      },
+      events: [
+        {
+          event_id: "risk-feed-delay",
+          severity: "info",
+          title: "One venue delayed",
+          message: "Derivatives risk feed is delayed by 12 seconds.",
+          occurred_at: "2026-03-27T08:59:00Z"
+        }
+      ],
+      blocks: [],
+      errors: [
+        {
+          section: "risk",
+          message: "One venue risk feed is delayed."
+        }
+      ]
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<RiskPage />);
+
+  expect(await screen.findByRole("heading", { name: "Risk center" })).toBeInTheDocument();
+  expect(await screen.findByText("Showing the latest partial snapshot.")).toBeInTheDocument();
+  expect(
+    screen.getByText((_, element) => element?.tagName === "LI" && element.textContent === "risk: One venue risk feed is delayed.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Derivatives risk feed is delayed by 12 seconds.")).toBeInTheDocument();
 });
 
 
