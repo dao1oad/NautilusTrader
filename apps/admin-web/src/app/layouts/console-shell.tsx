@@ -47,6 +47,8 @@ type Props = {
   workbenchEntries: readonly ConsoleWorkbenchEntry[];
 };
 
+const COMPACT_NAVIGATION_MEDIA_QUERY = "(max-width: 720px)";
+
 function formatWorkbenchLabel(workbench: ConsoleWorkbenchId) {
   return workbench.charAt(0).toUpperCase() + workbench.slice(1);
 }
@@ -64,6 +66,14 @@ function formatCompactTimestamp(timestamp: string | null) {
   return `${date.toISOString().replace("T", " ").slice(0, 16)} UTC`;
 }
 
+function readCompactNavigationMatch() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+
+  return window.matchMedia(COMPACT_NAVIGATION_MEDIA_QUERY).matches;
+}
+
 export function ConsoleShell({
   children,
   currentWorkbench,
@@ -73,88 +83,110 @@ export function ConsoleShell({
   workbenchEntries
 }: Props) {
   const { connectionState } = useAdminRuntime();
+  const [isCompactNavigation, setIsCompactNavigation] = useState(() => readCompactNavigationMatch());
   const [navigationOpen, setNavigationOpen] = useState(false);
   const currentWorkbenchLabel = formatWorkbenchLabel(currentWorkbench);
+  const shouldRenderSidebar = !isCompactNavigation || navigationOpen;
 
   useEffect(() => {
     setNavigationOpen(false);
   }, [currentWorkbench, runtimeMeta.pageTitle]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQueryList = window.matchMedia(COMPACT_NAVIGATION_MEDIA_QUERY);
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsCompactNavigation(event.matches);
+    };
+
+    setIsCompactNavigation(mediaQueryList.matches);
+    mediaQueryList.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQueryList.removeEventListener("change", handleChange);
+    };
+  }, []);
+
   return (
     <main className="app-shell">
       <div className="console-frame">
-        <aside className="console-sidebar" data-open={navigationOpen ? "true" : "false"} id="workbench-navigation">
-          <div className="console-sidebar-header">
-            <p className="app-kicker">Operator workstation</p>
-            <h1>NautilusTrader Admin</h1>
-            <p className="console-sidebar-copy">Pinned local shell for live operations, runtime diagnostics, and bounded analysis surfaces.</p>
-          </div>
-          <dl className="console-sidebar-meta">
-            <div className="console-sidebar-meta-item">
-              <dt>Runtime</dt>
-              <dd>Local process</dd>
+        {shouldRenderSidebar ? (
+          <aside className="console-sidebar" data-open={navigationOpen ? "true" : "false"} id="workbench-navigation">
+            <div className="console-sidebar-header">
+              <p className="app-kicker">Operator workstation</p>
+              <h1>NautilusTrader Admin</h1>
+              <p className="console-sidebar-copy">Pinned local shell for live operations, runtime diagnostics, and bounded analysis surfaces.</p>
             </div>
-            <div className="console-sidebar-meta-item">
-              <dt>Workspace</dt>
-              <dd>Browser-pinned memory</dd>
-            </div>
-            <div className="console-sidebar-meta-item">
-              <dt>Active desk</dt>
-              <dd>{currentWorkbenchLabel}</dd>
-            </div>
-          </dl>
-          <section className="console-workbench-switcher">
-            <p className="app-kicker">Workbench entry points</p>
-            <div className="console-workbench-entry-list">
-              {workbenchEntries.map((entry) => (
-                <Link
-                  className="console-workbench-link"
-                  data-active={entry.active}
-                  key={entry.label}
-                  onClick={() => setNavigationOpen(false)}
-                  to={entry.to}
-                >
-                  {entry.label}
-                </Link>
-              ))}
-            </div>
-          </section>
-          <nav aria-label="Workbench routes" className="console-nav">
-            <div className="console-nav-groups">
-              {navGroups.map((group) => (
-                <section className="console-nav-group" key={group.title}>
-                  <h3 className="console-nav-group-title">{group.title}</h3>
-                  <ul className="console-nav-list">
-                    {group.items.map((item) => (
-                      <li key={item.to}>
-                        <Link className="console-nav-link" onClick={() => setNavigationOpen(false)} to={item.to}>
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
-          </nav>
-          <section className="console-recent-routes">
-            <p className="app-kicker">Recent views</p>
-            <ul className="console-recent-list">
-              {recentRoutes.map((route) => (
-                <li className="console-recent-item" key={`${route.to}:${route.visitedAt}`}>
-                  <Link className="console-recent-link" onClick={() => setNavigationOpen(false)} to={route.to}>
-                    <span className="console-recent-label">{route.label}</span>
-                    <span className="console-recent-meta">
-                      <span className="console-recent-workbench">{formatWorkbenchLabel(route.workbench)}</span>
-                      <time dateTime={route.visitedAt}>{formatCompactTimestamp(route.visitedAt)}</time>
-                    </span>
+            <dl className="console-sidebar-meta">
+              <div className="console-sidebar-meta-item">
+                <dt>Runtime</dt>
+                <dd>Local process</dd>
+              </div>
+              <div className="console-sidebar-meta-item">
+                <dt>Workspace</dt>
+                <dd>Browser-pinned memory</dd>
+              </div>
+              <div className="console-sidebar-meta-item">
+                <dt>Active desk</dt>
+                <dd>{currentWorkbenchLabel}</dd>
+              </div>
+            </dl>
+            <section className="console-workbench-switcher">
+              <p className="app-kicker">Workbench entry points</p>
+              <div className="console-workbench-entry-list">
+                {workbenchEntries.map((entry) => (
+                  <Link
+                    className="console-workbench-link"
+                    data-active={entry.active}
+                    key={entry.label}
+                    onClick={() => setNavigationOpen(false)}
+                    to={entry.to}
+                  >
+                    {entry.label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </aside>
-        {navigationOpen ? (
+                ))}
+              </div>
+            </section>
+            <nav aria-label="Workbench routes" className="console-nav">
+              <div className="console-nav-groups">
+                {navGroups.map((group) => (
+                  <section className="console-nav-group" key={group.title}>
+                    <h3 className="console-nav-group-title">{group.title}</h3>
+                    <ul className="console-nav-list">
+                      {group.items.map((item) => (
+                        <li key={item.to}>
+                          <Link className="console-nav-link" onClick={() => setNavigationOpen(false)} to={item.to}>
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            </nav>
+            <section className="console-recent-routes">
+              <p className="app-kicker">Recent views</p>
+              <ul className="console-recent-list">
+                {recentRoutes.map((route) => (
+                  <li className="console-recent-item" key={`${route.to}:${route.visitedAt}`}>
+                    <Link className="console-recent-link" onClick={() => setNavigationOpen(false)} to={route.to}>
+                      <span className="console-recent-label">{route.label}</span>
+                      <span className="console-recent-meta">
+                        <span className="console-recent-workbench">{formatWorkbenchLabel(route.workbench)}</span>
+                        <time dateTime={route.visitedAt}>{formatCompactTimestamp(route.visitedAt)}</time>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </aside>
+        ) : null}
+        {isCompactNavigation && navigationOpen ? (
           <button
             aria-label="Close navigation"
             className="console-nav-scrim"
@@ -175,7 +207,7 @@ export function ConsoleShell({
               </div>
               <div className="console-toolbar-actions">
                 <button
-                  aria-controls="workbench-navigation"
+                  aria-controls={shouldRenderSidebar ? "workbench-navigation" : undefined}
                   aria-expanded={navigationOpen}
                   className="console-nav-toggle"
                   onClick={() => setNavigationOpen((current) => !current)}

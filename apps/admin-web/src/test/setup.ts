@@ -1,6 +1,6 @@
 import { createElement, type PropsWithChildren, type ReactElement } from "react";
 import "@testing-library/jest-dom/vitest";
-import { Theme } from "@radix-ui/themes";
+import { Theme } from "@radix-ui/themes/components/theme";
 import { render, type RenderOptions } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 

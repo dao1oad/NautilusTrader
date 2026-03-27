@@ -87,16 +87,39 @@ function workbenchShellMetaReducer(
   return state.map((entry, index) => (index === existingIndex ? action.entry : entry));
 }
 
-function resolveWorkbenchShellMetaValue(entries: WorkbenchShellMetaEntry[]): WorkbenchShellMetaSelection {
-  let activeEntry: WorkbenchShellMetaEntry | null = null;
+function resolveWorkbenchShellMetaField<Key extends keyof WorkbenchShellMetaValue>(
+  entries: WorkbenchShellMetaEntry[],
+  key: Key,
+): WorkbenchShellMetaSelection[Key] | undefined {
+  let resolvedValue: WorkbenchShellMetaSelection[Key] | undefined;
+  let resolvedPriority = Number.NEGATIVE_INFINITY;
 
   for (const entry of entries) {
-    if (activeEntry == null || entry.priority >= activeEntry.priority) {
-      activeEntry = entry;
+    if (!hasMetaValue(entry.meta, key)) {
+      continue;
+    }
+
+    if (entry.priority >= resolvedPriority) {
+      resolvedPriority = entry.priority;
+      resolvedValue = entry.meta[key];
     }
   }
 
-  return activeEntry?.meta ?? EMPTY_WORKBENCH_SHELL_META;
+  return resolvedValue;
+}
+
+function resolveWorkbenchShellMetaValue(entries: WorkbenchShellMetaEntry[]): WorkbenchShellMetaSelection {
+  const pageTitle = resolveWorkbenchShellMetaField(entries, "pageTitle");
+  const workbenchCopy = resolveWorkbenchShellMetaField(entries, "workbenchCopy");
+  const lastUpdated = resolveWorkbenchShellMetaField(entries, "lastUpdated");
+  const statusSummary = resolveWorkbenchShellMetaField(entries, "statusSummary");
+
+  return {
+    ...(pageTitle !== undefined ? { pageTitle } : null),
+    ...(workbenchCopy !== undefined ? { workbenchCopy } : null),
+    ...(lastUpdated !== undefined ? { lastUpdated } : null),
+    ...(statusSummary !== undefined ? { statusSummary } : null)
+  };
 }
 
 export function WorkbenchShellMetaProvider({ children }: { children: ReactNode }) {

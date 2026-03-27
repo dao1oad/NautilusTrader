@@ -860,6 +860,7 @@ a {
     bottom: 12px;
     width: min(320px, calc(100vw - 24px));
     min-height: auto;
+    overflow-y: auto;
     transform: translateX(calc(-100% - 18px));
     transition: transform 160ms ease;
   }
