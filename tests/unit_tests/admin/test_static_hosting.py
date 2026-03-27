@@ -5,6 +5,10 @@ from fastapi.testclient import TestClient
 from nautilus_trader.admin.app import create_admin_app
 
 
+def _normalize_newlines(value: str) -> str:
+    return value.replace("\r\n", "\n")
+
+
 def _write_frontend_bundle(bundle_dir: Path) -> str:
     index_markup = """<!doctype html>
 <html lang="en">
@@ -30,7 +34,7 @@ def test_static_frontend_root_is_served(tmp_path: Path, monkeypatch) -> None:
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert response.text == expected_markup
+    assert _normalize_newlines(response.text) == _normalize_newlines(expected_markup)
 
 
 def test_static_frontend_routes_fall_back_to_index_html(tmp_path: Path, monkeypatch) -> None:
@@ -42,7 +46,7 @@ def test_static_frontend_routes_fall_back_to_index_html(tmp_path: Path, monkeypa
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
-    assert response.text == expected_markup
+    assert _normalize_newlines(response.text) == _normalize_newlines(expected_markup)
 
 
 def test_static_frontend_assets_are_served(tmp_path: Path, monkeypatch) -> None:
