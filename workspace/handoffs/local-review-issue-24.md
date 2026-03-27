@@ -1,0 +1,23 @@
+# Local PR Review
+
+- Issue: #24
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Phase 4C backend-hosted delivery model, static hosting + SPA fallback, Playwright smoke coverage, bundle-budget gate, desktop evaluation document, mapped truth docs, progress-log memory update, and local execution review artifacts.
+- Findings:
+  - No blocking product defects remained after verifying the backend-hosted admin-web bundle, same-origin REST/WS behavior, and the retained read-only workbench semantics together.
+  - The final delivery model is now explicit and testable: FastAPI serves `/` and SPA deep links without shadowing `/api/*` or `/ws/*`, while Playwright exercises the same served bundle rather than a separate Vite dev path.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and chunk-size warning, but the production build completes and `check:bundle` enforces explicit asset budgets within the accepted thresholds.
+- Resolution:
+  - Added backend static hosting + bundle lookup logic, a frontend bundle budget script, Playwright smoke coverage, and CI steps that re-run the backend-hosted delivery path.
+  - Recorded the Tauri decision as deferred and updated all mapped truth docs so Phase 4C delivery hardening is grounded in the current code.
+  - Recovered disk space by removing stale worktrees before the final verification rerun, then revalidated the full Phase 4C stack end-to-end.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/issue-24 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-24 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm run check:bundle`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npx playwright test`
+  - `git -C /root/NautilusTrader/.worktrees/issue-24 diff --check`
+- Status: approved

@@ -2,7 +2,7 @@
 
 ## Build Flow
 
-`pyproject/build.py 解析环境变量 -> cargo 编译关键 Rust 库 -> Cython/PyO3 扩展构建 -> 可选复制二进制回源码树 -> Python surface 导入编译产物`
+`pyproject/build.py 解析环境变量 -> cargo 编译关键 Rust 库 -> Cython/PyO3 扩展构建 -> 可选复制二进制回源码树 -> admin-web 产物可被 vendored 到 nautilus_trader/admin/static -> Python surface 导入编译产物`
 
 本地与 CI 的 Rust 工具链都必须收敛到 `rust-toolchain.toml` 中同一个 pin；Linux 下 `scripts/install-capnp.sh` 必须能在 root 容器和普通用户环境中完成 Cap'n Proto 安装。
 
@@ -46,6 +46,12 @@
 
 该 flow 只在浏览器本地维护导航偏好。它不会向后端写入 session，也不会改变既有 `/api/admin/*` 或 `/ws/admin/events` 契约。
 
+## Admin Frontend Delivery Flow
+
+`npm run build -> apps/admin-web/dist/index.html + hashed assets -> nautilus_trader/admin/static.resolve_admin_frontend_dir() 解析 env/package/repo bundle -> FastAPI GET / 与 GET /{frontend_path} 托管入口 HTML / 静态资产 -> 浏览器以同源方式访问 /api/admin/* 与 /ws/admin/events`
+
+该交付 flow 固定是 backend-hosted SPA。`/api/*` 与 `/ws/*` 永远优先保留给现有 API/WS 契约，其他未知前端路径统一回退到 `index.html` 以支持 deep link。当前桌面壳只保留评估结论，不进入此运行流。
+
 ## Admin Realtime Refresh Flow
 
 `/ws/admin/events -> apps/admin-web/src/shared/realtime/admin-events.ts -> apps/admin-web/src/shared/realtime/invalidation-bus.ts / command-receipt-bus.ts -> apps/admin-web/src/app.tsx query invalidation -> TanStack Query refetch -> 页面清理 transient runtime error 并刷新 receipt/audit/config surface`
@@ -63,6 +69,8 @@
 `Phase 4A` implementation gate 当前要求 `#22` 保持“analysis surfaces 只读 + backtests/reports query bounded by limit + report artifact families operator-visible + 不引入回测启动/策略编辑写流”四项约束成立。
 
 `Phase 4B` implementation gate 当前要求 `#23` 保持“统一 workbench 入口只重组既有 route tree + workspace state 只写浏览器本地存储 + recent views / last-route 记忆可在缺失状态下安全回退 + 不引入新的后端导航/session 契约”四项约束成立。
+
+`Phase 4C` implementation gate 当前要求 `#24` 保持“前端入口由 backend-hosted bundle 提供 + bundle budget 进入可执行门禁 + Playwright smoke 覆盖 overview 与 operations deep-link path + Tauri 仅保留评估结论不进入实现面”四项约束成立。
 
 ## Repository Operational Flow
 
@@ -82,7 +90,8 @@
 
 1. 面向 `main` 的 PR 会触发 `codeql-analysis`
 2. 合并进入 `main` 的 push 会触发 `build.yml`
-3. `build.yml` 中的 `cargo-deny` 与 `cargo-vet` 仅在 `refs/heads/main` 上运行，用于覆盖受保护主分支的供应链检查
+3. `build.yml` 中的 `frontend-admin-web` job 会重新构建 admin-web bundle、执行 bundle budget gate，并以 backend-hosted FastAPI shell 运行 Playwright smoke
+4. `build.yml` 中的 `cargo-deny` 与 `cargo-vet` 仅在 `refs/heads/main` 上运行，用于覆盖受保护主分支的供应链检查
 
 ## Local Execution Sync Flow
 

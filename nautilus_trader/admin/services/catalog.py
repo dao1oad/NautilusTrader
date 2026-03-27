@@ -71,7 +71,12 @@ def _format_window(start_time: datetime, end_time: datetime) -> str:
     return f"{total_minutes} minute"
 
 
-def build_catalog_snapshot(*, limit: int, start_time: datetime, end_time: datetime) -> CatalogSnapshot:
+def build_catalog_snapshot(
+    *,
+    limit: int,
+    start_time: datetime,
+    end_time: datetime,
+) -> CatalogSnapshot:
     returned_rows = min(limit, 100)
 
     return CatalogSnapshot(

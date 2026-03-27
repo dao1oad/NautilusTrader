@@ -36,6 +36,7 @@ dependencies = [
   "pytz>=2025.2.0",
   "tqdm>=4.67.3,<5.0.0",
   "uvicorn>=0.42.0,<1.0.0",
+  "wsproto>=1.2.0,<2.0.0",
   "uvloop==0.22.1,<1.0.0; sys_platform != \"win32\"", # Pinned to 0.22.1 for stability
 ]
 
@@ -70,6 +71,9 @@ include = [
   # Include Python interface files for type checking support
   { path = "nautilus_trader/**/*.pyi", format = "sdist" },
   { path = "nautilus_trader/**/*.pyi", format = "wheel" },
+  # Include admin-web static bundle artifacts when packaged for release delivery
+  { path = "nautilus_trader/admin/static/**/*", format = "sdist" },
+  { path = "nautilus_trader/admin/static/**/*", format = "wheel" },
 ]
 
 [tool.poetry.build]

@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import UTC
 from datetime import datetime
 
-from nautilus_trader.admin.schemas import BacktestTaskSummary
 from nautilus_trader.admin.schemas import BacktestsSnapshot
+from nautilus_trader.admin.schemas import BacktestTaskSummary
 
 
 BACKTEST_TASKS = [

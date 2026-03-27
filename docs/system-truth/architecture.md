@@ -9,7 +9,8 @@
 - `crates/`: Rust workspace，承载核心领域模型、回测、实盘、网络、持久化、风险、组合管理、CLI 与各交易所/数据源适配器。
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
 - `nautilus_trader/admin/`: 管理控制面后端；负责把运行态状态、控制命令契约、审计记录以及 `Phase 4A` 的 backtest/report 摘要投影成稳定的 admin DTO，而不是把内部 `live`/`execution` object 直接暴露给浏览器。
-- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime、bounded trading ops / analysis 页面，以及浏览器本地 workbench/workspace 状态，而不是直接接入底层 venue/runtime object。
+- `nautilus_trader/admin/static/`: 管理控制面前端交付目录；负责解析最终 admin-web bundle 的查找顺序（显式环境变量、包内静态目录、repo `apps/admin-web/dist`），并作为 wheel/sdist 中可携带的前端静态产物落点。
+- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime、bounded trading ops / analysis 页面、浏览器本地 workbench/workspace 状态，以及 `Phase 4C` 的 Playwright smoke / bundle budget delivery tooling，而不是直接接入底层 venue/runtime object。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
@@ -42,5 +43,7 @@
 - `Phase 3C` 新引入的图表依赖只能落在 `apps/admin-web/src/features/playback/*`，用于 bounded playback preview；其余页面继续复用通用表格/metric/card 组件，不扩散出新的 chart runtime。
 - `Phase 4A` 的 `Backtests` 与 `Reports` surface 必须继续保持 bounded read-only analysis workflow：`/api/admin/backtests` 与 `/api/admin/reports` 只接受 `limit` 约束读取，后端只投影任务/报告摘要与关联 artifact，浏览器只允许浏览、过滤和 drill-down 已有结果，不引入回测启动、调度编辑或策略编辑器。
 - `Phase 4B` 的 unified workbench shell 必须把现有 route tree 分成 `Operations` 与 `Analysis` 两个浏览器入口，并把 active workbench、每个 workbench 的最近路由、recent views，以及每个 route 的 layout/filter 偏好保存在浏览器本地存储中；该状态不能升级成服务端 session、多用户同步或新的后端 API。
+- `Phase 4C` 的最终交付模型固定为“同源 backend-hosted web bundle”：FastAPI 在不遮蔽 `/api/admin/*` 与 `/ws/admin/events` 的前提下托管构建后的 admin-web `index.html` 与静态资产；bundle 查找顺序固定为 `NAUTILUS_ADMIN_FRONTEND_DIR` -> `nautilus_trader/admin/static` -> `apps/admin-web/dist`。
+- `Phase 4C` 的 CI/交付硬化固定包含三条门禁：前端生产构建、bundle budget 检查、以及针对 backend-hosted bundle 的 Playwright smoke；桌面壳只保留评估结论，不进入当前实现面。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

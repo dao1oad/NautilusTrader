@@ -1,0 +1,47 @@
+# Issue #24 Local Execution Output
+
+- Issue: #24
+- Worker: localhost
+- Branch: `codex/issue-24-phase-4c-frontend-hosting-packaging-e2e-and-delivery-hardening`
+- Job Id: `2026-03-27T10-23-09-432Z-3b7020e6`
+- Summary: Locked Phase 4C on a backend-hosted admin-web bundle, added static hosting + SPA fallback, Playwright smoke coverage, bundle budget gating, desktop evaluation notes, and passed the full local verification stack.
+- Notes:
+  - The original local `codex-orchestrator` run drifted into planning-only behavior and was stopped before it produced product edits; this handoff captures the manually completed implementation and verification state.
+  - FastAPI now serves the built admin-web bundle from a deterministic lookup chain: `NAUTILUS_ADMIN_FRONTEND_DIR` -> `nautilus_trader/admin/static` -> repo `apps/admin-web/dist`.
+  - The frontend delivery path is now hardened with Playwright smoke coverage for the overview and operations deep-link paths, plus an explicit bundle-budget gate for production assets.
+  - `pyproject.toml` now includes `wsproto` runtime support and explicitly packages `nautilus_trader/admin/static/**/*` for wheel/sdist delivery.
+  - `vite build` still emits the existing `@tanstack/react-query` `"use client"` warnings and the existing chunk-size warning, but the production build completes and the explicit bundle-budget gate passes.
+- Files:
+  - `.github/workflows/build.yml`
+  - `apps/admin-web/package-lock.json`
+  - `apps/admin-web/package.json`
+  - `apps/admin-web/playwright.config.ts`
+  - `apps/admin-web/scripts/check-bundle-budget.mjs`
+  - `apps/admin-web/tests/e2e/operations.spec.ts`
+  - `apps/admin-web/tests/e2e/overview.spec.ts`
+  - `apps/admin-web/tests/e2e/serve_admin_app.py`
+  - `apps/admin-web/vite.config.ts`
+  - `docs/plans/2026-03-23-nautilustrader-admin-console-desktop-evaluation.md`
+  - `docs/system-truth/api-contracts.md`
+  - `docs/system-truth/architecture.md`
+  - `docs/system-truth/data-model.md`
+  - `docs/system-truth/integrations.md`
+  - `docs/system-truth/module-boundaries.md`
+  - `docs/system-truth/runtime-flows.md`
+  - `memory/progress-log.md`
+  - `nautilus_trader/admin/app.py`
+  - `nautilus_trader/admin/static/__init__.py`
+  - `pyproject.toml`
+  - `tests/unit_tests/admin/test_static_hosting.py`
+  - `workspace/runbooks/remote-jobs.json`
+  - `workspace/runbooks/remote-output-issue-24.md`
+  - `workspace/handoffs/local-review-issue-24.md`
+  - `workspace/handoffs/review-resolution-issue-24.md`
+- Verification:
+  - `cd /root/NautilusTrader/.worktrees/issue-24 && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `cd /root/NautilusTrader/.worktrees/issue-24 && source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npm run check:bundle`
+  - `cd /root/NautilusTrader/.worktrees/issue-24/apps/admin-web && npx playwright test`
+  - `git -C /root/NautilusTrader/.worktrees/issue-24 diff --check`
