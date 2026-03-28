@@ -10,7 +10,9 @@ import {
   useCurrentWorkbenchShellMeta
 } from "../app/workbench-shell-meta";
 import { OverviewPage } from "../features/overview/overview-page";
+import { I18nProvider } from "../shared/i18n/i18n-provider";
 import type { AuditSnapshot, OverviewSnapshot, RiskSnapshot } from "../shared/types/admin";
+import type { SupportedLocale } from "../shared/i18n/locale";
 import { WORKSPACE_STORAGE_KEY } from "../shared/workspaces/workspace-store";
 
 
@@ -157,23 +159,25 @@ function WorkbenchShellMetaProbe() {
   );
 }
 
-function renderOverviewRoute(ui: ReactElement) {
+function renderOverviewRoute(ui: ReactElement, { locale = "en" }: { locale?: SupportedLocale } = {}) {
   const client = createQueryClient();
 
   return render(
-    <QueryClientProvider client={client}>
-      <AdminRuntimeProvider
-        value={{
-          connectionState: "connected",
-          error: null
-        }}
-      >
-        <WorkbenchShellMetaProvider>
-          <WorkbenchShellMetaProbe />
-          {ui}
-        </WorkbenchShellMetaProvider>
-      </AdminRuntimeProvider>
-    </QueryClientProvider>
+    <I18nProvider navigatorLanguages={[locale]} storage={window.localStorage}>
+      <QueryClientProvider client={client}>
+        <AdminRuntimeProvider
+          value={{
+            connectionState: "connected",
+            error: null
+          }}
+        >
+          <WorkbenchShellMetaProvider>
+            <WorkbenchShellMetaProbe />
+            {ui}
+          </WorkbenchShellMetaProvider>
+        </AdminRuntimeProvider>
+      </QueryClientProvider>
+    </I18nProvider>
   );
 }
 
@@ -227,7 +231,7 @@ test("renders risk snapshot, recent audit activity, and freshest runtime metadat
 });
 
 
-test("falls back to local recent routes when no audit activity is available", async () => {
+test("falls back to locale-safe route memory when no audit activity is available", async () => {
   window.localStorage.setItem(
     WORKSPACE_STORAGE_KEY,
     JSON.stringify({
@@ -260,10 +264,12 @@ test("falls back to local recent routes when no audit activity is available", as
   apiMocks.getRiskSnapshot.mockResolvedValue(createRiskSnapshot());
   apiMocks.getAuditSnapshot.mockResolvedValue(createAuditSnapshot({ items: [] }));
 
-  renderOverviewRoute(<OverviewRoutePage />);
+  renderOverviewRoute(<OverviewRoutePage />, { locale: "zh-CN" });
 
   expect(await screen.findByRole("heading", { name: "Recent activity" })).toBeInTheDocument();
-  expect(screen.getByText("Risk Center")).toBeInTheDocument();
-  expect(screen.getByText("Catalog")).toBeInTheDocument();
+  expect(screen.getAllByText("本地路由记忆").length).toBeGreaterThan(0);
+  expect(screen.getByText("风控中心")).toBeInTheDocument();
+  expect(screen.getByText("数据目录")).toBeInTheDocument();
+  expect(screen.queryByText("Risk Center")).not.toBeInTheDocument();
   expect(screen.queryByText("strategy.stop")).not.toBeInTheDocument();
 });

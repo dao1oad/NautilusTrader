@@ -2,6 +2,11 @@ import {
   resolveFreshestWorkbenchTimestamp,
   useWorkbenchShellMeta
 } from "../../app/workbench-shell-meta";
+import {
+  getLocalizedRouteLabel,
+  getLocalizedWorkbenchLabel
+} from "../../app/workbench-route-catalog";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import type {
   AuditSnapshot,
   ConnectionState,
@@ -20,6 +25,7 @@ import type { WorkspaceRecentRoute } from "../../shared/workspaces/workspace-sto
 
 const COMMAND_CENTER_COPY = "Runtime posture, risk pressure, and latest control-plane movement at a glance.";
 const MAX_ACTIVITY_ITEMS = 4;
+type OverviewTranslator = ReturnType<typeof useI18n>["t"];
 
 type Props = {
   auditSnapshot?: AuditSnapshot | null;
@@ -73,11 +79,8 @@ function toActivityTone(status: AuditSnapshot["items"][number]["status"]): Signa
   }
 }
 
-function formatWorkbenchLabel(workbench: WorkspaceRecentRoute["workbench"]) {
-  return workbench.charAt(0).toUpperCase() + workbench.slice(1);
-}
-
 function buildActivityRailState(
+  t: OverviewTranslator,
   auditSnapshot: AuditSnapshot | null | undefined,
   recentRoutes: WorkspaceRecentRoute[],
 ): {
@@ -95,7 +98,7 @@ function buildActivityRailState(
         title: record.command,
         tone: toActivityTone(record.status)
       })),
-      sourceLabel: "Audit timeline",
+      sourceLabel: t("overview.activitySource.auditTimeline"),
       sourceTone: "info"
     };
   }
@@ -105,20 +108,20 @@ function buildActivityRailState(
       items: recentRoutes.slice(0, MAX_ACTIVITY_ITEMS).map((route) => ({
         href: route.to,
         id: `${route.to}:${route.visitedAt}`,
-        meta: `${formatWorkbenchLabel(route.workbench)} workbench`,
+        meta: `${getLocalizedWorkbenchLabel(t, route.workbench)} ${t("chrome.workbench")}`,
         summary: route.to,
         timestamp: route.visitedAt,
-        title: route.label,
+        title: getLocalizedRouteLabel(t, route.to),
         tone: "neutral"
       })),
-      sourceLabel: "Local route memory",
+      sourceLabel: t("overview.activitySource.localRouteMemory"),
       sourceTone: "neutral"
     };
   }
 
   return {
     items: [],
-    sourceLabel: "Activity pending",
+    sourceLabel: t("overview.activitySource.pending"),
     sourceTone: "neutral"
   };
 }
@@ -155,6 +158,7 @@ export function OverviewPage({
   recentRoutes = [],
   riskSnapshot
 }: Props = {}) {
+  const { t } = useI18n();
   const hasCachedError = Boolean(error) && Boolean(snapshot);
   const isStale = connectionState === "stale" || snapshot?.stale === true || hasCachedError;
   const freshestTimestamp = resolveFreshestWorkbenchTimestamp(
@@ -163,7 +167,7 @@ export function OverviewPage({
     auditSnapshot?.generated_at
   );
   const lastUpdated = freshestTimestamp ? <LastUpdatedBadge stale={isStale} timestamp={freshestTimestamp} /> : null;
-  const activityRail = buildActivityRailState(auditSnapshot, recentRoutes);
+  const activityRail = buildActivityRailState(t, auditSnapshot, recentRoutes);
   const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceLabel);
   const nodeTone = snapshot ? toNodeTone(snapshot.node.status) : "neutral";
   const riskTone = riskSnapshot ? toRiskTone(riskSnapshot.summary.risk_level) : "neutral";

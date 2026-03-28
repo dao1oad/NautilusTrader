@@ -1,8 +1,9 @@
 import { StrictMode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { I18nProvider, resolveInitialLocale } from "../shared/i18n/i18n-provider";
 import { LOCALE_STORAGE_KEY } from "../shared/i18n/locale";
+import { en as englishCatalog } from "../shared/i18n/messages/en";
 import { useI18n } from "../shared/i18n/use-i18n";
 import * as localeModule from "../shared/i18n/locale";
 
@@ -43,6 +44,19 @@ function I18nProbe() {
     <>
       <p data-testid="locale">{locale}</p>
       <p data-testid="message">{t("chrome.appName")}</p>
+    </>
+  );
+}
+
+function LocaleSetterProbe() {
+  const { locale, setLocale, t } = useI18n();
+
+  return (
+    <>
+      <button onClick={() => setLocale(locale === "en" ? "zh-CN" : "en")} type="button">
+        Switch locale
+      </button>
+      <p data-testid="recent-views">{t("chrome.recentViews")}</p>
     </>
   );
 }
@@ -117,15 +131,7 @@ test("warns in development and falls back to English when a locale key is missin
   render(
     <I18nProvider
       catalogs={{
-        en: {
-          chrome: {
-            appName: "NautilusTrader Admin"
-          },
-          errors: {
-            adminEventStream: "Admin event stream error",
-            adminRequestFailedWithStatus: "Admin request failed with status {status}"
-          }
-        },
+        en: englishCatalog,
         "zh-CN": {
           chrome: {},
           errors: {
@@ -156,4 +162,23 @@ test('provides access to translated catalog entries through t("chrome.appName")'
   );
 
   expect(screen.getByTestId("message")).toHaveTextContent("NautilusTrader Admin");
+});
+
+test("updates translated shell chrome and persists when setLocale is called after mount", async () => {
+  const storage = createStorage("en");
+
+  render(
+    <I18nProvider navigatorLanguages={["en-US"]} storage={storage}>
+      <LocaleSetterProbe />
+    </I18nProvider>
+  );
+
+  expect(screen.getByTestId("recent-views")).toHaveTextContent("Recent views");
+
+  fireEvent.click(screen.getByRole("button", { name: "Switch locale" }));
+
+  await waitFor(() => {
+    expect(screen.getByTestId("recent-views")).toHaveTextContent("最近访问");
+    expect(storage.setItem).toHaveBeenCalledWith(LOCALE_STORAGE_KEY, "zh-CN");
+  });
 });

@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import { App } from "../app";
+import { I18nProvider } from "../shared/i18n/i18n-provider";
+import { LOCALE_STORAGE_KEY } from "../shared/i18n/locale";
 
 function stubMatchMedia(matches: boolean) {
   vi.stubGlobal(
@@ -15,6 +17,14 @@ function stubMatchMedia(matches: boolean) {
       removeListener: vi.fn(),
       dispatchEvent: vi.fn()
     }))
+  );
+}
+
+function renderLocalizedApp() {
+  return render(
+    <I18nProvider navigatorLanguages={["en-US"]} storage={window.localStorage}>
+      <App />
+    </I18nProvider>
   );
 }
 
@@ -144,4 +154,50 @@ test("returns focus to the trigger after compact-drawer link navigation", async 
     expect(screen.queryByRole("dialog", { name: "Workbench navigation" })).not.toBeInTheDocument();
   });
   expect(screen.getByRole("button", { name: "Open navigation" })).toHaveFocus();
+});
+
+test("switches the shell locale from the toolbar and persists the selection", async () => {
+  window.localStorage.clear();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {}))
+  );
+
+  renderLocalizedApp();
+
+  expect(await screen.findByRole("button", { name: "Language" })).toHaveTextContent("Language · English");
+  expect(await screen.findByText("Recent views")).toBeInTheDocument();
+  expect(screen.getByText("Workbench")).toBeInTheDocument();
+  expect(screen.getByText("Awaiting page telemetry")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Language" }));
+
+  expect(await screen.findByRole("button", { name: "语言" })).toHaveTextContent("语言 · 简体中文");
+  expect(await screen.findByText("最近访问")).toBeInTheDocument();
+  expect(screen.getByText("工作台")).toBeInTheDocument();
+  expect(screen.getByText("等待页面遥测")).toBeInTheDocument();
+  const workbenchCard = screen.getByText("工作台").closest("section");
+  expect(workbenchCard).not.toBeNull();
+  expect(within(workbenchCard as HTMLElement).getByText("操作")).toBeInTheDocument();
+  expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("zh-CN");
+});
+
+test("localizes compact navigation labels and close affordances after switching locale", async () => {
+  window.localStorage.clear();
+  stubMatchMedia(true);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => new Promise(() => {}))
+  );
+
+  renderLocalizedApp();
+
+  fireEvent.click(await screen.findByRole("button", { name: "Language" }));
+
+  const openNavigation = await screen.findByRole("button", { name: "打开导航" });
+  fireEvent.click(openNavigation);
+
+  expect(await screen.findByRole("dialog", { name: "工作台导航" })).toBeInTheDocument();
+  expect(screen.getAllByRole("button", { name: "关闭导航" })).toHaveLength(2);
+  expect(screen.getByText("操作台入口")).toBeInTheDocument();
 });

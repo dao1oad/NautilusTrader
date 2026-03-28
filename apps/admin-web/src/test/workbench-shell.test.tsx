@@ -20,6 +20,8 @@ import {
   WorkbenchShellMetaProvider,
   useCurrentWorkbenchShellMeta
 } from "../app/workbench-shell-meta";
+import { I18nProvider } from "../shared/i18n/i18n-provider";
+import { LOCALE_STORAGE_KEY } from "../shared/i18n/locale";
 import { readWorkspaceState } from "../shared/workspaces/workspace-store";
 
 
@@ -43,9 +45,9 @@ test("renders workbench entry points and seeds local workspace state", async () 
   expect(workspace.lastRouteByWorkbench.operations).toBe("/");
   expect(workspace.recentRoutes[0]).toMatchObject({
     to: "/",
-    label: "Overview",
     workbench: "operations"
   });
+  expect(workspace.recentRoutes[0]).not.toHaveProperty("label");
 });
 
 function ShellMetaProbe() {
@@ -233,4 +235,42 @@ test("updates the visible runtime strip when route-owned shell metadata unmounts
     expect(screen.queryByText("Custom route copy.")).not.toBeInTheDocument();
     expect(screen.queryByText("Route summary")).not.toBeInTheDocument();
   });
+});
+
+test("uses the persisted locale for fallback workbench status copy", async () => {
+  window.localStorage.clear();
+  window.localStorage.setItem(LOCALE_STORAGE_KEY, "zh-CN");
+
+  const rootRoute = createRootRoute({
+    component: RuntimeStripTestRoot
+  });
+  const overviewRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/",
+    component: OverviewMetaRoutePage
+  });
+  const nodesRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/nodes",
+    component: NodesRoutePage
+  });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([overviewRoute, nodesRoute]),
+    history: createMemoryHistory({
+      initialEntries: ["/"]
+    })
+  });
+
+  render(
+    <I18nProvider navigatorLanguages={["en-US"]} storage={window.localStorage}>
+      <RouterProvider router={router} />
+    </I18nProvider>
+  );
+
+  expect(await screen.findByRole("heading", { name: "Signal Console" })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("link", { name: "Open nodes route" }));
+
+  expect(await screen.findByRole("heading", { name: "节点" })).toBeInTheDocument();
+  expect(await screen.findByText(/运行工作台已就绪。/)).toBeInTheDocument();
 });

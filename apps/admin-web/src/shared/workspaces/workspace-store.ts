@@ -7,11 +7,13 @@ export type WorkspaceRoutePreference = {
 
 export type WorkspaceRouteVisit = {
   to: string;
-  label: string;
   workbench: WorkbenchId;
+  label?: string;
 };
 
-export type WorkspaceRecentRoute = WorkspaceRouteVisit & {
+export type WorkspaceRecentRoute = {
+  to: string;
+  workbench: WorkbenchId;
   visitedAt: string;
 };
 
@@ -24,11 +26,18 @@ export type WorkspaceState = {
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
 
+type PersistedWorkspaceRecentRoute = WorkspaceRecentRoute & {
+  label?: string;
+};
+
+type PersistedWorkspaceState = Omit<WorkspaceState, "recentRoutes"> & {
+  recentRoutes: PersistedWorkspaceRecentRoute[];
+};
+
 export const WORKSPACE_STORAGE_KEY = "nautilus-admin-workspace";
 
 const DEFAULT_ROUTE_VISIT: WorkspaceRecentRoute = {
   to: "/",
-  label: "Overview",
   workbench: "operations",
   visitedAt: "1970-01-01T00:00:00.000Z"
 };
@@ -54,8 +63,29 @@ export function createDefaultWorkspaceState(): WorkspaceState {
   };
 }
 
-function normalizeWorkspaceState(value: Partial<WorkspaceState> | null | undefined): WorkspaceState {
+function normalizeRecentRoute(route: Partial<PersistedWorkspaceRecentRoute> | null | undefined): WorkspaceRecentRoute | null {
+  if (!route?.to || typeof route.visitedAt !== "string") {
+    return null;
+  }
+
+  if (route.workbench !== "operations" && route.workbench !== "analysis") {
+    return null;
+  }
+
+  return {
+    to: route.to,
+    workbench: route.workbench,
+    visitedAt: route.visitedAt
+  };
+}
+
+function normalizeWorkspaceState(value: Partial<PersistedWorkspaceState> | null | undefined): WorkspaceState {
   const defaults = createDefaultWorkspaceState();
+  const recentRoutes = Array.isArray(value?.recentRoutes)
+    ? value.recentRoutes
+      .map((route) => normalizeRecentRoute(route))
+      .filter((route): route is WorkspaceRecentRoute => route !== null)
+    : [];
 
   return {
     activeWorkbench: value?.activeWorkbench === "analysis" ? "analysis" : defaults.activeWorkbench,
@@ -63,9 +93,7 @@ function normalizeWorkspaceState(value: Partial<WorkspaceState> | null | undefin
       operations: value?.lastRouteByWorkbench?.operations ?? defaults.lastRouteByWorkbench.operations,
       analysis: value?.lastRouteByWorkbench?.analysis ?? defaults.lastRouteByWorkbench.analysis
     },
-    recentRoutes: Array.isArray(value?.recentRoutes) && value?.recentRoutes.length > 0
-      ? value.recentRoutes
-      : defaults.recentRoutes,
+    recentRoutes: recentRoutes.length > 0 ? recentRoutes : defaults.recentRoutes,
     routePreferences: {
       ...defaults.routePreferences,
       ...(value?.routePreferences ?? {})
@@ -84,7 +112,7 @@ export function readWorkspaceState(storage?: StorageLike | null): WorkspaceState
   }
 
   try {
-    const parsed = JSON.parse(raw) as Partial<WorkspaceState>;
+    const parsed = JSON.parse(raw) as Partial<PersistedWorkspaceState>;
     return normalizeWorkspaceState(parsed);
   } catch {
     return createDefaultWorkspaceState();
@@ -98,7 +126,8 @@ export function writeWorkspaceState(storage: StorageLike | null | undefined, sta
 export function recordRouteVisit(state: WorkspaceState, route: WorkspaceRouteVisit): WorkspaceState {
   const visitedAt = new Date().toISOString();
   const recentRoute: WorkspaceRecentRoute = {
-    ...route,
+    to: route.to,
+    workbench: route.workbench,
     visitedAt
   };
   const existingPreference = state.routePreferences[route.to] ?? DEFAULT_ROUTE_PREFERENCE;
