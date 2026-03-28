@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useI18n } from "../i18n/use-i18n";
 
 export type TerminalTableColumn<T> = {
   header: ReactNode;
@@ -28,7 +29,8 @@ export function TerminalTable<T>({
   rowIndexOffset = 0,
   selectedRowKey = null
 }: Props<T>) {
-  const viewportLabel = `${ariaLabel} table viewport`;
+  const { t } = useI18n();
+  const viewportLabel = t("tables.viewport", { label: ariaLabel });
 
   return (
     <div aria-label={viewportLabel} role="region" style={{ overflowX: "auto" }} tabIndex={0}>

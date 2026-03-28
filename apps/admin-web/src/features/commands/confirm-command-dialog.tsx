@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useI18n } from "../../shared/i18n/use-i18n";
 
 type Props = {
   open: boolean;
@@ -21,6 +22,7 @@ export function ConfirmCommandDialog({
   onClose,
   onConfirm
 }: Props) {
+  const { t } = useI18n();
   const [typedValue, setTypedValue] = useState("");
 
   useEffect(() => {
@@ -33,13 +35,13 @@ export function ConfirmCommandDialog({
     return null;
   }
 
-  const confirmationLabel = `Type ${confirmationValue} to confirm`;
+  const confirmationLabel = t("dialogs.typeToConfirm", { value: confirmationValue });
   const isConfirmed = typedValue.trim() === confirmationValue;
 
   return (
     <div className="confirm-dialog-backdrop">
       <section aria-label={commandLabel} aria-modal="true" className="confirm-dialog" role="dialog">
-        <p className="page-state-kicker">Confirm command</p>
+        <p className="page-state-kicker">{t("dialogs.confirmCommand")}</p>
         <h2>{commandLabel}</h2>
         <p className="page-state-copy">{targetLabel}</p>
         <label className="confirm-dialog-field">
@@ -54,7 +56,7 @@ export function ConfirmCommandDialog({
         </label>
         <div className="confirm-dialog-actions">
           <button className="command-button command-button-secondary" onClick={onClose} type="button">
-            Cancel
+            {t("dialogs.cancel")}
           </button>
           <button
             className="command-button"
@@ -62,7 +64,7 @@ export function ConfirmCommandDialog({
             onClick={onConfirm}
             type="button"
           >
-            {isSubmitting ? "Executing..." : "Execute command"}
+            {isSubmitting ? t("dialogs.executing") : t("dialogs.executeCommand")}
           </button>
         </div>
       </section>

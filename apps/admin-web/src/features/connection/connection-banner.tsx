@@ -1,32 +1,6 @@
 import type { ConnectionState } from "../../shared/types/admin";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { SignalPill } from "../../shared/ui/signal-pill";
-
-
-const STATE_SIGNALS: Record<
-  ConnectionState,
-  {
-    label: string;
-    tone: "info" | "positive" | "warning" | "danger";
-  }
-> = {
-  connected: {
-    label: "Link healthy",
-    tone: "positive"
-  },
-  connecting: {
-    label: "Establishing link",
-    tone: "info"
-  },
-  disconnected: {
-    label: "Link offline",
-    tone: "danger"
-  },
-  stale: {
-    label: "Snapshot delayed",
-    tone: "warning"
-  }
-};
-
 
 type Props = {
   state: ConnectionState;
@@ -34,7 +8,32 @@ type Props = {
 
 
 export function ConnectionBanner({ state }: Props) {
-  const signal = STATE_SIGNALS[state];
+  const { t } = useI18n();
+  const stateSignals: Record<
+    ConnectionState,
+    {
+      label: string;
+      tone: "info" | "positive" | "warning" | "danger";
+    }
+  > = {
+    connected: {
+      label: t("state.connection.connected"),
+      tone: "positive"
+    },
+    connecting: {
+      label: t("state.connection.connecting"),
+      tone: "info"
+    },
+    disconnected: {
+      label: t("state.connection.disconnected"),
+      tone: "danger"
+    },
+    stale: {
+      label: t("state.connection.stale"),
+      tone: "warning"
+    }
+  };
+  const signal = stateSignals[state];
 
   return (
     <SignalPill

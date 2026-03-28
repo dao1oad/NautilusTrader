@@ -95,6 +95,61 @@ export const en = {
       }
     }
   },
+  state: {
+    runtimeState: "Runtime state",
+    connection: {
+      connected: "Link healthy",
+      connecting: "Establishing link",
+      disconnected: "Link offline",
+      stale: "Snapshot delayed"
+    },
+    signals: {
+      loading: "Acquiring snapshot",
+      empty: "Projection pending",
+      error: "Execution blocked",
+      stale: "Snapshot delayed"
+    },
+    lastUpdated: {
+      current: "Snapshot current",
+      stale: "Snapshot delayed",
+      unavailable: "Last updated unavailable",
+      timestamp: "Last updated {timestamp} UTC"
+    }
+  },
+  filters: {
+    operatorLabel: "Operator filter",
+    helper: "Narrow the current bounded snapshot without changing the query window.",
+    searchByKeyword: "Search {title} by keyword",
+    noRowsTitle: "Filter returned no rows",
+    noRowsDescription: "No rows match the current operator filter.",
+    previousPage: "Previous page",
+    nextPage: "Next page",
+    rowsSummary: "Rows {start}-{end} of {total}"
+  },
+  tables: {
+    liveSnapshot: "Live snapshot",
+    snapshotWindow: "Snapshot window",
+    waitingForFreshSnapshot: "Waiting for a fresh admin snapshot.",
+    reconnectAdminApi: "Reconnect the admin API to refresh runtime state.",
+    showingLastSnapshot: "Showing the last successfully received admin snapshot.",
+    partialSnapshot: "Showing the latest partial snapshot.",
+    viewport: "{label} table viewport",
+    details: "Details",
+    viewDetails: "View details",
+    hideDetails: "Hide details",
+    selectedRow: "Selected row"
+  },
+  dialogs: {
+    confirmCommand: "Confirm command",
+    typeToConfirm: "Type {value} to confirm",
+    cancel: "Cancel",
+    executeCommand: "Execute command",
+    executing: "Executing..."
+  },
+  commands: {
+    latestReceipt: "Latest receipt",
+    executionFailed: "Command execution failed."
+  },
   errors: {
     adminEventStream: "Admin event stream error",
     adminRequestFailedWithStatus: "Admin request failed with status {status}"

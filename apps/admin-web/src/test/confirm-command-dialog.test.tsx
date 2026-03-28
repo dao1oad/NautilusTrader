@@ -6,9 +6,10 @@ import { AdminRuntimeProvider } from "../app/admin-runtime";
 import { ConfirmCommandDialog } from "../features/commands/confirm-command-dialog";
 import { StrategiesPage } from "../features/strategies/strategies-page";
 import { publishCommandReceipt } from "../shared/realtime/command-receipt-bus";
+import { TestProviders } from "./setup";
 
 
-function renderWithRuntime(ui: ReactElement) {
+function renderWithRuntime(ui: ReactElement, locale: "en" | "zh-CN" = "en") {
   const client = new QueryClient({
     defaultOptions: {
       queries: {
@@ -18,16 +19,18 @@ function renderWithRuntime(ui: ReactElement) {
   });
 
   return render(
-    <QueryClientProvider client={client}>
-      <AdminRuntimeProvider
-        value={{
-          connectionState: "connected",
-          error: null
-        }}
-      >
-        {ui}
-      </AdminRuntimeProvider>
-    </QueryClientProvider>
+    <TestProviders locale={locale}>
+      <QueryClientProvider client={client}>
+        <AdminRuntimeProvider
+          value={{
+            connectionState: "connected",
+            error: null
+          }}
+        >
+          {ui}
+        </AdminRuntimeProvider>
+      </QueryClientProvider>
+    </TestProviders>
   );
 }
 
@@ -64,6 +67,27 @@ test("requires explicit confirmation copy before executing a command", () => {
 });
 
 
+test("renders localized confirmation chrome in Simplified Chinese", () => {
+  renderWithRuntime(
+    <ConfirmCommandDialog
+      open
+      commandLabel="Start strategy"
+      targetLabel="strategies/demo"
+      confirmationValue="START"
+      isSubmitting={false}
+      onClose={vi.fn()}
+      onConfirm={vi.fn()}
+    />,
+    "zh-CN"
+  );
+
+  expect(screen.getByText("确认命令")).toBeInTheDocument();
+  expect(screen.getByLabelText("输入 START 以确认")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "取消" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "执行命令" })).toBeInTheDocument();
+});
+
+
 test("surfaces accepted and completed receipts after a strategy control is confirmed", async () => {
   const fetchMock = vi.fn()
     .mockResolvedValueOnce({
@@ -90,16 +114,17 @@ test("surfaces accepted and completed receipts after a strategy control is confi
 
   vi.stubGlobal("fetch", fetchMock);
 
-  renderWithRuntime(<StrategiesPage />);
+  renderWithRuntime(<StrategiesPage />, "zh-CN");
 
   expect(await screen.findByText("demo")).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Start strategy demo" }));
-  fireEvent.change(screen.getByLabelText("Type START to confirm"), {
+  fireEvent.change(screen.getByLabelText("输入 START 以确认"), {
     target: { value: "START" }
   });
-  fireEvent.click(screen.getByRole("button", { name: "Execute command" }));
+  fireEvent.click(screen.getByRole("button", { name: "执行命令" }));
 
+  expect(await screen.findByText("最新回执")).toBeInTheDocument();
   expect(await screen.findByText("accepted")).toBeInTheDocument();
   expect(screen.getByText("Command queued for local strategy.start.")).toBeInTheDocument();
 

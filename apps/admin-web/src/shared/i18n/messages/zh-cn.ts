@@ -98,6 +98,61 @@ export const zhCN = {
       }
     }
   },
+  state: {
+    runtimeState: "运行状态",
+    connection: {
+      connected: "连接正常",
+      connecting: "正在建立连接",
+      disconnected: "连接已断开",
+      stale: "快照延迟"
+    },
+    signals: {
+      loading: "正在获取快照",
+      empty: "等待投影视图",
+      error: "执行受阻",
+      stale: "快照延迟"
+    },
+    lastUpdated: {
+      current: "快照最新",
+      stale: "快照延迟",
+      unavailable: "上次更新时间不可用",
+      timestamp: "上次更新 {timestamp} UTC"
+    }
+  },
+  filters: {
+    operatorLabel: "操作筛选",
+    helper: "在不改变查询窗口的前提下收窄当前有界快照。",
+    searchByKeyword: "按关键字搜索 {title}",
+    noRowsTitle: "筛选未返回任何行",
+    noRowsDescription: "当前操作筛选没有匹配的行。",
+    previousPage: "上一页",
+    nextPage: "下一页",
+    rowsSummary: "第 {start}-{end} 行，共 {total} 行"
+  },
+  tables: {
+    liveSnapshot: "实时快照",
+    snapshotWindow: "快照窗口",
+    waitingForFreshSnapshot: "等待新的管理快照。",
+    reconnectAdminApi: "重新连接管理 API 以刷新运行状态。",
+    showingLastSnapshot: "正在显示最近一次成功接收的管理快照。",
+    partialSnapshot: "正在显示最近一次部分管理快照。",
+    viewport: "{label} 表格视口",
+    details: "详情",
+    viewDetails: "查看详情",
+    hideDetails: "隐藏详情",
+    selectedRow: "已选行"
+  },
+  dialogs: {
+    confirmCommand: "确认命令",
+    typeToConfirm: "输入 {value} 以确认",
+    cancel: "取消",
+    executeCommand: "执行命令",
+    executing: "执行中..."
+  },
+  commands: {
+    latestReceipt: "最新回执",
+    executionFailed: "命令执行失败。"
+  },
   errors: {
     adminEventStream: "管理端事件流错误",
     adminRequestFailedWithStatus: "管理端请求失败，状态码 {status}"

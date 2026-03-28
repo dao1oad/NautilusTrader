@@ -1,3 +1,5 @@
+import { useI18n } from "../i18n/use-i18n";
+
 type Props = {
   inputId: string;
   label: string;
@@ -7,6 +9,8 @@ type Props = {
 };
 
 export function FilterBar({ inputId, label, onChange, placeholder, value }: Props) {
+  const { t } = useI18n();
+
   return (
     <section
       style={{
@@ -25,7 +29,7 @@ export function FilterBar({ inputId, label, onChange, placeholder, value }: Prop
         <label className="section-panel-eyebrow" htmlFor={inputId}>
           {label}
         </label>
-        <p className="section-panel-copy">Narrow the current bounded snapshot without changing the query window.</p>
+        <p className="section-panel-copy">{t("filters.helper")}</p>
       </div>
       <div style={{ display: "flex", flex: "1 1 280px", justifyContent: "flex-end" }}>
         <input

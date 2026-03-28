@@ -14,6 +14,7 @@ import { RiskPage } from "../features/risk/risk-page";
 import { READ_ONLY_DEFAULT_LIMIT } from "../shared/api/admin-client";
 import { adminQueryKeys } from "../shared/query/query-client";
 import type { AdminListSnapshot } from "../shared/types/admin";
+import { TestProviders } from "./setup";
 
 
 function createQueryClient() {
@@ -45,19 +46,22 @@ function renderWithRuntime(
   runtimeValue: { connectionState: "connected" | "stale" | "disconnected"; error: string | null } = {
     connectionState: "connected",
     error: null
-  }
+  },
+  locale: "en" | "zh-CN" = "en"
 ) {
   return {
     client,
     ...render(
-      <QueryClientProvider client={client}>
-        <AdminRuntimeProvider value={runtimeValue}>
-          <WorkbenchShellMetaProvider>
-            <WorkbenchShellMetaProbe />
-            {ui}
-          </WorkbenchShellMetaProvider>
-        </AdminRuntimeProvider>
-      </QueryClientProvider>
+      <TestProviders locale={locale}>
+        <QueryClientProvider client={client}>
+          <AdminRuntimeProvider value={runtimeValue}>
+            <WorkbenchShellMetaProvider>
+              <WorkbenchShellMetaProbe />
+              {ui}
+            </WorkbenchShellMetaProvider>
+          </AdminRuntimeProvider>
+        </QueryClientProvider>
+      </TestProviders>
     )
   };
 }
@@ -258,6 +262,47 @@ test("renders the shared terminal table inside a focusable named region", async 
 
   expect(viewport).toHaveAttribute("tabindex", "0");
   expect(within(viewport).getByRole("table", { name: "Blotter" })).toBeInTheDocument();
+});
+
+
+test("localizes shared trading list chrome in Simplified Chinese", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T00:00:00Z",
+      limit: 100,
+      partial: false,
+      items: [
+        {
+          client_order_id: "O-BTC-1",
+          instrument_id: "BTCUSDT-PERP.BINANCE",
+          side: "buy",
+          quantity: "0.50",
+          status: "accepted"
+        },
+        {
+          client_order_id: "O-ETH-1",
+          instrument_id: "ETHUSDT-PERP.BINANCE",
+          side: "sell",
+          quantity: "1.25",
+          status: "filled"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<OrdersPage />, createQueryClient(), { connectionState: "connected", error: null }, "zh-CN");
+
+  expect(await screen.findByText("O-BTC-1")).toBeInTheDocument();
+  expect(screen.getByText("实时快照")).toBeInTheDocument();
+  expect(screen.getByText("操作筛选")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "上一页" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "下一页" })).toBeInTheDocument();
+  expect(screen.getByText("第 1-2 行，共 2 行")).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "Blotter 表格视口" })).toBeInTheDocument();
 });
 
 
