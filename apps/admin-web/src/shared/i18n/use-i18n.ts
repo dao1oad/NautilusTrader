@@ -9,6 +9,6 @@ export function useI18n() {
   return useContext(I18nContext);
 }
 
-export function translate(key: MessageKey, params?: TranslationParams): string {
+export function translateNonReact(key: MessageKey, params?: TranslationParams): string {
   return translateCatalog(getActiveLocale(), key, params);
 }

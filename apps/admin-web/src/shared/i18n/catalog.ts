@@ -3,15 +3,7 @@ import { en } from "./messages/en";
 import { zhCN } from "./messages/zh-cn";
 
 
-export type MessageCatalog = {
-  chrome: {
-    appName: string;
-  };
-  errors: {
-    adminEventStream: string;
-    adminRequestFailedWithStatus: string;
-  };
-};
+export type MessageCatalog = typeof en;
 
 type NestedMessageKey<TValue> = {
   [TKey in keyof TValue & string]: TValue[TKey] extends string
@@ -23,15 +15,16 @@ export type MessageKey = NestedMessageKey<MessageCatalog>;
 
 export type TranslationParams = Record<string, string | number>;
 
-export type PartialMessageCatalog = {
-  [TKey in keyof MessageCatalog]?: MessageCatalog[TKey] extends string
-    ? string
-    : {
-        [TChildKey in keyof MessageCatalog[TKey]]?: MessageCatalog[TKey][TChildKey];
-      };
+type DeepPartial<TValue> = {
+  [TKey in keyof TValue]?: TValue[TKey] extends string ? string : DeepPartial<TValue[TKey]>;
 };
 
-export type CatalogCollection = Record<SupportedLocale, PartialMessageCatalog>;
+export type PartialMessageCatalog = DeepPartial<MessageCatalog>;
+
+export type CatalogCollection = {
+  en: MessageCatalog;
+  "zh-CN": PartialMessageCatalog;
+};
 
 export const catalogs = {
   en,

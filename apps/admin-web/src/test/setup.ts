@@ -5,6 +5,7 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
 import { I18nProvider } from "../shared/i18n/i18n-provider";
+import type { CatalogCollection } from "../shared/i18n/catalog";
 import { queryClient } from "../shared/query/query-client";
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, setActiveLocale, type SupportedLocale } from "../shared/i18n/locale";
 
@@ -32,11 +33,17 @@ export function renderWithTheme(ui: ReactElement, options?: Omit<RenderOptions, 
 }
 
 type RenderWithProvidersOptions = Omit<RenderOptions, "wrapper"> & {
+  catalogs?: CatalogCollection;
   locale?: SupportedLocale;
+  mode?: "development" | "production";
+  warn?: (message: string) => void;
 };
 
 type TestProvidersProps = PropsWithChildren<{
+  catalogs?: CatalogCollection;
   locale: SupportedLocale;
+  mode?: "development" | "production";
+  warn?: (message: string) => void;
 }>;
 
 function createTestStorage(locale: SupportedLocale): Storage {
@@ -50,12 +57,15 @@ function createTestStorage(locale: SupportedLocale): Storage {
   };
 }
 
-export function TestProviders({ children, locale }: TestProvidersProps) {
+export function TestProviders({ catalogs, children, locale, mode, warn }: TestProvidersProps) {
   return createElement(
     I18nProvider,
     {
+      catalogs,
+      mode,
       navigatorLanguages: [locale],
-      storage: createTestStorage(locale)
+      storage: createTestStorage(locale),
+      warn
     },
     createElement(TestThemeWrapper, null, children)
   );
@@ -63,10 +73,10 @@ export function TestProviders({ children, locale }: TestProvidersProps) {
 
 export function renderWithProviders(
   ui: ReactElement,
-  { locale = DEFAULT_LOCALE, ...options }: RenderWithProvidersOptions = {}
+  { catalogs, locale = DEFAULT_LOCALE, mode, warn, ...options }: RenderWithProvidersOptions = {}
 ) {
   function Wrapper({ children }: PropsWithChildren) {
-    return createElement(TestProviders, { locale }, children);
+    return createElement(TestProviders, { catalogs, locale, mode, warn }, children);
   }
 
   return render(ui, {

@@ -18,7 +18,7 @@ import type {
   RiskSnapshot,
   StrategiesSnapshot
 } from "../types/admin";
-import { translate } from "../i18n/use-i18n";
+import { translateNonReact } from "../i18n/use-i18n";
 
 
 export const READ_ONLY_DEFAULT_LIMIT = 100;
@@ -51,7 +51,10 @@ async function parseJson<T>(response: Response): Promise<T> {
   const payload = await readResponsePayload(response);
 
   if (!response.ok) {
-    throw new Error(readResponseMessage(payload) ?? translate("errors.adminRequestFailedWithStatus", { status: response.status }));
+    throw new Error(
+      readResponseMessage(payload) ??
+        translateNonReact("errors.adminRequestFailedWithStatus", { status: response.status })
+    );
   }
 
   return payload as T;
