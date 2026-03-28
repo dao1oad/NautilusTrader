@@ -44,6 +44,14 @@ type TranslateCatalogOptions = {
   warn?: (message: string) => void;
 };
 
+function resolveMode(mode: "development" | "production" | undefined): "development" | "production" {
+  if (mode) {
+    return mode;
+  }
+
+  return import.meta.env.MODE === "production" ? "production" : "development";
+}
+
 function readCatalogMessage(catalog: PartialMessageCatalog | undefined, key: MessageKey): string | null {
   if (!catalog) {
     return null;
@@ -82,6 +90,7 @@ export function translateCatalog(
   options: TranslateCatalogOptions = {}
 ): string {
   const catalogCollection = options.catalogCollection ?? catalogs;
+  const mode = resolveMode(options.mode);
   const localizedMessage = readCatalogMessage(catalogCollection[locale], key);
 
   if (localizedMessage) {
@@ -90,14 +99,14 @@ export function translateCatalog(
 
   const fallbackMessage = readCatalogMessage(catalogCollection[DEFAULT_LOCALE], key);
   if (fallbackMessage) {
-    if ((options.mode ?? "development") !== "production" && locale !== DEFAULT_LOCALE) {
+    if (mode !== "production" && locale !== DEFAULT_LOCALE) {
       (options.warn ?? console.warn)(`Missing i18n key "${key}" for locale "${locale}". Falling back to "${DEFAULT_LOCALE}".`);
     }
 
     return interpolateMessage(fallbackMessage, params);
   }
 
-  if ((options.mode ?? "development") !== "production") {
+  if (mode !== "production") {
     (options.warn ?? console.warn)(`Missing i18n key "${key}" in the default locale catalog.`);
   }
 
