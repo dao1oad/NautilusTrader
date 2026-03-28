@@ -31,3 +31,34 @@ test("preserves raw backend messages when the response body already provides one
 
   await expect(getOverviewSnapshot()).rejects.toThrow("Backend exploded");
 });
+
+
+test("rejects malformed 200 OK JSON instead of returning an undefined payload", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError("Unexpected end of JSON input");
+      }
+    })
+  );
+
+  await expect(getOverviewSnapshot()).rejects.toThrow("Unexpected end of JSON input");
+});
+
+
+test("preserves raw plain-text backend error bodies before falling back to the localized wrapper", async () => {
+  setActiveLocale("zh-CN");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: false,
+      status: 502,
+      text: async () => "Upstream proxy exploded\n"
+    })
+  );
+
+  await expect(getOverviewSnapshot()).rejects.toThrow("Upstream proxy exploded");
+});
