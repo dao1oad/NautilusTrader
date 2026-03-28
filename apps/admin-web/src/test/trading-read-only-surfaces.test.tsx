@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import type { ReactElement } from "react";
 
 import { AdminRuntimeProvider } from "../app/admin-runtime";
+import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { AccountsPage } from "../features/accounts/accounts-page";
 import { FillsPage } from "../features/fills/fills-page";
 import { LogsPage } from "../features/logs/logs-page";
@@ -25,6 +26,19 @@ function createQueryClient() {
   });
 }
 
+function WorkbenchShellMetaProbe() {
+  const meta = useCurrentWorkbenchShellMeta();
+
+  return (
+    <section>
+      <p>{`Page title: ${meta.pageTitle ?? "None"}`}</p>
+      <p>{`Workbench copy: ${meta.workbenchCopy ?? "None"}`}</p>
+      <p>{`Last updated: ${meta.lastUpdated ?? "None"}`}</p>
+      <p>{`Status summary: ${meta.statusSummary ?? "None"}`}</p>
+    </section>
+  );
+}
+
 function renderWithRuntime(
   ui: ReactElement,
   client: QueryClient = createQueryClient(),
@@ -38,7 +52,10 @@ function renderWithRuntime(
     ...render(
       <QueryClientProvider client={client}>
         <AdminRuntimeProvider value={runtimeValue}>
-          {ui}
+          <WorkbenchShellMetaProvider>
+            <WorkbenchShellMetaProbe />
+            {ui}
+          </WorkbenchShellMetaProvider>
         </AdminRuntimeProvider>
       </QueryClientProvider>
     )
@@ -773,9 +790,14 @@ test("renders risk center summaries, events, and active blocks", async () => {
   renderWithRuntime(<RiskPage />);
 
   expect(await screen.findByRole("heading", { name: "Risk center" })).toBeInTheDocument();
+  expect(screen.getByText("Immediate guardrail posture")).toBeInTheDocument();
   expect(await screen.findByText("Trading state")).toBeInTheDocument();
+  expect(screen.getByText("Alert stream")).toBeInTheDocument();
+  expect(screen.getByText("Hard constraints")).toBeInTheDocument();
   expect(screen.getByText("Margin buffer narrowing")).toBeInTheDocument();
   expect(screen.getByText("Reduce-only guard enabled while the margin cushion recovers.")).toBeInTheDocument();
+  expect(screen.getByText("Page title: Risk center")).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-27T08:57:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/risk");
 });
 
