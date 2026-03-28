@@ -795,6 +795,7 @@ test("renders risk center summaries, events, and active blocks", async () => {
   expect(screen.getByText("Alert stream")).toBeInTheDocument();
   expect(screen.getByText("Hard constraints")).toBeInTheDocument();
   expect(screen.getByText("Margin buffer narrowing")).toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "Active blocks" })).toBeInTheDocument();
   expect(screen.getByText("Reduce-only guard enabled while the margin cushion recovers.")).toBeInTheDocument();
   expect(screen.getByText("Page title: Risk center")).toBeInTheDocument();
   expect(screen.getByText("Last updated: 2026-03-27T08:57:00Z")).toBeInTheDocument();

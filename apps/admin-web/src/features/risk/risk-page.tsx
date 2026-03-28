@@ -264,29 +264,30 @@ export function RiskPage() {
         {snapshot.blocks.length === 0 ? (
           <p className="resource-filter-empty">No active risk blocks are currently projected.</p>
         ) : (
-          <ul style={DETAIL_LIST_STYLE}>
-            {snapshot.blocks.map((block) => (
-              <li
-                key={block.block_id}
-                style={{
-                  ...DETAIL_CARD_STYLE,
-                  borderColor:
-                    block.status === "active"
-                      ? "rgba(255, 157, 147, 0.24)"
-                      : "rgba(115, 224, 171, 0.24)"
-                }}
-              >
-                <div style={DETAIL_HEADER_STYLE}>
-                  <div>
-                    <p style={CONSTRAINT_SCOPE_STYLE}>{block.scope}</p>
-                    <p style={DETAIL_TIME_STYLE}>{formatTerminalTimestamp(block.raised_at)}</p>
-                  </div>
-                  <SignalPill label={block.status} tone={block.status === "active" ? "danger" : "positive"} />
-                </div>
-                <p className="command-receipt-copy">{block.reason}</p>
-              </li>
-            ))}
-          </ul>
+          <table aria-label="Active blocks" className="resource-table">
+            <thead>
+              <tr>
+                <th scope="col">Scope</th>
+                <th scope="col">Raised</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {snapshot.blocks.map((block) => (
+                <tr key={block.block_id}>
+                  <td>
+                    <span style={CONSTRAINT_SCOPE_STYLE}>{block.scope}</span>
+                  </td>
+                  <td>{formatTerminalTimestamp(block.raised_at)}</td>
+                  <td>{block.reason}</td>
+                  <td>
+                    <SignalPill label={block.status} tone={block.status === "active" ? "danger" : "positive"} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </SectionPanel>
     </div>
