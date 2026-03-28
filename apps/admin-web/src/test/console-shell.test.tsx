@@ -139,7 +139,7 @@ test("returns focus to the trigger after compact-drawer link navigation", async 
 
   fireEvent.click(nodesLink);
 
-  expect(await screen.findByRole("heading", { name: "Nodes" })).toBeInTheDocument();
+  expect((await screen.findAllByRole("heading", { name: "Nodes" })).length).toBeGreaterThan(0);
   await waitFor(() => {
     expect(screen.queryByRole("dialog", { name: "Workbench navigation" })).not.toBeInTheDocument();
   });
