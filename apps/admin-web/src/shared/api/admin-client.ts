@@ -18,6 +18,7 @@ import type {
   RiskSnapshot,
   StrategiesSnapshot
 } from "../types/admin";
+import { translate } from "../i18n/use-i18n";
 
 
 export const READ_ONLY_DEFAULT_LIMIT = 100;
@@ -47,11 +48,38 @@ function buildBoundedPath(
 
 
 async function parseJson<T>(response: Response): Promise<T> {
+  const payload = await readResponsePayload(response);
+
   if (!response.ok) {
-    throw new Error(`Admin request failed with status ${response.status}`);
+    throw new Error(readResponseMessage(payload) ?? translate("errors.adminRequestFailedWithStatus", { status: response.status }));
   }
 
-  return response.json() as Promise<T>;
+  return payload as T;
+}
+
+async function readResponsePayload(response: Response): Promise<unknown> {
+  if (typeof response.json !== "function") {
+    return undefined;
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
+  }
+}
+
+function readResponseMessage(payload: unknown): string | null {
+  if (typeof payload === "string" && payload.trim().length > 0) {
+    return payload;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const message = (payload as { message?: unknown }).message;
+  return typeof message === "string" && message.trim().length > 0 ? message : null;
 }
 
 

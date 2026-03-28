@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 
 import { App } from "../app";
+import { renderWithProviders } from "./setup";
 
 
 test("renders empty overview state from api payload", async () => {
@@ -21,7 +22,7 @@ test("renders empty overview state from api payload", async () => {
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect(await screen.findByText("No live node configured")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/overview");
@@ -36,7 +37,7 @@ test("renders fetch error state when admin overview returns 500", async () => {
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect(await screen.findByText("Admin request failed with status 500")).toBeInTheDocument();
 });
@@ -82,7 +83,7 @@ test("renders analysis route copy in the shell runtime strip for catalog", async
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect((await screen.findAllByRole("heading", { name: "Catalog" })).length).toBeGreaterThan(0);
   expect(await screen.findByText("History query capped at 100 rows across the selected 2 hour window.")).toBeInTheDocument();
