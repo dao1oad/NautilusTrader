@@ -5,6 +5,7 @@ import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import type { AdminListSnapshot } from "../../shared/types/admin";
 import { FilterBar } from "../../shared/ui/filter-bar";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
+import { PageState } from "../../shared/ui/page-state";
 import { SectionPanel } from "../../shared/ui/section-panel";
 import { StateBanner } from "../../shared/ui/state-banner";
 import { TerminalTable, type TerminalTableColumn } from "../../shared/ui/terminal-table";
@@ -123,6 +124,41 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
     }
   }, [getRowKey, selectedRowKey, startIndex, snapshot, visibleItems]);
 
+  if (query.isLoading && !snapshot) {
+    return <PageState description={loadingDescription} kind="loading" title={title} />;
+  }
+
+  if (error && !snapshot) {
+    return <PageState description={error} kind="error" title={title} />;
+  }
+
+  if (!snapshot && connectionState === "stale") {
+    return <PageState description="Waiting for a fresh admin snapshot." kind="stale" title={title} />;
+  }
+
+  if (!snapshot && connectionState === "disconnected") {
+    return <PageState description="Reconnect the admin API to refresh runtime state." kind="stale" title={title} />;
+  }
+
+  if (!snapshot) {
+    return <PageState description={loadingDescription} kind="loading" title={title} />;
+  }
+
+  if (isStale) {
+    return (
+      <PageState
+        description={error ?? "Showing the last successfully received admin snapshot."}
+        kind="stale"
+        meta={lastUpdated}
+        title={title}
+      />
+    );
+  }
+
+  if (snapshot.items.length === 0) {
+    return <PageState description={emptyDescription} kind="empty" meta={lastUpdated} title={title} />;
+  }
+
   const filterToolbar = snapshot && filter ? (
     <FilterBar
       inputId={filterInputId}
@@ -179,51 +215,14 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
     </div>
   ) : null;
 
-  let mainBody: ReactNode;
-
-  if (query.isLoading && !snapshot) {
-    mainBody = <StateBanner description={loadingDescription} kind="loading" title="Snapshot acquisition in progress" />;
-  } else if (error && !snapshot) {
-    mainBody = <StateBanner description={error} kind="error" title="Admin request failed" />;
-  } else if (!snapshot && connectionState === "stale") {
-    mainBody = (
-      <StateBanner
-        description="Waiting for a fresh admin snapshot."
-        kind="stale"
-        title="Runtime snapshot delayed"
-      />
-    );
-  } else if (!snapshot && connectionState === "disconnected") {
-    mainBody = (
-      <StateBanner
-        description="Reconnect the admin API to refresh runtime state."
-        kind="stale"
-        title="Admin connection unavailable"
-      />
-    );
-  } else if (!snapshot) {
-    mainBody = <StateBanner description={loadingDescription} kind="loading" title="Snapshot acquisition in progress" />;
-  } else if (isStale) {
-    mainBody = (
-      <StateBanner
-        description={error ?? "Showing the last successfully received admin snapshot."}
-        kind="stale"
-        meta={lastUpdated}
-        title="Snapshot delayed"
-      />
-    );
-  } else if (snapshot.items.length === 0) {
-    mainBody = <StateBanner description={emptyDescription} kind="empty" meta={lastUpdated} title="No projected rows" />;
-  } else if (filteredItems.length === 0) {
-    mainBody = (
+  const mainBody =
+    filteredItems.length === 0 ? (
       <StateBanner
         description="No rows match the current operator filter."
         kind="empty"
         title="Filter returned no rows"
       />
-    );
-  } else {
-    mainBody = (
+    ) : (
       <TerminalTable
         actionColumn={
           drillDown
@@ -257,7 +256,6 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
         selectedRowKey={selectedRowKey}
       />
     );
-  }
 
   const selectedItem =
     snapshot && selectedRowKey !== null

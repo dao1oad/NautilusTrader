@@ -28,8 +28,10 @@ export function TerminalTable<T>({
   rowIndexOffset = 0,
   selectedRowKey = null
 }: Props<T>) {
+  const viewportLabel = `${ariaLabel} table viewport`;
+
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div aria-label={viewportLabel} role="region" style={{ overflowX: "auto" }} tabIndex={0}>
       <table aria-label={ariaLabel} className="resource-table" style={{ minWidth: "720px" }}>
         <thead>
           <tr>

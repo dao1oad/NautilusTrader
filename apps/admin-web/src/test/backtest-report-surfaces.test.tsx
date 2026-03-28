@@ -82,7 +82,8 @@ test("renders backtest tasks with task status and report linkage", async () => {
 
   renderWithRuntime(<BacktestsPage />);
 
-  expect(await screen.findByRole("heading", { name: "Backtests" })).toBeInTheDocument();
+  expect(await screen.findByText("BT-20260327-01")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Backtests" })).toBeInTheDocument();
   expect(
     screen.getByText("Bounded backtest task history, operator-ready run status, and linked report hand-off points.")
   ).toBeInTheDocument();
@@ -93,7 +94,6 @@ test("renders backtest tasks with task status and report linkage", async () => {
     )
   ).toBeInTheDocument();
   expect(await screen.findByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
-  expect(await screen.findByText("BT-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("REP-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("Completed 5,842 bars with net PnL +1240.50 USDT and generated report REP-20260327-01.")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/backtests?limit=100");
@@ -131,7 +131,8 @@ test("renders report summaries with key performance metrics", async () => {
 
   renderWithRuntime(<ReportsPage />);
 
-  expect(await screen.findByRole("heading", { name: "Reports" })).toBeInTheDocument();
+  expect(await screen.findByText("REP-20260327-01")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Reports" })).toBeInTheDocument();
   expect(
     screen.getByText("Performance summaries, artifact families, and review-ready report context for completed runs.")
   ).toBeInTheDocument();
@@ -142,7 +143,6 @@ test("renders report summaries with key performance metrics", async () => {
     )
   ).toBeInTheDocument();
   expect(await screen.findByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
-  expect(await screen.findByText("REP-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("+1240.50 USDT")).toBeInTheDocument();
   expect(await screen.findByText("Orders, fills, positions, and account reports are ready for operator review.")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/reports?limit=100");

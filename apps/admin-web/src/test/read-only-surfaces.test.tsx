@@ -47,12 +47,12 @@ test("renders node rows from the nodes snapshot", async () => {
 
   renderWithRuntime(<NodesPage />);
 
-  expect(await screen.findByRole("heading", { name: "Nodes" })).toBeInTheDocument();
+  expect(await screen.findByText("node-alpha")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Nodes" })).toBeInTheDocument();
   expect(screen.getByText("Live snapshot")).toBeInTheDocument();
   expect(
     screen.getByText("Runtime node identity, assignment, and process status from the latest admin snapshot.")
   ).toBeInTheDocument();
-  expect(await screen.findByText("node-alpha")).toBeInTheDocument();
   expect(screen.getByText("running")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/nodes");
 });
