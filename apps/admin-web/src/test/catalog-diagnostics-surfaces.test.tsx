@@ -104,6 +104,7 @@ test("renders catalog browse results with bounded history feedback", async () =>
 
   expect(await screen.findByRole("heading", { name: "Catalog" })).toBeInTheDocument();
   expect(await screen.findByText("History query capped at 100 rows across the selected 2 hour window.")).toBeInTheDocument();
+  expect(screen.getByText("Analysis workbench")).toBeInTheDocument();
   expect(
     await screen.findByText(
       "Large catalog reads are capped by limit and explicit UTC time range before operators fan out deeper analysis."

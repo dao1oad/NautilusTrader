@@ -9,6 +9,7 @@ import { PageState } from "../../shared/ui/page-state";
 import { SectionPanel } from "../../shared/ui/section-panel";
 import { StateBanner } from "../../shared/ui/state-banner";
 import { TerminalTable, type TerminalTableColumn } from "../../shared/ui/terminal-table";
+import { WorkbenchHeader } from "../../shared/ui/workbench-header";
 import { useAdminRuntime } from "../../app/admin-runtime";
 
 
@@ -24,6 +25,15 @@ type Props<T> = {
   summary?: ReactNode;
   pagination?: {
     pageSize: number;
+  };
+  header?: {
+    eyebrow?: ReactNode;
+    summary?: ReactNode;
+  };
+  surface?: {
+    description?: ReactNode;
+    eyebrow?: ReactNode;
+    title?: ReactNode;
   };
   drillDown?: {
     title: string;
@@ -68,6 +78,8 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   getRowKey,
   summary,
   pagination,
+  header,
+  surface,
   drillDown,
   filter
 }: SnapshotProps<T, TSnapshot>) {
@@ -96,6 +108,10 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   const endIndex = pageSize === null || !snapshot ? totalItems : Math.min(startIndex + pageSize, totalItems);
   const visibleItems = filteredItems.slice(startIndex, endIndex);
   const pageSummary = pageSize !== null && totalItems > 0 ? `Rows ${startIndex + 1}-${endIndex} of ${totalItems}` : null;
+  const showWorkbenchHeader = Boolean(header);
+  const panelDescription = surface?.description ?? (showWorkbenchHeader ? undefined : summaryCopy);
+  const panelEyebrow = surface?.eyebrow ?? "Live snapshot";
+  const panelTitle = surface?.title ?? (showWorkbenchHeader ? "Snapshot window" : title);
 
   useWorkbenchShellMeta({
     lastUpdated: snapshot?.generated_at ?? null,
@@ -264,12 +280,21 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
 
   return (
     <div className="resource-stack">
+      {showWorkbenchHeader ? (
+        <WorkbenchHeader
+          actions={lastUpdated}
+          description={summaryCopy}
+          eyebrow={header?.eyebrow}
+          summary={header?.summary}
+          title={title}
+        />
+      ) : null}
       <SectionPanel
-        actions={lastUpdated}
-        description={summaryCopy}
-        eyebrow="Live snapshot"
+        actions={showWorkbenchHeader ? undefined : lastUpdated}
+        description={panelDescription}
+        eyebrow={panelEyebrow}
         meta={snapshot?.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
-        title={title}
+        title={panelTitle}
       >
         {snapshot ? renderResourceErrors(snapshot.errors) : null}
         {summary}

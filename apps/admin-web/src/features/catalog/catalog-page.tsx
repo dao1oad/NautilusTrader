@@ -171,9 +171,18 @@ export function CatalogPage() {
       emptyDescription="No catalog datasets are currently projected by the admin API."
       filter={{ getSearchText: getCatalogSearchText }}
       getRowKey={(entry) => `${entry.catalog_id}:${entry.instrument_id}:${entry.data_type}:${entry.timeframe}`}
+      header={{
+        eyebrow: "Analysis workbench",
+        summary: buildCatalogStatusSummary(query.data ?? null)
+      }}
       loadingDescription="Loading the latest catalog and history diagnostics."
       pagination={{ pageSize: CATALOG_PAGE_SIZE }}
       query={query}
+      surface={{
+        description: "History query feedback, operator notes, and bounded catalog rows for the selected UTC analysis window.",
+        eyebrow: "Catalog browse window",
+        title: "Bounded browse window"
+      }}
       summaryCopy={CATALOG_COPY}
       summary={query.data ? <CatalogSummaryCard snapshot={query.data} /> : null}
       tableLabel="Catalog entries"
