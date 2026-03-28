@@ -109,3 +109,6 @@
 - Hardened the shared i18n provider so provider-scoped `en` overrides merge with the built-in English catalog and `zh-CN` misses fall back through that merged English baseline instead of the built-in Chinese catalog.
 - Added a direct regression test for the partial-English-override fallback path, reran local review twice with no findings, and captured the issue-scoped local pre-PR review artifacts for `#52`.
 - Re-verified the branch with `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check` before opening the PR to `main`.
+- Merged PR `#54` to `main`, which landed the admin-web display-only i18n slice and advanced `origin/main` to `850dd8a`.
+- Confirmed issue `#52` auto-closed after the merge, then identified a second malformed open issue `#53` left behind by the earlier failed issue-creation command.
+- Repurposed issue `#53` into the post-merge close-loop task for repository memory sync and started `/root/NautilusTrader/.worktrees/admin-web-i18n-close-loop` from the latest `main` to update `memory/active-context.md`, `memory/issue-ledger.md`, and the progress log without touching product code.

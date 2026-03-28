@@ -6,12 +6,13 @@
 
 ## Current Phase
 
-- PR `#36` 已并入 `main`，Phase 1B/1C 与本地 PR review 治理迁移已落地。当前仓库正在 2026-03-26 纯本机运行态上继续治理收口：主 agent 在本机 `codex` 会话执行，issue 派发到本机隔离 worktree，`agentboard` 仅作为本机观测面。
-- 2026-03-27 当前具体实施入口已切到 issue `#19`；隔离分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 已完成 Phase 3A 的 blotter、fills 与 position drill-down surface，通过本地 pre-PR review，并已打开 PR `#42`。
+- `Phase 0` 到 `Phase 4` 已全部合并到 `main`，admin control plane 当前主线已经包含只读运维面、低风险控制链路、交易运维与诊断工作台、统一 workbench，以及 backend-hosted 前端交付链路。
+- 2026-03-28 `PR #54` 已将 admin-web display-only i18n 合并到 `main`；浏览器当前支持 `en` 与 `zh-CN` 两个 locale，并保持后端 payload values、status、ID、target、timestamp 与 route path 不翻译。
+- 当前具体实施入口切到 issue `#53`；分支 `codex/admin-web-i18n-close-loop` 只负责 i18n 合并后的 memory/ledger close-loop 与重复 issue 清理，不再改动产品代码。
 
 ## Blockers
 
-- 无新的人工决策阻塞；当前 issue `#19` 已进入 PR `#42` 的远端检查 / review 阶段，正等待门禁结果。
+- 无新的人工决策阻塞；当前仅剩 i18n merge 后的仓库记忆同步和 close-loop 收口。
 
 ## Confirmed Facts
 
@@ -106,12 +107,14 @@
 - 2026-03-27 PR `#42` 已由分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 打开到 `main`；首轮 `pr-gate` 暴露的 truth-doc 缺口已在 `architecture` / `integrations` / `module-boundaries` 三份真值文档中补齐。
 - 2026-03-28 已创建 GitHub issue `#52`：`Admin web display-only i18n for English and Simplified Chinese`，用于承接 admin-web 仅界面文案国际化的主线收口。
 - 2026-03-28 分支 `codex/admin-web-i18n-plan` 已完成 admin-web display-only i18n 的本地实现与 review 闭环：浏览器当前仅支持 `en` 与 `zh-CN` 两个 locale，provider-scoped catalog override 会合并内置英文并让 `zh-CN` 缺失 key 回退到合并后的英文；后端 payload message、status、ID、target、timestamp 与 route path 保持未翻译。
+- 2026-03-28 `PR #54` 已合并到 `main`，merge commit 为 `850dd8afe03a2a6bc8cd24426e2c4741fb64248d`；issue `#52` 已自动关闭。
+- 2026-03-28 远端当前没有 open PR；唯一 open issue 是 `#53`，其作用已收敛为 i18n mainline close-loop 和 memory sync。
 
 ## Next Actions
 
-1. 为 issue `#52` 提交 truth-doc、memory 与本地 review 证据，然后从 `codex/admin-web-i18n-plan` 打开面向 `main` 的 PR。
-2. 监控 issue `#52` 对应 PR 的 `pr-gate`、`governance-check` 与其余远端检查结果，并在全部通过后合并到 `main`。
-3. 合并后同步本地 `main`、关闭 issue `#52`，并清理 `codex/admin-web-i18n-plan` worktree。
+1. 为 issue `#53` 提交 memory 与本地 review 证据，然后从 `codex/admin-web-i18n-close-loop` 打开面向 `main` 的 PR。
+2. 合并 issue `#53` 的 close-loop PR，并关闭该 issue。
+3. 合并后清理 `codex/admin-web-i18n-plan` 与 `codex/admin-web-i18n-close-loop` 两个 worktree，保留 `main` 为最新主线。
 
 ## Repository
 
