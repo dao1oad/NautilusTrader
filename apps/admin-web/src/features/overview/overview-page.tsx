@@ -26,6 +26,7 @@ import type { WorkspaceRecentRoute } from "../../shared/workspaces/workspace-sto
 const COMMAND_CENTER_COPY = "Runtime posture, risk pressure, and latest control-plane movement at a glance.";
 const MAX_ACTIVITY_ITEMS = 4;
 type OverviewTranslator = ReturnType<typeof useI18n>["t"];
+type ActivitySourceId = "auditTimeline" | "localRouteMemory" | "pending";
 
 type Props = {
   auditSnapshot?: AuditSnapshot | null;
@@ -85,6 +86,7 @@ function buildActivityRailState(
   recentRoutes: WorkspaceRecentRoute[],
 ): {
   items: ActivityRailItem[];
+  sourceId: ActivitySourceId;
   sourceLabel: string;
   sourceTone: SignalTone;
 } {
@@ -98,6 +100,7 @@ function buildActivityRailState(
         title: record.command,
         tone: toActivityTone(record.status)
       })),
+      sourceId: "auditTimeline",
       sourceLabel: t("overview.activitySource.auditTimeline"),
       sourceTone: "info"
     };
@@ -114,6 +117,7 @@ function buildActivityRailState(
         title: getLocalizedRouteLabel(t, route.to),
         tone: "neutral"
       })),
+      sourceId: "localRouteMemory",
       sourceLabel: t("overview.activitySource.localRouteMemory"),
       sourceTone: "neutral"
     };
@@ -121,22 +125,39 @@ function buildActivityRailState(
 
   return {
     items: [],
+    sourceId: "pending",
     sourceLabel: t("overview.activitySource.pending"),
     sourceTone: "neutral"
   };
+}
+
+function buildActivitySourceSummary(activityCount: number, sourceId: ActivitySourceId): string | null {
+  if (activityCount === 0) {
+    return null;
+  }
+
+  if (sourceId === "auditTimeline") {
+    return `${activityCount} recent audit items ready.`;
+  }
+
+  if (sourceId === "localRouteMemory") {
+    return `${activityCount} recent local route memory items ready.`;
+  }
+
+  return `${activityCount} recent activity items ready.`;
 }
 
 function buildStatusSummary(
   snapshot: OverviewSnapshot | null | undefined,
   riskSnapshot: RiskSnapshot | null | undefined,
   activityCount: number,
-  activitySourceLabel: string,
+  activitySourceId: ActivitySourceId,
 ) {
   if (!snapshot) {
     return "Awaiting runtime summary.";
   }
 
-  const sourceSummary = activityCount > 0 ? `${activityCount} recent ${activitySourceLabel.toLowerCase()} items ready.` : null;
+  const sourceSummary = buildActivitySourceSummary(activityCount, activitySourceId);
 
   if (!riskSnapshot) {
     return [`Node ${snapshot.node.status}.`, "Risk snapshot pending.", sourceSummary].filter(Boolean).join(" ");
@@ -168,7 +189,7 @@ export function OverviewPage({
   );
   const lastUpdated = freshestTimestamp ? <LastUpdatedBadge stale={isStale} timestamp={freshestTimestamp} /> : null;
   const activityRail = buildActivityRailState(t, auditSnapshot, recentRoutes);
-  const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceLabel);
+  const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceId);
   const nodeTone = snapshot ? toNodeTone(snapshot.node.status) : "neutral";
   const riskTone = riskSnapshot ? toRiskTone(riskSnapshot.summary.risk_level) : "neutral";
 
