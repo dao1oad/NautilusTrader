@@ -104,12 +104,14 @@
 - 2026-03-27 已为 issue `#19` 补齐 `workspace/runbooks/remote-output-issue-19.md` 与 pending `workspace/handoffs/review-resolution-issue-19.md`，并再次确认 `pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`、`cd apps/admin-web && npm test -- --run`、`npm run build`、`pwsh -NoProfile -File scripts/check-governance.ps1` 与 `git diff --check` 全部通过。
 - 2026-03-27 issue `#19` 已完成本地 pre-PR review rerun：`workspace/handoffs/local-review-issue-19.md` 状态更新为 `approved`，`workspace/handoffs/review-resolution-issue-19.md` 状态更新为 `accepted`；复核证据覆盖 targeted backend pytest、`src/test/trading-read-only-surfaces.test.tsx`、full admin-web Vitest、frontend build、governance check 与 `git diff --check`。
 - 2026-03-27 PR `#42` 已由分支 `codex/issue-19-phase-3a-blotter-fills-and-position-drill-down` 打开到 `main`；首轮 `pr-gate` 暴露的 truth-doc 缺口已在 `architecture` / `integrations` / `module-boundaries` 三份真值文档中补齐。
+- 2026-03-28 已创建 GitHub issue `#52`：`Admin web display-only i18n for English and Simplified Chinese`，用于承接 admin-web 仅界面文案国际化的主线收口。
+- 2026-03-28 分支 `codex/admin-web-i18n-plan` 已完成 admin-web display-only i18n 的本地实现与 review 闭环：浏览器当前仅支持 `en` 与 `zh-CN` 两个 locale，provider-scoped catalog override 会合并内置英文并让 `zh-CN` 缺失 key 回退到合并后的英文；后端 payload message、status、ID、target、timestamp 与 route path 保持未翻译。
 
 ## Next Actions
 
-1. 监控 PR `#42` 的 `pr-gate`、`pre-commit` 与其余远端检查结果，并处理任何新反馈。
-2. 继续保持 `workspace/handoffs/local-review-issue-19.md` 与 `workspace/handoffs/review-resolution-issue-19.md` 作为该 PR 的本地 review 证据。
-3. 保持 issue `#20` 与 `#21` 继续阻塞，直到 issue `#19` 合并后再解锁后续 Phase 3 子任务。
+1. 为 issue `#52` 提交 truth-doc、memory 与本地 review 证据，然后从 `codex/admin-web-i18n-plan` 打开面向 `main` 的 PR。
+2. 监控 issue `#52` 对应 PR 的 `pr-gate`、`governance-check` 与其余远端检查结果，并在全部通过后合并到 `main`。
+3. 合并后同步本地 `main`、关闭 issue `#52`，并清理 `codex/admin-web-i18n-plan` worktree。
 
 ## Repository
 

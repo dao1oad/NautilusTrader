@@ -2,6 +2,7 @@
 
 | Issue | Title | Priority | Dependencies | State | Parallel | Execution | Worker | Job | Branch | PR | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #52 | Admin web display-only i18n for English and Simplified Chinese | Medium | None | ready | No | awaiting-local-review | localhost | manual-admin-web-i18n-plan-2026-03-28 | codex/admin-web-i18n-plan | TBD | Open PR to main |
 | #51 | Admin terminal editorial redesign | Medium | None | ready | No | awaiting-pr-checks | localhost | manual-admin-terminal-redesign-2026-03-28 | codex/admin-terminal-editorial-redesign | 50 | Monitor PR #50 checks |
 | #24 | Phase 4C: frontend hosting, packaging, E2E, and delivery hardening | Medium | 22, 23 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
 | #23 | Phase 4B: unified workbench navigation and workspace model | Medium | 22 | blocked | No | idle | TBD | TBD | TBD | TBD | Resolve dependency |
