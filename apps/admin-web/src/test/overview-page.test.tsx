@@ -210,6 +210,22 @@ test("renders runtime summary tiles inside the command center", () => {
 });
 
 
+test("localizes overview page-owned copy in Simplified Chinese", async () => {
+  apiMocks.getOverviewSnapshot.mockResolvedValue(createOverviewSnapshot());
+  apiMocks.getRiskSnapshot.mockResolvedValue(createRiskSnapshot());
+  apiMocks.getAuditSnapshot.mockResolvedValue(createAuditSnapshot());
+
+  renderOverviewRoute(<OverviewRoutePage />, { locale: "zh-CN" });
+
+  expect(await screen.findByRole("heading", { name: "命令中心" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "运行时总览" })).toBeInTheDocument();
+  expect(screen.getByText("节点状态")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "风险快照" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "最近活动" })).toBeInTheDocument();
+  expect(screen.getByText("Page title: 命令中心")).toBeInTheDocument();
+});
+
+
 test("renders stale banner when connection is stale and no overview snapshot is available", () => {
   render(<OverviewPage connectionState="stale" snapshot={null} error={null} />);
   expect(screen.getByText("Connection stale")).toBeInTheDocument();
@@ -277,7 +293,7 @@ test("falls back to locale-safe route memory when no audit activity is available
 
   renderOverviewRoute(<OverviewRoutePage />, { locale: "zh-CN" });
 
-  expect(await screen.findByRole("heading", { name: "Recent activity" })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "最近活动" })).toBeInTheDocument();
   expect(screen.getAllByText("本地路由记忆").length).toBeGreaterThan(0);
   expect(screen.getByText("风控中心")).toBeInTheDocument();
   expect(screen.getByText("数据目录")).toBeInTheDocument();

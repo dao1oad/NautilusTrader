@@ -302,7 +302,77 @@ test("localizes shared trading list chrome in Simplified Chinese", async () => {
   expect(screen.getByRole("button", { name: "上一页" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "下一页" })).toBeInTheDocument();
   expect(screen.getByText("第 1-2 行，共 2 行")).toBeInTheDocument();
-  expect(screen.getByRole("region", { name: "Blotter 表格视口" })).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "订单台 表格视口" })).toBeInTheDocument();
+});
+
+
+test("localizes trading page-owned copy in Simplified Chinese", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T00:00:00Z",
+      limit: 100,
+      partial: false,
+      items: [
+        {
+          client_order_id: "O-BTC-1",
+          instrument_id: "BTCUSDT-PERP.BINANCE",
+          side: "buy",
+          quantity: "0.50",
+          status: "accepted"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<OrdersPage />, createQueryClient(), { connectionState: "connected", error: null }, "zh-CN");
+
+  expect(await screen.findByText("O-BTC-1")).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "订单台" })).toBeInTheDocument();
+  expect(screen.getByText("当前有界订单窗口内的活动订单流、执行态势与最新簿记活动。")).toBeInTheDocument();
+  expect(screen.getByPlaceholderText("按订单 ID、品种、方向、数量或状态筛选")).toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "订单台" })).toBeInTheDocument();
+});
+
+
+test("localizes position drill-down labels in Simplified Chinese", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T00:00:00Z",
+      limit: 100,
+      partial: false,
+      items: [
+        {
+          position_id: "P-1001",
+          instrument_id: "BTCUSDT-PERP.BINANCE",
+          side: "long",
+          quantity: "0.25",
+          entry_price: "64125.0",
+          unrealized_pnl: "125.5",
+          realized_pnl: "42.0",
+          opened_at: "2026-03-27T00:00:00Z",
+          updated_at: "2026-03-27T00:05:00Z"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<PositionsPage />, createQueryClient(), { connectionState: "connected", error: null }, "zh-CN");
+
+  const toggleButton = await screen.findByRole("button", { name: "查看 BTCUSDT-PERP.BINANCE 的详情" });
+
+  fireEvent.click(toggleButton);
+
+  expect(await screen.findByRole("heading", { name: "持仓详情" })).toBeInTheDocument();
+  expect(screen.getByText("入场价格")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "隐藏 BTCUSDT-PERP.BINANCE 的详情" })).toBeInTheDocument();
 });
 
 
@@ -891,6 +961,54 @@ test("shows degraded risk snapshots explicitly", async () => {
     screen.getByText((_, element) => element?.tagName === "LI" && element.textContent === "risk: One venue risk feed is delayed.")
   ).toBeInTheDocument();
   expect(screen.getByText("Derivatives risk feed is delayed by 12 seconds.")).toBeInTheDocument();
+});
+
+
+test("localizes risk page-owned copy in Simplified Chinese", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T08:57:00Z",
+      partial: false,
+      summary: {
+        trading_state: "reducing",
+        risk_level: "elevated",
+        margin_utilization: "0.54",
+        exposure_utilization: "0.67",
+        active_alerts: 2,
+        blocked_actions: 1
+      },
+      events: [
+        {
+          event_id: "margin-buffer-warning",
+          severity: "warn",
+          title: "Margin buffer narrowing",
+          message: "BTC book is using 54% of the configured margin budget.",
+          occurred_at: "2026-03-27T08:55:00Z"
+        }
+      ],
+      blocks: [
+        {
+          block_id: "reduce-only-btc",
+          scope: "orders/BTCUSDT-PERP.BINANCE",
+          reason: "Reduce-only guard enabled while the margin cushion recovers.",
+          status: "active",
+          raised_at: "2026-03-27T08:57:00Z"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<RiskPage />, createQueryClient(), { connectionState: "connected", error: null }, "zh-CN");
+
+  expect(await screen.findByRole("heading", { name: "风控中心" })).toBeInTheDocument();
+  expect(screen.getByText("即时护栏态势")).toBeInTheDocument();
+  expect(screen.getByText("风控事件")).toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "激活中的阻断" })).toBeInTheDocument();
+  expect(screen.getByText("Page title: 风控中心")).toBeInTheDocument();
 });
 
 

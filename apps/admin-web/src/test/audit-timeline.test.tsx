@@ -6,6 +6,7 @@ import { AdminRuntimeProvider } from "../app/admin-runtime";
 import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { AuditTimeline } from "../features/audit/audit-timeline";
 import { ConfigDiffPage } from "../features/config/config-diff-page";
+import { TestProviders } from "./setup";
 
 
 function WorkbenchShellMetaProbe() {
@@ -21,7 +22,7 @@ function WorkbenchShellMetaProbe() {
   );
 }
 
-function renderWithRuntime(ui: ReactElement) {
+function renderWithRuntime(ui: ReactElement, locale: "en" | "zh-CN" = "en") {
   const client = new QueryClient({
     defaultOptions: {
       queries: {
@@ -31,19 +32,21 @@ function renderWithRuntime(ui: ReactElement) {
   });
 
   return render(
-    <QueryClientProvider client={client}>
-      <AdminRuntimeProvider
-        value={{
-          connectionState: "connected",
-          error: null
-        }}
-      >
-        <WorkbenchShellMetaProvider>
-          <WorkbenchShellMetaProbe />
-          {ui}
-        </WorkbenchShellMetaProvider>
-      </AdminRuntimeProvider>
-    </QueryClientProvider>
+    <TestProviders locale={locale}>
+      <QueryClientProvider client={client}>
+        <AdminRuntimeProvider
+          value={{
+            connectionState: "connected",
+            error: null
+          }}
+        >
+          <WorkbenchShellMetaProvider>
+            <WorkbenchShellMetaProbe />
+            {ui}
+          </WorkbenchShellMetaProvider>
+        </AdminRuntimeProvider>
+      </QueryClientProvider>
+    </TestProviders>
   );
 }
 
@@ -191,4 +194,86 @@ test("renders config diff guardrails and recovery runbooks", async () => {
   expect(screen.getByText("Page title: Config diff")).toBeInTheDocument();
   expect(screen.getByText("Last updated: 2026-03-26T00:00:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/config/diff");
+});
+
+
+test("localizes audit and config page-owned copy in Simplified Chinese", async () => {
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        generated_at: "2026-03-26T00:00:00Z",
+        partial: false,
+        items: [
+          {
+            sequence_id: 2,
+            command_id: "cmd-2",
+            command: "adapter.connect",
+            target: "adapters/ib",
+            status: "failed",
+            payload: { adapter_id: "ib" },
+            recorded_at: "2026-03-26T00:00:02Z",
+            message: "Adapter 'ib' was not found.",
+            failure: {
+              code: "not_found",
+              message: "Adapter 'ib' was not found.",
+              retryable: false,
+              details: {}
+            }
+          }
+        ],
+        errors: []
+      })
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        generated_at: "2026-03-26T00:00:00Z",
+        items: [
+          {
+            key: "command.confirmation.required",
+            summary: "All low-risk commands require an explicit UI confirmation step.",
+            desired: "enabled",
+            actual: "enabled",
+            status: "in_sync",
+            runbook_id: null
+          }
+        ],
+        runbooks: [
+          {
+            runbook_id: "verify-command-guardrails",
+            title: "Verify command guardrails",
+            summary: "Confirm the local admin control plane still blocks high-risk actions.",
+            steps: ["Check the config diff entries."]
+          }
+        ]
+      })
+    });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  const { rerender } = renderWithRuntime(<AuditTimeline />, "zh-CN");
+
+  expect(await screen.findByText("操作回执流")).toBeInTheDocument();
+  expect(screen.getByText("结果状态")).toBeInTheDocument();
+  expect(screen.getByText("恢复指引")).toBeInTheDocument();
+  expect(screen.getByText("Page title: 审计时间线")).toBeInTheDocument();
+
+  rerender(
+    <TestProviders locale="zh-CN">
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <AdminRuntimeProvider value={{ connectionState: "connected", error: null }}>
+          <WorkbenchShellMetaProvider>
+            <WorkbenchShellMetaProbe />
+            <ConfigDiffPage />
+          </WorkbenchShellMetaProvider>
+        </AdminRuntimeProvider>
+      </QueryClientProvider>
+    </TestProviders>
+  );
+
+  expect(await screen.findByText("护栏漂移账本")).toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "配置差异" })).toBeInTheDocument();
+  expect(screen.getByText("Page title: 配置差异")).toBeInTheDocument();
 });

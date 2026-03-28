@@ -1,56 +1,69 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getPositionsSnapshot, READ_ONLY_DEFAULT_LIMIT } from "../../shared/api/admin-client";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { adminQueryKeys } from "../../shared/query/query-client";
 import type { PositionSummary } from "../../shared/types/admin";
 import { AdminListPage } from "../read-only/admin-list-page";
 
 
 const TRADING_PAGE_SIZE = 25;
+type PositionsTranslator = ReturnType<typeof useI18n>["t"];
 
-const POSITION_COLUMNS = [
-  {
-    header: "Instrument",
-    render: (position: PositionSummary) => position.instrument_id
-  },
-  {
-    header: "Side",
-    render: (position: PositionSummary) => position.side
-  },
-  {
-    header: "Quantity",
-    render: (position: PositionSummary) => position.quantity
-  }
-] as const;
+function buildPositionColumns(t: PositionsTranslator) {
+  return [
+    {
+      header: t("pages.positions.columns.instrument"),
+      render: (position: PositionSummary) => position.instrument_id
+    },
+    {
+      header: t("pages.positions.columns.side"),
+      render: (position: PositionSummary) => position.side
+    },
+    {
+      header: t("pages.positions.columns.quantity"),
+      render: (position: PositionSummary) => position.quantity
+    }
+  ] as const;
+}
 
 type PositionDetailField = {
   label: string;
   value: string | null | undefined;
+  fallback: string;
 };
 
-function renderPositionDetailField({ label, value }: PositionDetailField) {
-  return (
-    <div key={label}>
-      <dt>{label}</dt>
-      <dd>{value ?? "Unavailable"}</dd>
-    </div>
-  );
-}
-
-function renderPositionDrillDown(position: PositionSummary) {
+function renderPositionDrillDown(t: PositionsTranslator, position: PositionSummary) {
   const detailFields: PositionDetailField[] = [
-    { label: "Position", value: position.position_id },
-    { label: "Instrument", value: position.instrument_id },
-    { label: "Side", value: position.side },
-    { label: "Quantity", value: position.quantity },
-    { label: "Entry price", value: position.entry_price },
-    { label: "Unrealized PnL", value: position.unrealized_pnl },
-    { label: "Realized PnL", value: position.realized_pnl },
-    { label: "Opened at", value: position.opened_at },
-    { label: "Updated at", value: position.updated_at }
+    { label: t("pages.positions.details.position"), value: position.position_id, fallback: t("pages.positions.unavailable") },
+    { label: t("pages.positions.details.instrument"), value: position.instrument_id, fallback: t("pages.positions.unavailable") },
+    { label: t("pages.positions.details.side"), value: position.side, fallback: t("pages.positions.unavailable") },
+    { label: t("pages.positions.details.quantity"), value: position.quantity, fallback: t("pages.positions.unavailable") },
+    { label: t("pages.positions.details.entryPrice"), value: position.entry_price, fallback: t("pages.positions.unavailable") },
+    {
+      label: t("pages.positions.details.unrealizedPnl"),
+      value: position.unrealized_pnl,
+      fallback: t("pages.positions.unavailable")
+    },
+    {
+      label: t("pages.positions.details.realizedPnl"),
+      value: position.realized_pnl,
+      fallback: t("pages.positions.unavailable")
+    },
+    { label: t("pages.positions.details.openedAt"), value: position.opened_at, fallback: t("pages.positions.unavailable") },
+    { label: t("pages.positions.details.updatedAt"), value: position.updated_at, fallback: t("pages.positions.unavailable") }
   ];
 
-  return <dl className="resource-detail-grid">{detailFields.map(renderPositionDetailField)}</dl>;
+  return (
+    <dl className="resource-detail-grid">
+      {detailFields.map((field) => (
+        <div key={field.label}>
+          <dt>{field.label}</dt>
+          <dd>{field.value ?? field.fallback}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 function getPositionSearchText(position: PositionSummary) {
@@ -78,6 +91,7 @@ function getPositionRowKey(position: PositionSummary, _index: number) {
 }
 
 export function PositionsPage() {
+  const { t } = useI18n();
   const query = useQuery({
     queryKey: adminQueryKeys.positions(READ_ONLY_DEFAULT_LIMIT),
     queryFn: () => getPositionsSnapshot(READ_ONLY_DEFAULT_LIMIT)
@@ -85,24 +99,26 @@ export function PositionsPage() {
 
   return (
     <AdminListPage
-      columns={POSITION_COLUMNS}
-      emptyDescription="No positions are currently reported by the admin API."
+      columns={buildPositionColumns(t)}
+      emptyDescription={t("pages.positions.emptyDescription")}
       filter={{
         getSearchText: getPositionSearchText,
-        placeholder: "Filter by position id, instrument, side, quantity, price, or pnl"
+        placeholder: t("pages.positions.filterPlaceholder")
       }}
       getRowKey={getPositionRowKey}
-      loadingDescription="Loading the latest position diagnostics."
+      loadingDescription={t("pages.positions.loadingDescription")}
       pagination={{ pageSize: TRADING_PAGE_SIZE }}
       query={query}
-      summaryCopy="Open inventory, side bias, and drill-down context for the currently projected positions."
-      tableLabel="Positions"
-      title="Positions"
+      summaryCopy={t("pages.positions.summaryCopy")}
+      tableLabel={t("pages.positions.tableLabel")}
+      title={t("pages.positions.title")}
       drillDown={{
-        title: "Position details",
+        title: t("pages.positions.drillDownTitle"),
         getButtonLabel: (position, _index, expanded) =>
-          `${expanded ? "Hide" : "View"} details for ${position.instrument_id}`,
-        render: renderPositionDrillDown
+          expanded
+            ? t("pages.positions.hideDetails", { instrumentId: position.instrument_id })
+            : t("pages.positions.viewDetails", { instrumentId: position.instrument_id }),
+        render: (position) => renderPositionDrillDown(t, position)
       }}
     />
   );

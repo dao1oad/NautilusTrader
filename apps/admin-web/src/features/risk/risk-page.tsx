@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminRuntime } from "../../app/admin-runtime";
 import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import { getRiskSnapshot } from "../../shared/api/admin-client";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { adminQueryKeys } from "../../shared/query/query-client";
 import type { RiskSnapshot } from "../../shared/types/admin";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
@@ -12,20 +13,6 @@ import { SectionPanel } from "../../shared/ui/section-panel";
 import { SignalPill, type SignalTone } from "../../shared/ui/signal-pill";
 
 
-const RISK_CENTER_COPY = "Immediate guardrail posture, alert stream, and hard constraints for local trading operations.";
-
-const SUMMARY_FIELDS: Array<{
-  detail: string;
-  label: string;
-  key: keyof RiskSnapshot["summary"];
-}> = [
-  { detail: "Current severity projected by the local risk engine.", label: "Risk level", key: "risk_level" },
-  { detail: "Hard constraints currently projected.", label: "Blocked actions", key: "blocked_actions" },
-  { detail: "Signals currently flowing into the alert stream.", label: "Active alerts", key: "active_alerts" },
-  { detail: "Current operator posture from the risk engine.", label: "Trading state", key: "trading_state" },
-  { detail: "Configured margin window currently consumed.", label: "Margin utilization", key: "margin_utilization" },
-  { detail: "Risk window currently consumed by live exposures.", label: "Exposure utilization", key: "exposure_utilization" }
-];
 const DETAIL_LIST_STYLE = {
   display: "grid",
   gap: "16px",
@@ -63,6 +50,7 @@ const CONSTRAINT_SCOPE_STYLE = {
   fontWeight: 700,
   margin: 0
 } as const;
+type RiskTranslator = ReturnType<typeof useI18n>["t"];
 
 function formatTerminalTimestamp(timestamp: string) {
   const date = new Date(timestamp);
@@ -138,16 +126,60 @@ function toSummaryTone(field: keyof RiskSnapshot["summary"], value: RiskSnapshot
   }
 }
 
-function buildRiskStatusSummary(snapshot: RiskSnapshot | null) {
+function buildRiskSummaryFields(t: RiskTranslator) {
+  return [
+    {
+      detail: t("pages.risk.summaryFields.riskLevel.detail"),
+      label: t("pages.risk.summaryFields.riskLevel.label"),
+      key: "risk_level"
+    },
+    {
+      detail: t("pages.risk.summaryFields.blockedActions.detail"),
+      label: t("pages.risk.summaryFields.blockedActions.label"),
+      key: "blocked_actions"
+    },
+    {
+      detail: t("pages.risk.summaryFields.activeAlerts.detail"),
+      label: t("pages.risk.summaryFields.activeAlerts.label"),
+      key: "active_alerts"
+    },
+    {
+      detail: t("pages.risk.summaryFields.tradingState.detail"),
+      label: t("pages.risk.summaryFields.tradingState.label"),
+      key: "trading_state"
+    },
+    {
+      detail: t("pages.risk.summaryFields.marginUtilization.detail"),
+      label: t("pages.risk.summaryFields.marginUtilization.label"),
+      key: "margin_utilization"
+    },
+    {
+      detail: t("pages.risk.summaryFields.exposureUtilization.detail"),
+      label: t("pages.risk.summaryFields.exposureUtilization.label"),
+      key: "exposure_utilization"
+    }
+  ] as const satisfies Array<{
+    detail: string;
+    label: string;
+    key: keyof RiskSnapshot["summary"];
+  }>;
+}
+
+function buildRiskStatusSummary(t: RiskTranslator, snapshot: RiskSnapshot | null) {
   if (!snapshot) {
-    return "Awaiting the latest risk posture.";
+    return t("pages.risk.status.awaiting");
   }
 
-  return `${snapshot.summary.risk_level} risk, ${snapshot.summary.active_alerts} alerts, ${snapshot.summary.blocked_actions} blocked actions.`;
+  return t("pages.risk.status.summary", {
+    riskLevel: snapshot.summary.risk_level,
+    activeAlerts: snapshot.summary.active_alerts,
+    blockedActions: snapshot.summary.blocked_actions
+  });
 }
 
 export function RiskPage() {
   const { connectionState, error: runtimeError } = useAdminRuntime();
+  const { t } = useI18n();
   const query = useQuery({
     queryKey: adminQueryKeys.risk(),
     queryFn: getRiskSnapshot
@@ -158,32 +190,46 @@ export function RiskPage() {
   const hasCachedError = Boolean(error) && Boolean(snapshot);
   const isStale = connectionState === "stale" || hasCachedError;
   const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
+  const pageTitle = t("pages.risk.title");
+  const workbenchCopy = t("pages.risk.copy");
 
   useWorkbenchShellMeta({
     lastUpdated: snapshot?.generated_at ?? null,
-    pageTitle: "Risk center",
-    statusSummary: buildRiskStatusSummary(snapshot),
-    workbenchCopy: RISK_CENTER_COPY
+    pageTitle,
+    statusSummary: buildRiskStatusSummary(t, snapshot),
+    workbenchCopy
   });
 
   if (query.isLoading && !snapshot) {
-    return <PageState kind="loading" title="Loading risk center" description="Loading margin and risk controls." />;
+    return (
+      <PageState
+        kind="loading"
+        title={t("pages.risk.pageState.loadingTitle")}
+        description={t("pages.risk.pageState.loadingDescription")}
+      />
+    );
   }
 
   if (error && !snapshot) {
-    return <PageState kind="error" title="Risk center unavailable" description={error} />;
+    return <PageState kind="error" title={t("pages.risk.pageState.unavailableTitle")} description={error} />;
   }
 
   if (!snapshot) {
-    return <PageState kind="loading" title="Loading risk center" description="Waiting for risk state." />;
+    return (
+      <PageState
+        kind="loading"
+        title={t("pages.risk.pageState.loadingTitle")}
+        description={t("pages.risk.pageState.waitingDescription")}
+      />
+    );
   }
 
   if (isStale) {
     return (
       <PageState
         kind="stale"
-        title="Risk center"
-        description={error ?? "Showing the last successfully received risk snapshot."}
+        title={pageTitle}
+        description={error ?? t("pages.risk.pageState.staleDescription")}
         meta={lastUpdated}
       />
     );
@@ -192,13 +238,19 @@ export function RiskPage() {
   return (
     <div className="resource-stack risk-command-center">
       <SectionPanel
-        description={RISK_CENTER_COPY}
-        eyebrow="Immediate guardrail posture"
+        description={workbenchCopy}
+        eyebrow={t("pages.risk.header.eyebrow")}
         meta={lastUpdated}
-        signal={<SignalPill detail="risk level" label={snapshot.summary.risk_level} tone={toRiskTone(snapshot.summary.risk_level)} />}
-        title="Risk center"
+        signal={
+          <SignalPill
+            detail={t("pages.risk.signal.detail")}
+            label={snapshot.summary.risk_level}
+            tone={toRiskTone(snapshot.summary.risk_level)}
+          />
+        }
+        title={pageTitle}
       >
-        {snapshot.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
+        {snapshot.partial ? <p className="resource-alert">{t("pages.risk.alerts.partialSnapshot")}</p> : null}
         {snapshot.errors.length > 0 ? (
           <ul className="resource-errors">
             {snapshot.errors.map((resourceError) => (
@@ -209,8 +261,8 @@ export function RiskPage() {
             ))}
           </ul>
         ) : null}
-        <div aria-label="Risk summary" className="metric-grid">
-          {SUMMARY_FIELDS.map((field) => (
+        <div aria-label={t("pages.risk.summaryAriaLabel")} className="metric-grid">
+          {buildRiskSummaryFields(t).map((field) => (
             <MetricTile
               detail={field.detail}
               key={field.label}
@@ -223,12 +275,12 @@ export function RiskPage() {
       </SectionPanel>
 
       <SectionPanel
-        description="Projected alerts are listed as a live operator stream for attention and escalation."
-        eyebrow="Alert stream"
-        title="Risk events"
+        description={t("pages.risk.events.description")}
+        eyebrow={t("pages.risk.events.eyebrow")}
+        title={t("pages.risk.events.title")}
       >
         {snapshot.events.length === 0 ? (
-          <p className="resource-filter-empty">No active risk events are currently projected.</p>
+          <p className="resource-filter-empty">{t("pages.risk.events.emptyDescription")}</p>
         ) : (
           <ul style={DETAIL_LIST_STYLE}>
             {snapshot.events.map((event) => (
@@ -257,20 +309,20 @@ export function RiskPage() {
       </SectionPanel>
 
       <SectionPanel
-        description="Active blocks are shown as hard constraints that bound what operators can do locally."
-        eyebrow="Hard constraints"
-        title="Active blocks"
+        description={t("pages.risk.blocks.description")}
+        eyebrow={t("pages.risk.blocks.eyebrow")}
+        title={t("pages.risk.blocks.title")}
       >
         {snapshot.blocks.length === 0 ? (
-          <p className="resource-filter-empty">No active risk blocks are currently projected.</p>
+          <p className="resource-filter-empty">{t("pages.risk.blocks.emptyDescription")}</p>
         ) : (
-          <table aria-label="Active blocks" className="resource-table">
+          <table aria-label={t("pages.risk.blocks.tableLabel")} className="resource-table">
             <thead>
               <tr>
-                <th scope="col">Scope</th>
-                <th scope="col">Raised</th>
-                <th scope="col">Reason</th>
-                <th scope="col">Status</th>
+                <th scope="col">{t("pages.risk.blocks.columns.scope")}</th>
+                <th scope="col">{t("pages.risk.blocks.columns.raised")}</th>
+                <th scope="col">{t("pages.risk.blocks.columns.reason")}</th>
+                <th scope="col">{t("pages.risk.blocks.columns.status")}</th>
               </tr>
             </thead>
             <tbody>
