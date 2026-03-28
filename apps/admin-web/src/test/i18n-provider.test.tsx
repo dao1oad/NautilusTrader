@@ -1,8 +1,10 @@
+import { StrictMode } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 
 import { I18nProvider, resolveInitialLocale } from "../shared/i18n/i18n-provider";
 import { LOCALE_STORAGE_KEY } from "../shared/i18n/locale";
 import { useI18n } from "../shared/i18n/use-i18n";
+import * as localeModule from "../shared/i18n/locale";
 
 
 function createStorage(initialLocale: string | null): Storage {
@@ -45,6 +47,10 @@ function I18nProbe() {
   );
 }
 
+function ThrowingProbe() {
+  throw new Error("render exploded");
+}
+
 test("resolves the initial locale from persisted or navigator languages", () => {
   expect(resolveInitialLocale({ persistedLocale: "zh-CN", navigatorLanguages: ["en-US"] })).toBe("zh-CN");
   expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh"] })).toBe("zh-CN");
@@ -61,17 +67,47 @@ test("resolves the initial locale from persisted or navigator languages", () => 
 
 test("repairs invalid persisted locales by writing the resolved value back to storage", async () => {
   const storage = createStorage("broken");
+  const setActiveLocaleSpy = vi.spyOn(localeModule, "setActiveLocale");
 
   render(
-    <I18nProvider navigatorLanguages={["zh-Hans"]} storage={storage}>
-      <I18nProbe />
-    </I18nProvider>
+    <StrictMode>
+      <I18nProvider navigatorLanguages={["zh-Hans"]} storage={storage}>
+        <I18nProbe />
+      </I18nProvider>
+    </StrictMode>
   );
 
   expect(screen.getByTestId("locale")).toHaveTextContent("zh-CN");
   await waitFor(() => {
     expect(storage.setItem).toHaveBeenCalledWith(LOCALE_STORAGE_KEY, "zh-CN");
+    expect(storage.setItem).toHaveBeenCalledTimes(1);
+    expect(setActiveLocaleSpy).toHaveBeenCalledWith("zh-CN");
+    expect(setActiveLocaleSpy).toHaveBeenCalledTimes(1);
+    expect(localeModule.getActiveLocale()).toBe("zh-CN");
   });
+});
+
+
+test("does not repair storage or mutate the active locale when render aborts before commit", () => {
+  const storage = createStorage("broken");
+  const setActiveLocaleSpy = vi.spyOn(localeModule, "setActiveLocale");
+  const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+  expect(() =>
+    render(
+      <StrictMode>
+        <I18nProvider navigatorLanguages={["zh-Hans"]} storage={storage}>
+          <ThrowingProbe />
+        </I18nProvider>
+      </StrictMode>
+    )
+  ).toThrow("render exploded");
+
+  expect(storage.setItem).not.toHaveBeenCalled();
+  expect(setActiveLocaleSpy).not.toHaveBeenCalled();
+  expect(localeModule.getActiveLocale()).toBe("en");
+
+  consoleErrorSpy.mockRestore();
 });
 
 

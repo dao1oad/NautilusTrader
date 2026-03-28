@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useLayoutEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import {
@@ -10,6 +10,7 @@ import {
 } from "./catalog";
 import {
   DEFAULT_LOCALE,
+  getActiveLocale,
   LOCALE_STORAGE_KEY,
   getNavigatorLanguages,
   normalizeLocale,
@@ -90,25 +91,32 @@ export function I18nProvider({
   storage = getDefaultStorage(),
   warn
 }: I18nProviderProps) {
-  const [state, setState] = useState(() => {
-    const initialState = resolveInitialLocaleState(storage, navigatorLanguages);
-
-    setActiveLocale(initialState.locale);
-    if (initialState.shouldRepairStorage) {
-      storage?.setItem(LOCALE_STORAGE_KEY, initialState.locale);
-    }
-
-    return initialState;
-  });
+  const [state, setState] = useState(() => resolveInitialLocaleState(storage, navigatorLanguages));
 
   const currentMode = resolveMode(mode);
+
+  useLayoutEffect(() => {
+    if (getActiveLocale() !== state.locale) {
+      setActiveLocale(state.locale);
+    }
+
+    if (state.shouldRepairStorage && storage?.getItem(LOCALE_STORAGE_KEY) !== state.locale) {
+      storage?.setItem(LOCALE_STORAGE_KEY, state.locale);
+    }
+  }, [state.locale, state.shouldRepairStorage, storage]);
 
   function setLocale(next: SupportedLocale) {
     setActiveLocale(next);
     storage?.setItem(LOCALE_STORAGE_KEY, next);
-    setState({
-      locale: next,
-      shouldRepairStorage: false
+    setState((currentState) => {
+      if (currentState.locale === next && currentState.shouldRepairStorage === false) {
+        return currentState;
+      }
+
+      return {
+        locale: next,
+        shouldRepairStorage: false
+      };
     });
   }
 
