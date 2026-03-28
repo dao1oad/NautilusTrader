@@ -48,6 +48,12 @@ function I18nProbe() {
   );
 }
 
+function RecentViewsProbe() {
+  const { t } = useI18n();
+
+  return <p data-testid="recent-views">{t("chrome.recentViews")}</p>;
+}
+
 function LocaleSetterProbe() {
   const { locale, setLocale, t } = useI18n();
 
@@ -151,6 +157,34 @@ test("warns in development and falls back to English when a locale key is missin
 
   expect(screen.getByTestId("message")).toHaveTextContent("NautilusTrader Admin");
   expect(warn).toHaveBeenCalledWith(expect.stringContaining('Missing i18n key "chrome.appName" for locale "zh-CN"'));
+});
+
+test("falls back to merged built-in English keys when provider overrides are partial", () => {
+  const warn = vi.fn();
+
+  render(
+    <I18nProvider
+      catalogs={{
+        en: {
+          chrome: {
+            appName: "Custom Admin"
+          }
+        },
+        "zh-CN": {
+          chrome: {}
+        }
+      }}
+      navigatorLanguages={["zh-CN"]}
+      storage={createStorage(null)}
+      warn={warn}
+      mode="development"
+    >
+      <RecentViewsProbe />
+    </I18nProvider>
+  );
+
+  expect(screen.getByTestId("recent-views")).toHaveTextContent("Recent views");
+  expect(warn).toHaveBeenCalledWith(expect.stringContaining('Missing i18n key "chrome.recentViews" for locale "zh-CN"'));
 });
 
 

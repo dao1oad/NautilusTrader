@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 
 import {
   catalogs as defaultCatalogs,
+  mergeCatalogOverrides,
   translateCatalog,
-  type CatalogCollection,
+  type CatalogOverrides,
   type MessageKey,
   type TranslationParams
 } from "./catalog";
@@ -37,7 +38,7 @@ export const I18nContext = createContext<I18nContextValue>({
 
 type I18nProviderProps = {
   children: ReactNode;
-  catalogs?: CatalogCollection;
+  catalogs?: CatalogOverrides;
   mode?: "development" | "production";
   navigatorLanguages?: readonly string[];
   storage?: LocaleStorage;
@@ -84,6 +85,7 @@ export function I18nProvider({
   warn
 }: I18nProviderProps) {
   const [state, setState] = useState(() => resolveInitialLocaleState(storage, navigatorLanguages));
+  const catalogCollection = catalogs ? mergeCatalogOverrides(catalogs) : defaultCatalogs;
 
   useLayoutEffect(() => {
     if (getActiveLocale() !== state.locale) {
@@ -112,7 +114,7 @@ export function I18nProvider({
 
   function t(key: MessageKey, params?: TranslationParams) {
     return translateCatalog(state.locale, key, params, {
-      catalogCollection: catalogs,
+      catalogCollection,
       mode,
       warn
     });

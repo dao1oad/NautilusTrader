@@ -26,10 +26,44 @@ export type CatalogCollection = {
   "zh-CN": PartialMessageCatalog;
 };
 
+export type CatalogOverrides = Partial<Record<SupportedLocale, PartialMessageCatalog>>;
+
 export const catalogs = {
   en,
   "zh-CN": zhCN
 } satisfies Record<SupportedLocale, MessageCatalog>;
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeCatalogValue<TValue>(baseValue: TValue, overrideValue: unknown): TValue {
+  if (!isPlainObject(baseValue) || !isPlainObject(overrideValue)) {
+    return (overrideValue ?? baseValue) as TValue;
+  }
+
+  const mergedValue: Record<string, unknown> = { ...baseValue };
+
+  for (const [key, value] of Object.entries(overrideValue)) {
+    const baseChild = mergedValue[key];
+    mergedValue[key] = isPlainObject(baseChild) && isPlainObject(value)
+      ? mergeCatalogValue(baseChild, value)
+      : value;
+  }
+
+  return mergedValue as TValue;
+}
+
+export function mergeCatalogOverrides(overrides?: CatalogOverrides): CatalogCollection {
+  if (!overrides) {
+    return catalogs;
+  }
+
+  return {
+    en: mergeCatalogValue(catalogs.en, overrides.en),
+    "zh-CN": overrides["zh-CN"] ?? catalogs["zh-CN"]
+  };
+}
 
 type TranslateCatalogOptions = {
   catalogCollection?: CatalogCollection;

@@ -5,7 +5,7 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
 import { I18nProvider } from "../shared/i18n/i18n-provider";
-import type { CatalogCollection } from "../shared/i18n/catalog";
+import type { CatalogOverrides } from "../shared/i18n/catalog";
 import { queryClient } from "../shared/query/query-client";
 import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, setActiveLocale, type SupportedLocale } from "../shared/i18n/locale";
 
@@ -33,14 +33,14 @@ export function renderWithTheme(ui: ReactElement, options?: Omit<RenderOptions, 
 }
 
 type RenderWithProvidersOptions = Omit<RenderOptions, "wrapper"> & {
-  catalogs?: CatalogCollection;
+  catalogs?: CatalogOverrides;
   locale?: SupportedLocale;
   mode?: "development" | "production";
   warn?: (message: string) => void;
 };
 
 type TestProvidersProps = PropsWithChildren<{
-  catalogs?: CatalogCollection;
+  catalogs?: CatalogOverrides;
   locale: SupportedLocale;
   mode?: "development" | "production";
   warn?: (message: string) => void;

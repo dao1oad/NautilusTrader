@@ -118,7 +118,7 @@ test("surfaces accepted and completed receipts after a strategy control is confi
 
   expect(await screen.findByText("demo")).toBeInTheDocument();
 
-  fireEvent.click(screen.getByRole("button", { name: "Start strategy demo" }));
+  fireEvent.click(screen.getByRole("button", { name: "启动策略 demo" }));
   fireEvent.change(screen.getByLabelText("输入 START 以确认"), {
     target: { value: "START" }
   });
