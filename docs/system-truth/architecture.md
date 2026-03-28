@@ -10,7 +10,7 @@
 - `nautilus_trader/`: 用户可见的 Python 包源码树，包含大量 Cython `.pyx`/`.pxd` 模块与高层 Python 接口。
 - `nautilus_trader/admin/`: 管理控制面后端；负责把运行态状态、控制命令契约、审计记录以及 `Phase 4A` 的 backtest/report 摘要投影成稳定的 admin DTO，而不是把内部 `live`/`execution` object 直接暴露给浏览器。
 - `nautilus_trader/admin/static/`: 管理控制面前端交付目录；负责解析最终 admin-web bundle 的查找顺序（显式环境变量、包内静态目录、repo `apps/admin-web/dist`），并作为 wheel/sdist 中可携带的前端静态产物落点。
-- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime、bounded trading ops / analysis 页面、浏览器本地 workbench/workspace 状态，以及 `Phase 4C` 的 Playwright smoke / bundle budget delivery tooling，而不是直接接入底层 venue/runtime object。
+- `apps/admin-web/`: 浏览器管理控制台；负责组合 routed operator surface、shared query/realtime runtime、terminal-editorial workbench shell、bounded trading ops / analysis 页面、浏览器本地 workbench/workspace 状态，以及 `Phase 4C` 的 Playwright smoke / bundle budget delivery tooling，而不是直接接入底层 venue/runtime object。
 - `python/nautilus_trader/`: Python/PyO3 暴露层与类型桩，负责把编译产物组织成稳定的 Python import surface。
 - `schema/sql/`: 持久化后端的 SQL 类型、表、分区与函数定义。
 - `examples/`: 回测、实盘、sandbox 与工具示例。
@@ -46,5 +46,6 @@
 - `Phase 4C` 的最终交付模型固定为“同源 backend-hosted web bundle”：FastAPI 在不遮蔽 `/api/admin/*` 与 `/ws/admin/events` 的前提下托管构建后的 admin-web `index.html` 与静态资产；bundle 查找顺序固定为 `NAUTILUS_ADMIN_FRONTEND_DIR` -> `nautilus_trader/admin/static` -> `apps/admin-web/dist`。
 - `Phase 4C` 的 CI/交付硬化固定包含三条门禁：前端生产构建、bundle budget 检查、以及针对 backend-hosted bundle 的 Playwright smoke；桌面壳只保留评估结论，不进入当前实现面。
 - `Phase 4` 当前已经收敛为单一主线路径：操作员通过同一个浏览器 workbench 在 `Operations` 与 `Analysis` 间切换，并始终命中 FastAPI 同源托管的 admin-web bundle；不存在并行的桌面壳、独立前端部署真值或第二套导航/runtime 模型。
+- 当前 admin-web 的页面上下文收敛为 project-owned terminal-editorial shell：route page 通过 `WorkbenchShellMeta` 发布 `pageTitle/workbenchCopy/statusSummary/lastUpdated`，统一 runtime strip 与页面 header 只消费这些浏览器本地元数据，不新增任何后端 API、session 或远端偏好同步契约。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

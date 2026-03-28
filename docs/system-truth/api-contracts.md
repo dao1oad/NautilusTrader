@@ -89,6 +89,8 @@
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`；`CATALOG_DEFAULT_START_TIME/END_TIME` 与 `PLAYBACK_DEFAULT_START_TIME/END_TIME` 固定了浏览器默认 bounded query window
 - `apps/admin-web/src/app/routes/__root.tsx` / `apps/admin-web/src/app/layouts/workbench-shell.tsx`
   - 契约：浏览器根路由必须先进入 unified workbench shell，再渲染具体 route page；该 shell 固定暴露 `Operations` 与 `Analysis` 两个入口 link，并在不改变既有 admin route path 的前提下对页面进行分组导航
+- `apps/admin-web/src/app/workbench-shell-meta.tsx`
+  - 契约：route page 只能向 shell 发布浏览器本地元数据 `pageTitle`、`workbenchCopy`、`lastUpdated`、`statusSummary` 与可选 `priority`；provider 必须在 route 卸载时移除旧条目，避免 runtime strip 残留上一页状态
 - `apps/admin-web/src/shared/workspaces/workspace-store.ts`
   - 契约：浏览器本地 workspace state 固定写入 `localStorage["nautilus-admin-workspace"]`
   - 字段：`activeWorkbench`、`lastRouteByWorkbench`、`recentRoutes`、`routePreferences`
@@ -100,9 +102,11 @@
   - `Accounts` 页面继续消费 bounded `/api/admin/accounts?limit=<n>`，但会在列表上方显示 balance / margin / exposure summary，并使用 `AccountSummary` drill-down 展示 per-account balances、exposures 与 alerts
   - `Risk center` 页面固定消费 `/api/admin/risk`，显示 `RiskSummary` metric、risk events 与 active blocks；页面只读，不附带任何解除 block 或修改风险参数的写接口
 - `apps/admin-web/src/features/catalog/catalog-page.tsx` / `apps/admin-web/src/features/playback/playback-page.tsx` / `apps/admin-web/src/features/diagnostics/diagnostics-page.tsx`
-  - `Catalog` 页面固定消费 bounded `/api/admin/catalog?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 browse item、history query feedback 与 operator note，并继续复用 `AdminListPage` 的 filter / pagination / drill-down
-  - `Playback` 页面固定消费 bounded `/api/admin/playback?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 `PlaybackRequest`、timeline preview 与 projected event table；图表 runtime 仅允许封装在 `playback-preview-chart.tsx`
-  - `Diagnostics` 页面固定消费 `/api/admin/diagnostics`，显示 `DiagnosticsSummary`、link health、query timing 与显式 `errors`，partial failure 必须在页面上可见
+  - `Catalog` 页面固定消费 bounded `/api/admin/catalog?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 browse item、history query feedback、operator note 与 analysis-workbench header，并继续复用 `AdminListPage` 的 filter / pagination / drill-down
+  - `Playback` 页面固定消费 bounded `/api/admin/playback?limit=<n>&start_time=<utc>&end_time=<utc>`，显示 `PlaybackRequest`、timeline preview、projected event table 与 shell/runtime metadata；图表 runtime 仅允许封装在 `playback-preview-chart.tsx`
+  - `Diagnostics` 页面固定消费 `/api/admin/diagnostics`，显示 `DiagnosticsSummary`、link health、query timing、显式 `errors` 与 shell/runtime metadata，partial failure 必须在页面上可见
+- `apps/admin-web/src/features/read-only/admin-list-page.tsx`
+  - 契约：通用只读列表 surface 可以选择性接收 `header` 与 `surface` copy 配置，以在不改变 query key、bounded snapshot、filter/pagination、drill-down 或 invalidation 语义的前提下输出 terminal-editorial header / panel 结构
 - `Phase 3` close-out contract
   - `Blotter`、`Fills`、`Positions`、`Accounts`、`Risk center`、`Catalog`、`Playback` 与 `Diagnostics` 当前共同构成日常运维读工作台，但仍只暴露 bounded read-only snapshot / preview 契约，不引入任何新的交易写接口
   - `Catalog` / `Playback` 的 UTC window、`operator_notes` 与 `errors`，以及 `Diagnostics` 的 link health / query timing / partial error 都必须作为浏览器可见 DTO 字段返回，避免大查询、慢查询或链路退化时静默卡死 UI
