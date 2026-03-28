@@ -71,6 +71,7 @@ export function StrategiesPage() {
         getRowKey={(strategy) => strategy.strategy_id}
         loadingDescription="Loading the latest strategy diagnostics."
         query={query}
+        summaryCopy="Supervised strategy processes, current run state, and guarded control entry points for the connected node."
         tableLabel="Strategies"
         title="Strategies"
       />

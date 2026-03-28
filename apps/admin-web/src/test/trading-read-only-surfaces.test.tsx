@@ -152,15 +152,23 @@ test("filters blotter rows by the operator search term", async () => {
   renderWithRuntime(<OrdersPage />);
 
   expect(await screen.findByText("O-BTC-1")).toBeInTheDocument();
+  expect(screen.getByText("Live snapshot")).toBeInTheDocument();
+  expect(
+    screen.getByText("Active order flow, execution posture, and recent book activity inside the bounded blotter window.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Operator filter")).toBeInTheDocument();
+  expect(
+    screen.getByPlaceholderText("Filter by order id, instrument, side, quantity, or status")
+  ).toBeInTheDocument();
   expect(screen.getByText("O-ETH-1")).toBeInTheDocument();
 
-  fireEvent.change(screen.getByLabelText("Filter Blotter rows"), {
+  fireEvent.change(screen.getByRole("searchbox", { name: "Operator filter" }), {
     target: { value: "ETHUSDT" }
   });
 
   expect(await screen.findByText("O-ETH-1")).toBeInTheDocument();
   expect(screen.queryByText("O-BTC-1")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 1-1 of 1 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 1-1 of 1")).toBeInTheDocument();
 });
 
 
@@ -191,13 +199,13 @@ test("paginates fill rows inside the bounded snapshot", async () => {
 
   expect(await screen.findByText("F-1")).toBeInTheDocument();
   expect(screen.queryByText("F-26")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 1-25 of 26 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 1-25 of 26")).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
   expect(await screen.findByText("F-26")).toBeInTheDocument();
   expect(screen.queryByText("F-1")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 26-26 of 26 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 26-26 of 26")).toBeInTheDocument();
 });
 
 
@@ -299,7 +307,7 @@ test("filters positions before rendering the drill-down table", async () => {
   expect(await screen.findByText("BTCUSDT-PERP.BINANCE")).toBeInTheDocument();
   expect(screen.getByText("ETHUSDT-PERP.BINANCE")).toBeInTheDocument();
 
-  fireEvent.change(screen.getByLabelText("Filter Positions rows"), {
+  fireEvent.change(screen.getByRole("searchbox", { name: "Operator filter" }), {
     target: { value: "ETHUSDT" }
   });
 

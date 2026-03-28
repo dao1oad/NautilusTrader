@@ -66,11 +66,15 @@ export function FillsPage() {
     <AdminListPage
       columns={FILL_COLUMNS}
       emptyDescription="No fills are currently reported by the admin API."
+      filter={{
+        getSearchText: getFillSearchText,
+        placeholder: "Filter by fill id, order id, instrument, side, price, liquidity, or time"
+      }}
       getRowKey={(fill) => fill.fill_id}
       loadingDescription="Loading the latest fill diagnostics."
       pagination={{ pageSize: TRADING_PAGE_SIZE }}
-      filter={{ getSearchText: getFillSearchText }}
       query={query}
+      summaryCopy="Recent executions with side, liquidity, and timestamp context from the current bounded fill window."
       tableLabel="Fills"
       title="Fills"
     />

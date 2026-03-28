@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 
 import { AdminRuntimeProvider } from "../app/admin-runtime";
+import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { BacktestsPage } from "../features/backtests/backtests-page";
 import { ReportsPage } from "../features/reports/reports-page";
 
@@ -17,6 +18,19 @@ function createQueryClient() {
   });
 }
 
+function WorkbenchShellMetaProbe() {
+  const meta = useCurrentWorkbenchShellMeta();
+
+  return (
+    <section>
+      <p>{`Page title: ${meta.pageTitle ?? "None"}`}</p>
+      <p>{`Workbench copy: ${meta.workbenchCopy ?? "None"}`}</p>
+      <p>{`Last updated: ${meta.lastUpdated ?? "None"}`}</p>
+      <p>{`Status summary: ${meta.statusSummary ?? "None"}`}</p>
+    </section>
+  );
+}
+
 
 function renderWithRuntime(ui: ReactElement, client: QueryClient = createQueryClient()) {
   return render(
@@ -27,7 +41,10 @@ function renderWithRuntime(ui: ReactElement, client: QueryClient = createQueryCl
           error: null
         }}
       >
-        {ui}
+        <WorkbenchShellMetaProvider>
+          <WorkbenchShellMetaProbe />
+          {ui}
+        </WorkbenchShellMetaProvider>
       </AdminRuntimeProvider>
     </QueryClientProvider>
   );
@@ -66,6 +83,16 @@ test("renders backtest tasks with task status and report linkage", async () => {
   renderWithRuntime(<BacktestsPage />);
 
   expect(await screen.findByRole("heading", { name: "Backtests" })).toBeInTheDocument();
+  expect(
+    screen.getByText("Bounded backtest task history, operator-ready run status, and linked report hand-off points.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Page title: Backtests")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "Workbench copy: Bounded backtest task history, operator-ready run status, and linked report hand-off points."
+    )
+  ).toBeInTheDocument();
+  expect(await screen.findByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
   expect(await screen.findByText("BT-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("REP-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("Completed 5,842 bars with net PnL +1240.50 USDT and generated report REP-20260327-01.")).toBeInTheDocument();
@@ -105,6 +132,16 @@ test("renders report summaries with key performance metrics", async () => {
   renderWithRuntime(<ReportsPage />);
 
   expect(await screen.findByRole("heading", { name: "Reports" })).toBeInTheDocument();
+  expect(
+    screen.getByText("Performance summaries, artifact families, and review-ready report context for completed runs.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Page title: Reports")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "Workbench copy: Performance summaries, artifact families, and review-ready report context for completed runs."
+    )
+  ).toBeInTheDocument();
+  expect(await screen.findByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
   expect(await screen.findByText("REP-20260327-01")).toBeInTheDocument();
   expect(await screen.findByText("+1240.50 USDT")).toBeInTheDocument();
   expect(await screen.findByText("Orders, fills, positions, and account reports are ready for operator review.")).toBeInTheDocument();

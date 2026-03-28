@@ -45,11 +45,15 @@ export function OrdersPage() {
     <AdminListPage
       columns={ORDER_COLUMNS}
       emptyDescription="No orders are currently reported by the admin API."
+      filter={{
+        getSearchText: getOrderSearchText,
+        placeholder: "Filter by order id, instrument, side, quantity, or status"
+      }}
       getRowKey={(order) => order.client_order_id}
       loadingDescription="Loading the latest order diagnostics."
       pagination={{ pageSize: TRADING_PAGE_SIZE }}
-      filter={{ getSearchText: getOrderSearchText }}
       query={query}
+      summaryCopy="Active order flow, execution posture, and recent book activity inside the bounded blotter window."
       tableLabel="Blotter"
       title="Blotter"
     />

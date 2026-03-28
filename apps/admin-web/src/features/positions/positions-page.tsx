@@ -87,11 +87,15 @@ export function PositionsPage() {
     <AdminListPage
       columns={POSITION_COLUMNS}
       emptyDescription="No positions are currently reported by the admin API."
+      filter={{
+        getSearchText: getPositionSearchText,
+        placeholder: "Filter by position id, instrument, side, quantity, price, or pnl"
+      }}
       getRowKey={getPositionRowKey}
       loadingDescription="Loading the latest position diagnostics."
       pagination={{ pageSize: TRADING_PAGE_SIZE }}
-      filter={{ getSearchText: getPositionSearchText }}
       query={query}
+      summaryCopy="Open inventory, side bias, and drill-down context for the currently projected positions."
       tableLabel="Positions"
       title="Positions"
       drillDown={{

@@ -71,6 +71,7 @@ export function AdaptersPage() {
         getRowKey={(adapter) => adapter.adapter_id}
         loadingDescription="Loading the latest adapter diagnostics."
         query={query}
+        summaryCopy="Venue adapter connectivity, current link posture, and guarded connect or disconnect controls."
         tableLabel="Adapters"
         title="Adapters"
       />
