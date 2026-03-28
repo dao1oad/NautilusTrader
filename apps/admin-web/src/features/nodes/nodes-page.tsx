@@ -30,6 +30,7 @@ export function NodesPage() {
       getRowKey={(node, index) => node.node_id ?? `node-${index}`}
       loadingDescription="Loading the latest node diagnostics."
       query={query}
+      summaryCopy="Runtime node identity, assignment, and process status from the latest admin snapshot."
       tableLabel="Nodes"
       title="Nodes"
     />

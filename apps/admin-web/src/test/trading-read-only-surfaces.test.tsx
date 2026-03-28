@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 
 import { AdminRuntimeProvider } from "../app/admin-runtime";
+import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { AccountsPage } from "../features/accounts/accounts-page";
 import { FillsPage } from "../features/fills/fills-page";
 import { LogsPage } from "../features/logs/logs-page";
@@ -25,18 +26,36 @@ function createQueryClient() {
   });
 }
 
-function renderWithRuntime(ui: ReactElement, client: QueryClient = createQueryClient()) {
+function WorkbenchShellMetaProbe() {
+  const meta = useCurrentWorkbenchShellMeta();
+
+  return (
+    <section>
+      <p>{`Page title: ${meta.pageTitle ?? "None"}`}</p>
+      <p>{`Workbench copy: ${meta.workbenchCopy ?? "None"}`}</p>
+      <p>{`Last updated: ${meta.lastUpdated ?? "None"}`}</p>
+      <p>{`Status summary: ${meta.statusSummary ?? "None"}`}</p>
+    </section>
+  );
+}
+
+function renderWithRuntime(
+  ui: ReactElement,
+  client: QueryClient = createQueryClient(),
+  runtimeValue: { connectionState: "connected" | "stale" | "disconnected"; error: string | null } = {
+    connectionState: "connected",
+    error: null
+  }
+) {
   return {
     client,
     ...render(
       <QueryClientProvider client={client}>
-        <AdminRuntimeProvider
-          value={{
-            connectionState: "connected",
-            error: null
-          }}
-        >
-          {ui}
+        <AdminRuntimeProvider value={runtimeValue}>
+          <WorkbenchShellMetaProvider>
+            <WorkbenchShellMetaProbe />
+            {ui}
+          </WorkbenchShellMetaProvider>
         </AdminRuntimeProvider>
       </QueryClientProvider>
     )
@@ -82,6 +101,45 @@ function IndexedDrillDownPage() {
       drillDown={{
         title: "Indexed details",
         getButtonLabel: (_item, index, expanded) => `${expanded ? "Hide" : "View"} details for row ${index + 1}`,
+        render: (item) => item.label
+      }}
+    />
+  );
+}
+
+function BlockingStatePage({ items }: { items: DrillDownRow[] }) {
+  const query = useQuery({
+    queryKey: ["admin", "test", "blocking-state"],
+    queryFn: async () =>
+      ({
+        generated_at: "2026-03-27T00:00:00Z",
+        limit: 100,
+        partial: false,
+        items,
+        errors: []
+      }) satisfies AdminListSnapshot<DrillDownRow> & { limit: number }
+  });
+
+  return (
+    <AdminListPage
+      columns={[
+        {
+          header: "Label",
+          render: (item: DrillDownRow) => item.label
+        }
+      ]}
+      emptyDescription="No blocking rows."
+      filter={{ getSearchText: (item) => item.label }}
+      getRowKey={(item) => item.row_id}
+      loadingDescription="Loading blocking rows."
+      pagination={{ pageSize: 25 }}
+      query={query}
+      summary={<p>Blocking summary</p>}
+      tableLabel="Blocking rows"
+      title="Blocking rows"
+      drillDown={{
+        title: "Blocking details",
+        getButtonLabel: (item, _index, expanded) => `${expanded ? "Hide" : "View"} details for ${item.label}`,
         render: (item) => item.label
       }}
     />
@@ -152,15 +210,54 @@ test("filters blotter rows by the operator search term", async () => {
   renderWithRuntime(<OrdersPage />);
 
   expect(await screen.findByText("O-BTC-1")).toBeInTheDocument();
+  expect(screen.getByText("Live snapshot")).toBeInTheDocument();
+  expect(
+    screen.getByText("Active order flow, execution posture, and recent book activity inside the bounded blotter window.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Operator filter")).toBeInTheDocument();
+  expect(
+    screen.getByPlaceholderText("Filter by order id, instrument, side, quantity, or status")
+  ).toBeInTheDocument();
   expect(screen.getByText("O-ETH-1")).toBeInTheDocument();
 
-  fireEvent.change(screen.getByLabelText("Filter Blotter rows"), {
+  fireEvent.change(screen.getByRole("searchbox", { name: "Operator filter" }), {
     target: { value: "ETHUSDT" }
   });
 
   expect(await screen.findByText("O-ETH-1")).toBeInTheDocument();
   expect(screen.queryByText("O-BTC-1")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 1-1 of 1 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 1-1 of 1")).toBeInTheDocument();
+});
+
+
+test("renders the shared terminal table inside a focusable named region", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-27T00:00:00Z",
+      limit: 100,
+      partial: false,
+      items: [
+        {
+          client_order_id: "O-BTC-1",
+          instrument_id: "BTCUSDT-PERP.BINANCE",
+          side: "buy",
+          quantity: "0.50",
+          status: "accepted"
+        }
+      ],
+      errors: []
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<OrdersPage />);
+
+  const viewport = await screen.findByRole("region", { name: "Blotter table viewport" });
+
+  expect(viewport).toHaveAttribute("tabindex", "0");
+  expect(within(viewport).getByRole("table", { name: "Blotter" })).toBeInTheDocument();
 });
 
 
@@ -191,13 +288,13 @@ test("paginates fill rows inside the bounded snapshot", async () => {
 
   expect(await screen.findByText("F-1")).toBeInTheDocument();
   expect(screen.queryByText("F-26")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 1-25 of 26 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 1-25 of 26")).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
   expect(await screen.findByText("F-26")).toBeInTheDocument();
   expect(screen.queryByText("F-1")).not.toBeInTheDocument();
-  expect(screen.getByText("Showing 26-26 of 26 rows")).toBeInTheDocument();
+  expect(screen.getByText("Rows 26-26 of 26")).toBeInTheDocument();
 });
 
 
@@ -253,7 +350,22 @@ test("renders an explicit empty state when no positions are reported", async () 
 
   expect(await screen.findByText("No positions are currently reported by the admin API.")).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Positions" })).toBeInTheDocument();
+  expect(screen.queryByText("Operator filter")).not.toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/positions?limit=100");
+});
+
+
+test("does not render list chrome when a cached snapshot is stale", async () => {
+  renderWithRuntime(<BlockingStatePage items={[{ row_id: "row-1", label: "Row 1" }]} />, createQueryClient(), {
+    connectionState: "stale",
+    error: null
+  });
+
+  expect(await screen.findByText("Showing the last successfully received admin snapshot.")).toBeInTheDocument();
+  expect(screen.queryByText("Operator filter")).not.toBeInTheDocument();
+  expect(screen.queryByText("Blocking summary")).not.toBeInTheDocument();
+  expect(screen.queryByText("Row 1")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "View details for Row 1" })).not.toBeInTheDocument();
 });
 
 
@@ -299,7 +411,7 @@ test("filters positions before rendering the drill-down table", async () => {
   expect(await screen.findByText("BTCUSDT-PERP.BINANCE")).toBeInTheDocument();
   expect(screen.getByText("ETHUSDT-PERP.BINANCE")).toBeInTheDocument();
 
-  fireEvent.change(screen.getByLabelText("Filter Positions rows"), {
+  fireEvent.change(screen.getByRole("searchbox", { name: "Operator filter" }), {
     target: { value: "ETHUSDT" }
   });
 
@@ -678,9 +790,15 @@ test("renders risk center summaries, events, and active blocks", async () => {
   renderWithRuntime(<RiskPage />);
 
   expect(await screen.findByRole("heading", { name: "Risk center" })).toBeInTheDocument();
+  expect(screen.getByText("Immediate guardrail posture")).toBeInTheDocument();
   expect(await screen.findByText("Trading state")).toBeInTheDocument();
+  expect(screen.getByText("Alert stream")).toBeInTheDocument();
+  expect(screen.getByText("Hard constraints")).toBeInTheDocument();
   expect(screen.getByText("Margin buffer narrowing")).toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "Active blocks" })).toBeInTheDocument();
   expect(screen.getByText("Reduce-only guard enabled while the margin cushion recovers.")).toBeInTheDocument();
+  expect(screen.getByText("Page title: Risk center")).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-27T08:57:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/risk");
 });
 

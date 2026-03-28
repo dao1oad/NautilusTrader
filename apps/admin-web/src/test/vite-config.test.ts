@@ -50,3 +50,14 @@ test("dev server proxy target can be overridden", async () => {
     ws: true
   });
 });
+
+test("lightweight charts stay in the main chunk while radix theme code remains split", async () => {
+  const config = await loadViteConfig();
+  const manualChunks = config.build?.rollupOptions?.output?.manualChunks;
+
+  expect(typeof manualChunks).toBe("function");
+  expect(manualChunks?.("/workspace/node_modules/lightweight-charts/dist/lightweight-charts.esm.production.js")).toBe(
+    undefined
+  );
+  expect(manualChunks?.("/workspace/node_modules/@radix-ui/themes/dist/esm/components/theme.js")).toBe("radix-theme");
+});

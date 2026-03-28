@@ -1,28 +1,39 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useId, useState, type ReactNode } from "react";
 
-import { useAdminRuntime } from "../../app/admin-runtime";
+import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import type { AdminListSnapshot } from "../../shared/types/admin";
+import { FilterBar } from "../../shared/ui/filter-bar";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
 import { PageState } from "../../shared/ui/page-state";
+import { SectionPanel } from "../../shared/ui/section-panel";
+import { StateBanner } from "../../shared/ui/state-banner";
+import { TerminalTable, type TerminalTableColumn } from "../../shared/ui/terminal-table";
+import { WorkbenchHeader } from "../../shared/ui/workbench-header";
+import { useAdminRuntime } from "../../app/admin-runtime";
 
-
-type Column<T> = {
-  header: string;
-  render: (item: T) => ReactNode;
-};
 
 type Props<T> = {
   title: string;
   query: UseQueryResult<AdminListSnapshot<T>, Error>;
   emptyDescription: string;
   loadingDescription: string;
+  summaryCopy?: string;
   tableLabel: string;
-  columns: Column<T>[];
+  columns: readonly TerminalTableColumn<T>[];
   getRowKey: (item: T, index: number) => string;
   summary?: ReactNode;
   pagination?: {
     pageSize: number;
+  };
+  header?: {
+    eyebrow?: ReactNode;
+    summary?: ReactNode;
+  };
+  surface?: {
+    description?: ReactNode;
+    eyebrow?: ReactNode;
+    title?: ReactNode;
   };
   drillDown?: {
     title: string;
@@ -31,6 +42,7 @@ type Props<T> = {
   };
   filter?: {
     getSearchText: (item: T) => string;
+    placeholder?: string;
   };
 };
 
@@ -38,22 +50,41 @@ type SnapshotProps<T, TSnapshot extends AdminListSnapshot<T>> = Omit<Props<T>, "
   query: UseQueryResult<TSnapshot, Error>;
 };
 
+function renderResourceErrors(errors: AdminListSnapshot<unknown>["errors"]) {
+  if (errors.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className="resource-errors">
+      {errors.map((resourceError) => (
+        <li key={`${resourceError.section}:${resourceError.message}`}>
+          <strong>{resourceError.section}</strong>
+          {`: ${resourceError.message}`}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   title,
   query,
   emptyDescription,
   loadingDescription,
+  summaryCopy,
   tableLabel,
   columns,
   getRowKey,
   summary,
   pagination,
+  header,
+  surface,
   drillDown,
   filter
 }: SnapshotProps<T, TSnapshot>) {
   const { connectionState, error: runtimeError } = useAdminRuntime();
   const filterInputId = useId();
-  const filterLabel = `Filter ${title} rows`;
   const [pageIndex, setPageIndex] = useState(0);
   const [filterText, setFilterText] = useState("");
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
@@ -76,8 +107,17 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   const startIndex = pageSize === null ? 0 : currentPage * pageSize;
   const endIndex = pageSize === null || !snapshot ? totalItems : Math.min(startIndex + pageSize, totalItems);
   const visibleItems = filteredItems.slice(startIndex, endIndex);
-  const pageSummary =
-    pageSize !== null && totalItems > 0 ? `Showing ${startIndex + 1}-${endIndex} of ${totalItems} rows` : null;
+  const pageSummary = pageSize !== null && totalItems > 0 ? `Rows ${startIndex + 1}-${endIndex} of ${totalItems}` : null;
+  const showWorkbenchHeader = Boolean(header);
+  const panelDescription = surface?.description ?? (showWorkbenchHeader ? undefined : summaryCopy);
+  const panelEyebrow = surface?.eyebrow ?? "Live snapshot";
+  const panelTitle = surface?.title ?? (showWorkbenchHeader ? "Snapshot window" : title);
+
+  useWorkbenchShellMeta({
+    lastUpdated: snapshot?.generated_at ?? null,
+    pageTitle: title,
+    workbenchCopy: summaryCopy
+  });
 
   useEffect(() => {
     setPageIndex(0);
@@ -101,216 +141,171 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   }, [getRowKey, selectedRowKey, startIndex, snapshot, visibleItems]);
 
   if (query.isLoading && !snapshot) {
-    return <PageState kind="loading" title={title} description={loadingDescription} />;
+    return <PageState description={loadingDescription} kind="loading" title={title} />;
   }
 
   if (error && !snapshot) {
-    return <PageState kind="error" title={title} description={error} />;
+    return <PageState description={error} kind="error" title={title} />;
   }
 
   if (!snapshot && connectionState === "stale") {
-    return (
-      <PageState
-        kind="stale"
-        title={title}
-        description="Waiting for a fresh admin snapshot."
-      />
-    );
+    return <PageState description="Waiting for a fresh admin snapshot." kind="stale" title={title} />;
   }
 
   if (!snapshot && connectionState === "disconnected") {
-    return (
-      <PageState
-        kind="stale"
-        title={title}
-        description="Reconnect the admin API to refresh runtime state."
-      />
-    );
+    return <PageState description="Reconnect the admin API to refresh runtime state." kind="stale" title={title} />;
   }
 
   if (!snapshot) {
-    return <PageState kind="loading" title={title} description={loadingDescription} />;
+    return <PageState description={loadingDescription} kind="loading" title={title} />;
   }
 
   if (isStale) {
     return (
       <PageState
-        kind="stale"
-        title={title}
         description={error ?? "Showing the last successfully received admin snapshot."}
+        kind="stale"
         meta={lastUpdated}
+        title={title}
       />
     );
   }
 
   if (snapshot.items.length === 0) {
-    return (
-      <PageState
-        kind="empty"
-        title={title}
-        description={emptyDescription}
-        meta={lastUpdated}
-      />
-    );
+    return <PageState description={emptyDescription} kind="empty" meta={lastUpdated} title={title} />;
   }
 
-  const filterToolbar = filter ? (
-    <div className="resource-filter-toolbar">
-      <label className="resource-filter-label" htmlFor={filterInputId}>
-        {filterLabel}
-      </label>
-      <input
-        id={filterInputId}
-        type="search"
-        className="resource-filter-input"
-        placeholder={`Search ${title.toLowerCase()} by keyword`}
-        value={filterText}
-        onChange={(event) => {
-          setFilterText(event.target.value);
+  const filterToolbar = snapshot && filter ? (
+    <FilterBar
+      inputId={filterInputId}
+      label="Operator filter"
+      onChange={setFilterText}
+      placeholder={filter.placeholder ?? `Search ${title.toLowerCase()} by keyword`}
+      value={filterText}
+    />
+  ) : null;
+
+  const paginationToolbar = pageSummary ? (
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "12px",
+        justifyContent: "space-between"
+      }}
+    >
+      <p
+        style={{
+          color: "var(--text-body)",
+          fontFamily: "\"IBM Plex Mono\", \"SFMono-Regular\", monospace",
+          fontSize: "0.88rem",
+          letterSpacing: "0.04em",
+          margin: 0
         }}
-      />
+      >
+        {pageSummary}
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+        <button
+          type="button"
+          className="command-button command-button-secondary"
+          disabled={currentPage === 0}
+          onClick={() => {
+            setPageIndex((current) => Math.max(current - 1, 0));
+          }}
+        >
+          Previous page
+        </button>
+        <button
+          type="button"
+          className="command-button command-button-secondary"
+          disabled={currentPage >= totalPages - 1}
+          onClick={() => {
+            setPageIndex((current) => Math.min(current + 1, totalPages - 1));
+          }}
+        >
+          Next page
+        </button>
+      </div>
     </div>
   ) : null;
 
-  if (filteredItems.length === 0) {
-    return (
-      <div className="resource-stack">
-        <section className="resource-card">
-          <div className="resource-header">
-            <div>
-              <h2>{title}</h2>
-              {snapshot.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
-            </div>
-            {lastUpdated}
-          </div>
-          {snapshot.errors.length > 0 ? (
-            <ul className="resource-errors">
-              {snapshot.errors.map((resourceError) => (
-                <li key={`${resourceError.section}:${resourceError.message}`}>
-                  <strong>{resourceError.section}</strong>
-                  {`: ${resourceError.message}`}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {summary}
-          {filterToolbar}
-          <p className="resource-filter-empty">No rows match the current filter.</p>
-        </section>
-      </div>
+  const mainBody =
+    filteredItems.length === 0 ? (
+      <StateBanner
+        description="No rows match the current operator filter."
+        kind="empty"
+        title="Filter returned no rows"
+      />
+    ) : (
+      <TerminalTable
+        actionColumn={
+          drillDown
+            ? {
+              header: "Details",
+              render: (item, rowIndex, rowKey) => {
+                const isSelected = rowKey === selectedRowKey;
+
+                return (
+                  <button
+                    type="button"
+                    className="command-button command-button-secondary resource-table-action"
+                    aria-pressed={isSelected}
+                    aria-label={drillDown.getButtonLabel(item, rowIndex, isSelected)}
+                    onClick={() => {
+                      setSelectedRowKey(isSelected ? null : rowKey);
+                    }}
+                  >
+                    {isSelected ? "Hide details" : "View details"}
+                  </button>
+                );
+              }
+            }
+            : undefined
+        }
+        ariaLabel={tableLabel}
+        columns={columns}
+        getRowKey={getRowKey}
+        items={visibleItems}
+        rowIndexOffset={startIndex}
+        selectedRowKey={selectedRowKey}
+      />
     );
-  }
 
   const selectedItem =
-    selectedRowKey === null
-      ? null
-      : visibleItems.find((item, index) => getRowKey(item, startIndex + index) === selectedRowKey) ?? null;
+    snapshot && selectedRowKey !== null
+      ? visibleItems.find((item, index) => getRowKey(item, startIndex + index) === selectedRowKey) ?? null
+      : null;
 
   return (
     <div className="resource-stack">
-      <section className="resource-card">
-        <div className="resource-header">
-          <div>
-            <h2>{title}</h2>
-            {snapshot.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
-          </div>
-          {lastUpdated}
-        </div>
-        {snapshot.errors.length > 0 ? (
-          <ul className="resource-errors">
-            {snapshot.errors.map((resourceError) => (
-              <li key={`${resourceError.section}:${resourceError.message}`}>
-                <strong>{resourceError.section}</strong>
-                {`: ${resourceError.message}`}
-              </li>
-            ))}
-          </ul>
-        ) : null}
+      {showWorkbenchHeader ? (
+        <WorkbenchHeader
+          actions={lastUpdated}
+          description={summaryCopy}
+          eyebrow={header?.eyebrow}
+          summary={header?.summary}
+          title={title}
+        />
+      ) : null}
+      <SectionPanel
+        actions={showWorkbenchHeader ? undefined : lastUpdated}
+        description={panelDescription}
+        eyebrow={panelEyebrow}
+        meta={snapshot?.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
+        title={panelTitle}
+      >
+        {snapshot ? renderResourceErrors(snapshot.errors) : null}
         {summary}
         {filterToolbar}
-        {pageSummary ? (
-          <div className="resource-pagination-toolbar">
-            <p className="resource-pagination-summary">{pageSummary}</p>
-            <div className="resource-pagination-actions">
-              <button
-                type="button"
-                className="command-button command-button-secondary"
-                disabled={currentPage === 0}
-                onClick={() => {
-                  setPageIndex((current) => Math.max(current - 1, 0));
-                }}
-              >
-                Previous page
-              </button>
-              <button
-                type="button"
-                className="command-button command-button-secondary"
-                disabled={currentPage >= totalPages - 1}
-                onClick={() => {
-                  setPageIndex((current) => Math.min(current + 1, totalPages - 1));
-                }}
-              >
-                Next page
-              </button>
-            </div>
-          </div>
-        ) : null}
-        <table aria-label={tableLabel} className="resource-table">
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column.header} scope="col">
-                  {column.header}
-                </th>
-              ))}
-              {drillDown ? (
-                <th scope="col">
-                  Details
-                </th>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleItems.map((item, index) => {
-              const rowIndex = startIndex + index;
-              const rowKey = getRowKey(item, rowIndex);
-              const isSelected = rowKey === selectedRowKey;
-
-              return (
-                <tr key={rowKey}>
-                  {columns.map((column) => (
-                    <td key={column.header}>{column.render(item)}</td>
-                  ))}
-                  {drillDown ? (
-                    <td>
-                      <button
-                        type="button"
-                        className="command-button command-button-secondary resource-table-action"
-                        aria-pressed={isSelected}
-                        aria-label={drillDown.getButtonLabel(item, rowIndex, isSelected)}
-                        onClick={() => {
-                          setSelectedRowKey(isSelected ? null : rowKey);
-                        }}
-                      >
-                        {isSelected ? "Hide details" : "View details"}
-                      </button>
-                    </td>
-                  ) : null}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
+        {paginationToolbar}
+        {mainBody}
+      </SectionPanel>
       {drillDown && selectedItem ? (
-        <section className="resource-card resource-detail-card">
-          <div className="resource-header">
-            <div>
-              <h3>{drillDown.title}</h3>
-            </div>
-          </div>
+        <SectionPanel eyebrow="Selected row" title={drillDown.title}>
           {drillDown.render(selectedItem)}
-        </section>
+        </SectionPanel>
       ) : null}
     </div>
   );

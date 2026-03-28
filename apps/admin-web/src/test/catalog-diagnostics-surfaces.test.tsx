@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 
 import { AdminRuntimeProvider } from "../app/admin-runtime";
+import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { CatalogPage } from "../features/catalog/catalog-page";
 import { DiagnosticsPage } from "../features/diagnostics/diagnostics-page";
 import { PlaybackPage } from "../features/playback/playback-page";
@@ -28,6 +29,19 @@ function createQueryClient() {
   });
 }
 
+function WorkbenchShellMetaProbe() {
+  const meta = useCurrentWorkbenchShellMeta();
+
+  return (
+    <section>
+      <p>{`Page title: ${meta.pageTitle ?? "None"}`}</p>
+      <p>{`Workbench copy: ${meta.workbenchCopy ?? "None"}`}</p>
+      <p>{`Last updated: ${meta.lastUpdated ?? "None"}`}</p>
+      <p>{`Status summary: ${meta.statusSummary ?? "None"}`}</p>
+    </section>
+  );
+}
+
 
 function renderWithRuntime(ui: ReactElement, client: QueryClient = createQueryClient()) {
   return render(
@@ -38,7 +52,10 @@ function renderWithRuntime(ui: ReactElement, client: QueryClient = createQueryCl
           error: null
         }}
       >
-        {ui}
+        <WorkbenchShellMetaProvider>
+          <WorkbenchShellMetaProbe />
+          {ui}
+        </WorkbenchShellMetaProvider>
       </AdminRuntimeProvider>
     </QueryClientProvider>
   );
@@ -87,11 +104,22 @@ test("renders catalog browse results with bounded history feedback", async () =>
 
   expect(await screen.findByRole("heading", { name: "Catalog" })).toBeInTheDocument();
   expect(await screen.findByText("History query capped at 100 rows across the selected 2 hour window.")).toBeInTheDocument();
+  expect(screen.getByText("Analysis workbench")).toBeInTheDocument();
   expect(
     await screen.findByText(
       "Large catalog reads are capped by limit and explicit UTC time range before operators fan out deeper analysis."
     )
   ).toBeInTheDocument();
+  expect(
+    screen.getByText("Bounded catalog browse windows, query feedback, and operator notes for analysis workbench datasets.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Page title: Catalog")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "Workbench copy: Bounded catalog browse windows, query feedback, and operator notes for analysis workbench datasets."
+    )
+  ).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
   expect((await screen.findAllByText("BTCUSDT-PERP.BINANCE")).length).toBeGreaterThan(0);
   expect(fetchMock).toHaveBeenCalledWith(
     "/api/admin/catalog?limit=100&start_time=2026-03-27T07%3A00%3A00Z&end_time=2026-03-27T09%3A00%3A00Z"
@@ -142,9 +170,20 @@ test("renders playback request details and projected events", async () => {
   renderWithRuntime(<PlaybackPage />);
 
   expect(await screen.findByRole("heading", { name: "Playback" })).toBeInTheDocument();
-  expect(await screen.findByText("PB-20260327-01")).toBeInTheDocument();
+  expect((await screen.findAllByText("PB-20260327-01")).length).toBeGreaterThan(0);
   expect(await screen.findByText("Playback preview is capped at 100 projected events across the selected 30 minute window.")).toBeInTheDocument();
   expect(await screen.findByText("BTC taker buy fill matched against the replay stream.")).toBeInTheDocument();
+  expect(screen.getByText("Analysis workbench")).toBeInTheDocument();
+  expect(
+    screen.getByText("Bounded replay request, preview chart, and projected event stream for the selected analysis window.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Page title: Playback")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "Workbench copy: Bounded replay request, preview chart, and projected event stream for the selected analysis window."
+    )
+  ).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
   expect(screen.getByLabelText("Playback preview chart")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith(
     "/api/admin/playback?limit=100&start_time=2026-03-27T07%3A30%3A00Z&end_time=2026-03-27T08%3A00%3A00Z"
@@ -213,5 +252,16 @@ test("surfaces diagnostics partial errors explicitly", async () => {
   expect(await screen.findByText("Primary catalog heartbeat timed out while refreshing diagnostics.")).toBeInTheDocument();
   expect(await screen.findByText("Archive parquet catalog")).toBeInTheDocument();
   expect(await screen.findByText("Catalog scan hit the operator warning threshold but remained bounded.")).toBeInTheDocument();
+  expect(screen.getByText("Analysis workbench")).toBeInTheDocument();
+  expect(
+    screen.getByText("Link health, bounded query timing, and catalog sync posture across the analysis workbench.")
+  ).toBeInTheDocument();
+  expect(screen.getByText("Page title: Diagnostics")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "Workbench copy: Link health, bounded query timing, and catalog sync posture across the analysis workbench."
+    )
+  ).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-27T09:03:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/diagnostics");
 });

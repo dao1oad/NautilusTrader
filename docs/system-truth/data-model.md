@@ -132,6 +132,10 @@
   - 数据职责：统一浏览器侧 page-state view model；当前固定状态集合为 `loading`、`empty`、`error`、`stale`
 - `apps/admin-web/src/features/read-only/admin-list-page.tsx`
   - 数据职责：通用只读列表 surface；在 bounded snapshot 之上复用表格渲染、可选 row drill-down，以及 trading ops 页面使用的前端 keyword filter 与分页状态（默认每页 `25` 行）
+- `WorkbenchShellMetaValue`
+  - 数据职责：浏览器工作台 shell 的瞬时页面元数据；表达 `pageTitle`、`workbenchCopy`、`lastUpdated` 与 `statusSummary`
+- `WorkbenchShellMetaInput`
+  - 数据职责：route page 写入 shell 元数据的输入模型；在 `WorkbenchShellMetaValue` 之上增加可选 `priority`，用于解决 overview、list page 与 specialized surface 间的 header/runtime-strip 覆盖顺序
 - `apps/admin-web/src/shared/realtime/invalidation-bus.ts`
   - 数据职责：浏览器侧 invalidation topic 投影；当前定义 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`orders`、`fills`、`positions`、`accounts`、`risk`、`logs`、`catalog`、`playback`、`diagnostics`、`backtests`、`reports` 十七个 topic，并把 `overview.*` / `snapshot.invalidate` 与 `command.*` 事件映射到对应 query invalidation
 - `apps/admin-web/src/shared/realtime/command-receipt-bus.ts`

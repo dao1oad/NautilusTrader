@@ -1,0 +1,24 @@
+# Local PR Review
+
+- Issue: N/A (`codex/admin-terminal-editorial-redesign` design branch)
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Terminal Editorial redesign across the admin-web shell, shared terminal primitives, overview, read-only surfaces, audit, risk, config diff, and the final Task 6 consistency pass for catalog, playback, and diagnostics.
+- Findings:
+  - No blocking product defects remained after rerunning governance checks, full admin-web Vitest coverage, production build, bundle-budget checks, and diff hygiene on branch head `2549fdb`.
+  - The Task 6 consistency gap identified during spec review was resolved by giving catalog the same explicit analysis-workbench editorial header treatment used by playback and diagnostics, while preserving list-query behavior and route structure.
+  - Local review subagents both passed on the final Task 6 range `aeb34d7..2549fdb`: spec compliance returned `PASS` with no findings, and code-quality review returned `PASS` with no actionable defects.
+- Resolution:
+  - Completed the Terminal Editorial redesign in two final commits: `5aebfd5 feat: complete terminal editorial admin redesign` and `2549fdb fix: align catalog editorial header treatment`.
+  - Revalidated the full admin-web suite plus governance and bundle gates on the final branch head after the catalog header correction.
+  - Recorded branch-local review evidence so the PR to `main` satisfies the repository's mandatory local pre-PR review requirement.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/admin-terminal-redesign/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/admin-terminal-redesign/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/admin-terminal-redesign/apps/admin-web && npm run check:bundle`
+  - `cd /root/NautilusTrader/.worktrees/admin-terminal-redesign/apps/admin-web && npm run lint`
+  - `cd /root/NautilusTrader/.worktrees/admin-terminal-redesign && pwsh -NoProfile -File scripts/check-governance.ps1`
+  - `git -C /root/NautilusTrader/.worktrees/admin-terminal-redesign diff --check`
+  - Local spec review on `aeb34d7..2549fdb`: PASS
+  - Local code-quality review on `aeb34d7..2549fdb`: PASS
+- Status: approved

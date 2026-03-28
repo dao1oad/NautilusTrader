@@ -141,11 +141,15 @@ export function BacktestsPage() {
         render: renderBacktestDetails
       }}
       emptyDescription="No backtest tasks are currently projected by the admin API."
-      filter={{ getSearchText: getBacktestSearchText }}
+      filter={{
+        getSearchText: getBacktestSearchText,
+        placeholder: "Filter by task, run, strategy, catalog, instrument, or report id"
+      }}
       getRowKey={(task) => task.task_id}
       loadingDescription="Loading bounded backtest task history."
       pagination={{ pageSize: BACKTESTS_PAGE_SIZE }}
       query={query}
+      summaryCopy="Bounded backtest task history, operator-ready run status, and linked report hand-off points."
       summary={query.data ? <BacktestsSummaryCard snapshot={query.data} /> : null}
       tableLabel="Backtest tasks"
       title="Backtests"

@@ -1,20 +1,179 @@
-import type { ConnectionState, OverviewSnapshot } from "../../shared/types/admin";
+import {
+  resolveFreshestWorkbenchTimestamp,
+  useWorkbenchShellMeta
+} from "../../app/workbench-shell-meta";
+import type {
+  AuditSnapshot,
+  ConnectionState,
+  OverviewSnapshot,
+  RiskSnapshot
+} from "../../shared/types/admin";
+import { ActivityRail, type ActivityRailItem } from "../../shared/ui/activity-rail";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
+import { MetricTile } from "../../shared/ui/metric-tile";
 import { PageState } from "../../shared/ui/page-state";
+import { SectionPanel } from "../../shared/ui/section-panel";
+import { SignalPill, type SignalTone } from "../../shared/ui/signal-pill";
+import { WorkbenchHeader } from "../../shared/ui/workbench-header";
+import type { WorkspaceRecentRoute } from "../../shared/workspaces/workspace-store";
 
+
+const COMMAND_CENTER_COPY = "Runtime posture, risk pressure, and latest control-plane movement at a glance.";
+const MAX_ACTIVITY_ITEMS = 4;
 
 type Props = {
+  auditSnapshot?: AuditSnapshot | null;
   connectionState?: ConnectionState;
-  snapshot?: OverviewSnapshot | null;
   error?: string | null;
   isLoading?: boolean;
+  recentRoutes?: WorkspaceRecentRoute[];
+  riskSnapshot?: RiskSnapshot | null;
+  snapshot?: OverviewSnapshot | null;
 };
 
+function toNodeTone(status: OverviewSnapshot["node"]["status"]): SignalTone {
+  switch (status) {
+    case "running":
+      return "positive";
+    case "error":
+      return "danger";
+    case "stopped":
+      return "warning";
+    default:
+      return "info";
+  }
+}
 
-export function OverviewPage({ connectionState, snapshot, error, isLoading = false }: Props = {}) {
+function toRiskTone(riskLevel: string): SignalTone {
+  const normalizedRiskLevel = riskLevel.trim().toLowerCase();
+
+  if (normalizedRiskLevel.includes("critical") || normalizedRiskLevel.includes("high")) {
+    return "danger";
+  }
+
+  if (normalizedRiskLevel.includes("elevated") || normalizedRiskLevel.includes("warn")) {
+    return "warning";
+  }
+
+  if (normalizedRiskLevel.includes("normal") || normalizedRiskLevel.includes("low")) {
+    return "positive";
+  }
+
+  return "info";
+}
+
+function toActivityTone(status: AuditSnapshot["items"][number]["status"]): SignalTone {
+  switch (status) {
+    case "completed":
+      return "positive";
+    case "failed":
+      return "danger";
+    default:
+      return "info";
+  }
+}
+
+function formatWorkbenchLabel(workbench: WorkspaceRecentRoute["workbench"]) {
+  return workbench.charAt(0).toUpperCase() + workbench.slice(1);
+}
+
+function buildActivityRailState(
+  auditSnapshot: AuditSnapshot | null | undefined,
+  recentRoutes: WorkspaceRecentRoute[],
+): {
+  items: ActivityRailItem[];
+  sourceLabel: string;
+  sourceTone: SignalTone;
+} {
+  if (Array.isArray(auditSnapshot?.items) && auditSnapshot.items.length > 0) {
+    return {
+      items: auditSnapshot.items.slice(0, MAX_ACTIVITY_ITEMS).map((record) => ({
+        id: `${record.command_id}:${record.sequence_id}`,
+        meta: record.message ?? `Status ${record.status}`,
+        summary: record.target ?? "No target recorded",
+        timestamp: record.recorded_at,
+        title: record.command,
+        tone: toActivityTone(record.status)
+      })),
+      sourceLabel: "Audit timeline",
+      sourceTone: "info"
+    };
+  }
+
+  if (recentRoutes.length > 0) {
+    return {
+      items: recentRoutes.slice(0, MAX_ACTIVITY_ITEMS).map((route) => ({
+        href: route.to,
+        id: `${route.to}:${route.visitedAt}`,
+        meta: `${formatWorkbenchLabel(route.workbench)} workbench`,
+        summary: route.to,
+        timestamp: route.visitedAt,
+        title: route.label,
+        tone: "neutral"
+      })),
+      sourceLabel: "Local route memory",
+      sourceTone: "neutral"
+    };
+  }
+
+  return {
+    items: [],
+    sourceLabel: "Activity pending",
+    sourceTone: "neutral"
+  };
+}
+
+function buildStatusSummary(
+  snapshot: OverviewSnapshot | null | undefined,
+  riskSnapshot: RiskSnapshot | null | undefined,
+  activityCount: number,
+  activitySourceLabel: string,
+) {
+  if (!snapshot) {
+    return "Awaiting runtime summary.";
+  }
+
+  const sourceSummary = activityCount > 0 ? `${activityCount} recent ${activitySourceLabel.toLowerCase()} items ready.` : null;
+
+  if (!riskSnapshot) {
+    return [`Node ${snapshot.node.status}.`, "Risk snapshot pending.", sourceSummary].filter(Boolean).join(" ");
+  }
+
+  return [
+    `Node ${snapshot.node.status}.`,
+    `Risk ${riskSnapshot.summary.risk_level} with ${riskSnapshot.summary.active_alerts} active alerts and ${riskSnapshot.summary.blocked_actions} blocked actions.`,
+    sourceSummary
+  ].filter(Boolean).join(" ");
+}
+
+export function OverviewPage({
+  auditSnapshot,
+  connectionState,
+  snapshot,
+  error,
+  isLoading = false,
+  recentRoutes = [],
+  riskSnapshot
+}: Props = {}) {
   const hasCachedError = Boolean(error) && Boolean(snapshot);
   const isStale = connectionState === "stale" || snapshot?.stale === true || hasCachedError;
-  const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
+  const freshestTimestamp = resolveFreshestWorkbenchTimestamp(
+    snapshot?.generated_at,
+    riskSnapshot?.generated_at,
+    auditSnapshot?.generated_at
+  );
+  const lastUpdated = freshestTimestamp ? <LastUpdatedBadge stale={isStale} timestamp={freshestTimestamp} /> : null;
+  const activityRail = buildActivityRailState(auditSnapshot, recentRoutes);
+  const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceLabel);
+  const nodeTone = snapshot ? toNodeTone(snapshot.node.status) : "neutral";
+  const riskTone = riskSnapshot ? toRiskTone(riskSnapshot.summary.risk_level) : "neutral";
+
+  useWorkbenchShellMeta({
+    lastUpdated: freshestTimestamp,
+    pageTitle: "Command center",
+    statusSummary,
+    workbenchCopy: COMMAND_CENTER_COPY
+  });
 
   if (isLoading && !snapshot) {
     return (
@@ -83,13 +242,161 @@ export function OverviewPage({ connectionState, snapshot, error, isLoading = fal
   }
 
   return (
-    <section className="overview-card">
-      <div className="overview-header">
-        <div>
-          <h2>Overview</h2>
-          <p className="overview-copy">{`Node status: ${snapshot.node.status}`}</p>
-        </div>
+    <section className="overview-command-center">
+      <WorkbenchHeader
+        description={COMMAND_CENTER_COPY}
+        summary={statusSummary}
+        title="Command center"
+      >
+        <SignalPill
+          detail={snapshot.node.node_id ?? "No node id"}
+          label={`Node ${snapshot.node.status}`}
+          tone={nodeTone}
+        />
+        {riskSnapshot ? (
+          <SignalPill
+            detail={`${riskSnapshot.summary.active_alerts} alerts`}
+            label={`Risk ${riskSnapshot.summary.risk_level}`}
+            tone={riskTone}
+          />
+        ) : null}
+        <SignalPill
+          detail={`${activityRail.items.length} items`}
+          label={activityRail.sourceLabel}
+          tone={activityRail.sourceTone}
+        />
         {lastUpdated}
+      </WorkbenchHeader>
+
+      {snapshot.partial ? (
+        <p className="resource-alert">Showing the latest partial runtime snapshot.</p>
+      ) : null}
+      {isStale ? (
+        <p className="resource-alert">
+          {error ?? "Snapshot refresh is delayed. Showing the freshest available command-center data."}
+        </p>
+      ) : null}
+
+      <div className="overview-command-grid">
+        <div className="overview-main-stack">
+          <SectionPanel
+            description="Runtime breadth across live strategies, adapters, accounts, and open positions."
+            title="Runtime summary"
+          >
+            <div className="overview-metric-grid">
+              <MetricTile
+                detail={snapshot.node.node_id ? "Connected node" : "Node id pending"}
+                label="Node status"
+                meta={snapshot.node.node_id ?? "Unassigned"}
+                tone={nodeTone}
+                value={snapshot.node.status}
+              />
+              <MetricTile
+                detail={`${snapshot.strategies.filter((strategy) => strategy.status === "running").length} running`}
+                label="Active strategies"
+                meta="Supervised strategies"
+                tone="info"
+                value={snapshot.strategies.length}
+              />
+              <MetricTile
+                detail="Bounded venue adapters"
+                label="Adapter links"
+                meta={`${snapshot.adapters.filter((adapter) => adapter.status === "connected").length} connected`}
+                tone="info"
+                value={snapshot.adapters.length}
+              />
+              <MetricTile
+                detail="Accounts projected into the shell"
+                label="Accounts"
+                meta="Balances and exposures"
+                tone="neutral"
+                value={snapshot.accounts.length}
+              />
+              <MetricTile
+                detail="Projected live positions"
+                label="Open positions"
+                meta="Cross-venue exposure"
+                tone="warning"
+                value={snapshot.positions.length}
+              />
+            </div>
+          </SectionPanel>
+
+          <SectionPanel
+            description="Cross-account guardrails, live alerts, and the latest operator blocks."
+            title="Risk snapshot"
+          >
+            {riskSnapshot ? (
+              <div className="overview-risk-stack">
+                <div className="overview-metric-grid">
+                  <MetricTile
+                    detail="Operator gate status"
+                    label="Trading state"
+                    meta="Risk coordinator"
+                    tone={riskTone}
+                    value={riskSnapshot.summary.trading_state}
+                  />
+                  <MetricTile
+                    detail="Current posture"
+                    label="Risk level"
+                    meta="Margin and exposure"
+                    tone={riskTone}
+                    value={riskSnapshot.summary.risk_level}
+                  />
+                  <MetricTile
+                    detail={riskSnapshot.summary.margin_utilization}
+                    label="Active alerts"
+                    meta="Margin utilization"
+                    tone="warning"
+                    value={riskSnapshot.summary.active_alerts}
+                  />
+                  <MetricTile
+                    detail={riskSnapshot.summary.exposure_utilization}
+                    label="Blocked actions"
+                    meta="Exposure utilization"
+                    tone={riskSnapshot.summary.blocked_actions > 0 ? "danger" : "positive"}
+                    value={riskSnapshot.summary.blocked_actions}
+                  />
+                </div>
+                <div className="detail-list">
+                  <div className="audit-item">
+                    <h3>Latest alert</h3>
+                    {riskSnapshot.events.length > 0 ? (
+                      <>
+                        <p className="audit-item-command">{riskSnapshot.events[0].title}</p>
+                        <p className="command-receipt-copy">{riskSnapshot.events[0].message}</p>
+                      </>
+                    ) : (
+                      <p className="command-receipt-copy">No live risk alerts are currently projected.</p>
+                    )}
+                  </div>
+                  <div className="audit-item">
+                    <h3>Latest block</h3>
+                    {riskSnapshot.blocks.length > 0 ? (
+                      <>
+                        <p className="audit-item-command">{riskSnapshot.blocks[0].reason}</p>
+                        <p className="command-receipt-copy">{riskSnapshot.blocks[0].scope}</p>
+                      </>
+                    ) : (
+                      <p className="command-receipt-copy">No operator blocks are currently active.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="command-receipt-copy">Risk snapshot is not available yet.</p>
+            )}
+          </SectionPanel>
+        </div>
+
+        <ActivityRail
+          description="Latest control receipts, with local route memory as the quiet-state fallback."
+          emptyState="No audit activity or local route history is available yet."
+          items={activityRail.items}
+          sourceLabel={activityRail.sourceLabel}
+          sourceTone={activityRail.sourceTone}
+          title="Recent activity"
+        />
       </div>
     </section>
   );

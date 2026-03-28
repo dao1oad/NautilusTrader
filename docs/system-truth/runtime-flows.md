@@ -46,6 +46,12 @@
 
 该 flow 只在浏览器本地维护导航偏好。它不会向后端写入 session，也不会改变既有 `/api/admin/*` 或 `/ws/admin/events` 契约。
 
+## Admin Shell Metadata Flow
+
+`route page/useWorkbenchShellMeta -> WorkbenchShellMetaProvider 按 priority 合并 pageTitle/workbenchCopy/statusSummary/lastUpdated -> WorkbenchShell runtime strip + page-level WorkbenchHeader 读取当前元数据 -> route 卸载时移除对应 metadata entry`
+
+该 flow 只服务浏览器壳层排版与运行态提示，不改变 query key、snapshot invalidation、REST/WS 契约或本地 workspace 持久化模型。
+
 ## Admin Frontend Delivery Flow
 
 `npm run build -> apps/admin-web/dist/index.html + hashed assets -> nautilus_trader/admin/static.resolve_admin_frontend_dir() 解析 env/package/repo bundle -> FastAPI GET / 与 GET /{frontend_path} 托管入口 HTML / 静态资产 -> 浏览器以同源方式访问 /api/admin/* 与 /ws/admin/events`

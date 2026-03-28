@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import {
   CATALOG_DEFAULT_END_TIME,
   CATALOG_DEFAULT_START_TIME,
@@ -12,6 +13,8 @@ import { AdminListPage } from "../read-only/admin-list-page";
 
 
 const CATALOG_PAGE_SIZE = 25;
+const CATALOG_COPY =
+  "Bounded catalog browse windows, query feedback, and operator notes for analysis workbench datasets.";
 
 const CATALOG_COLUMNS = [
   {
@@ -133,11 +136,27 @@ function CatalogSummaryCard({ snapshot }: { snapshot: CatalogSnapshot }) {
   );
 }
 
+function buildCatalogStatusSummary(snapshot: CatalogSnapshot | null) {
+  if (!snapshot) {
+    return "Awaiting bounded catalog browse telemetry.";
+  }
+
+  return `${snapshot.items.length} datasets projected; ${snapshot.history_query.returned_rows} rows returned within the bounded query window.`;
+}
+
 
 export function CatalogPage() {
   const query = useQuery({
     queryKey: adminQueryKeys.catalog(READ_ONLY_DEFAULT_LIMIT, CATALOG_DEFAULT_START_TIME, CATALOG_DEFAULT_END_TIME),
     queryFn: () => getCatalogSnapshot(READ_ONLY_DEFAULT_LIMIT, CATALOG_DEFAULT_START_TIME, CATALOG_DEFAULT_END_TIME)
+  });
+
+  useWorkbenchShellMeta({
+    lastUpdated: query.data?.generated_at ?? null,
+    pageTitle: "Catalog",
+    priority: 2,
+    statusSummary: buildCatalogStatusSummary(query.data ?? null),
+    workbenchCopy: CATALOG_COPY
   });
 
   return (
@@ -152,9 +171,19 @@ export function CatalogPage() {
       emptyDescription="No catalog datasets are currently projected by the admin API."
       filter={{ getSearchText: getCatalogSearchText }}
       getRowKey={(entry) => `${entry.catalog_id}:${entry.instrument_id}:${entry.data_type}:${entry.timeframe}`}
+      header={{
+        eyebrow: "Analysis workbench",
+        summary: buildCatalogStatusSummary(query.data ?? null)
+      }}
       loadingDescription="Loading the latest catalog and history diagnostics."
       pagination={{ pageSize: CATALOG_PAGE_SIZE }}
       query={query}
+      surface={{
+        description: "History query feedback, operator notes, and bounded catalog rows for the selected UTC analysis window.",
+        eyebrow: "Catalog browse window",
+        title: "Bounded browse window"
+      }}
+      summaryCopy={CATALOG_COPY}
       summary={query.data ? <CatalogSummaryCard snapshot={query.data} /> : null}
       tableLabel="Catalog entries"
       title="Catalog"

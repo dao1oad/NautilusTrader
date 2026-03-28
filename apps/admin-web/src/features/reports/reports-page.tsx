@@ -136,11 +136,15 @@ export function ReportsPage() {
         render: renderReportDetails
       }}
       emptyDescription="No report summaries are currently projected by the admin API."
-      filter={{ getSearchText: getReportSearchText }}
+      filter={{
+        getSearchText: getReportSearchText,
+        placeholder: "Filter by report, run, strategy, instrument, pnl, summary, or artifact family"
+      }}
       getRowKey={(report) => report.report_id}
       loadingDescription="Loading bounded report summaries."
       pagination={{ pageSize: REPORTS_PAGE_SIZE }}
       query={query}
+      summaryCopy="Performance summaries, artifact families, and review-ready report context for completed runs."
       summary={query.data ? <ReportsSummaryCard snapshot={query.data} /> : null}
       tableLabel="Report summaries"
       title="Reports"

@@ -172,6 +172,7 @@ export function AccountsPage() {
       getRowKey={(account) => account.account_id}
       loadingDescription="Loading the latest account diagnostics."
       query={query}
+      summaryCopy="Equity, margin posture, and account-level exposure with expandable balance and alert detail."
       summary={query.data ? <AccountsSummaryGrid summary={query.data.summary} /> : null}
       tableLabel="Accounts"
       title="Accounts"

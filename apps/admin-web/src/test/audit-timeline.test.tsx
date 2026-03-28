@@ -3,9 +3,23 @@ import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 
 import { AdminRuntimeProvider } from "../app/admin-runtime";
+import { WorkbenchShellMetaProvider, useCurrentWorkbenchShellMeta } from "../app/workbench-shell-meta";
 import { AuditTimeline } from "../features/audit/audit-timeline";
 import { ConfigDiffPage } from "../features/config/config-diff-page";
 
+
+function WorkbenchShellMetaProbe() {
+  const meta = useCurrentWorkbenchShellMeta();
+
+  return (
+    <section>
+      <p>{`Page title: ${meta.pageTitle ?? "None"}`}</p>
+      <p>{`Workbench copy: ${meta.workbenchCopy ?? "None"}`}</p>
+      <p>{`Last updated: ${meta.lastUpdated ?? "None"}`}</p>
+      <p>{`Status summary: ${meta.statusSummary ?? "None"}`}</p>
+    </section>
+  );
+}
 
 function renderWithRuntime(ui: ReactElement) {
   const client = new QueryClient({
@@ -24,7 +38,10 @@ function renderWithRuntime(ui: ReactElement) {
           error: null
         }}
       >
-        {ui}
+        <WorkbenchShellMetaProvider>
+          <WorkbenchShellMetaProbe />
+          {ui}
+        </WorkbenchShellMetaProvider>
       </AdminRuntimeProvider>
     </QueryClientProvider>
   );
@@ -75,10 +92,54 @@ test("renders audit records newest first and exposes recovery affordances for fa
   renderWithRuntime(<AuditTimeline />);
 
   expect(await screen.findByText("adapter.connect")).toBeInTheDocument();
+  expect(screen.getByText("Action receipt stream")).toBeInTheDocument();
+  expect(screen.getAllByText("Result state")).toHaveLength(2);
   expect(screen.getByText("strategy.start")).toBeInTheDocument();
   expect(screen.getByText("Adapter 'ib' was not found.")).toBeInTheDocument();
+  expect(screen.getByText("Recovery guidance")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Open recovery runbook" })).toBeInTheDocument();
+  expect(screen.getByText("Page title: Audit timeline")).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-26T00:00:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/audit");
+});
+
+test("surfaces degraded audit snapshots when partial data or section errors are present", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-26T01:00:00Z",
+      partial: true,
+      items: [
+        {
+          sequence_id: 3,
+          command_id: "cmd-3",
+          command: "node.refresh",
+          target: "node/local",
+          status: "completed",
+          payload: {},
+          recorded_at: "2026-03-26T01:00:00Z",
+          message: "Node refresh completed.",
+          failure: null
+        }
+      ],
+      errors: [
+        {
+          section: "audit_projection",
+          message: "One audit source is delayed by 18 seconds."
+        }
+      ]
+    })
+  });
+
+  vi.stubGlobal("fetch", fetchMock);
+
+  renderWithRuntime(<AuditTimeline />);
+
+  expect(await screen.findByText("node.refresh")).toBeInTheDocument();
+  expect(screen.getByText("Showing the latest partial audit snapshot.")).toBeInTheDocument();
+  expect(screen.getByText("audit_projection")).toBeInTheDocument();
+  expect(screen.getByText(/One audit source is delayed by 18 seconds/)).toBeInTheDocument();
+  expect(screen.getByText("partial snapshot")).toBeInTheDocument();
 });
 
 
@@ -124,7 +185,10 @@ test("renders config diff guardrails and recovery runbooks", async () => {
   renderWithRuntime(<ConfigDiffPage />);
 
   expect(await screen.findByText("command.confirmation.required")).toBeInTheDocument();
+  expect(screen.getByText("Guardrail drift ledger")).toBeInTheDocument();
   expect(screen.getAllByText("in_sync").length).toBeGreaterThan(0);
   expect(screen.getByText("Verify command guardrails")).toBeInTheDocument();
+  expect(screen.getByText("Page title: Config diff")).toBeInTheDocument();
+  expect(screen.getByText("Last updated: 2026-03-26T00:00:00Z")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/config/diff");
 });

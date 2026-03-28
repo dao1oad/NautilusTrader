@@ -38,6 +38,7 @@ export function LogsPage() {
       getRowKey={(log, index) => `${log.timestamp}:${log.component}:${index}`}
       loadingDescription="Loading the latest operational logs."
       query={query}
+      summaryCopy="Operational log lines from the latest bounded runtime window, ordered for rapid operator scan."
       tableLabel="Logs"
       title="Logs"
     />
