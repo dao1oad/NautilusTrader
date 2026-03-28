@@ -1,6 +1,6 @@
 import { createElement, type PropsWithChildren, type ReactElement } from "react";
 import "@testing-library/jest-dom/vitest";
-import { Theme } from "@radix-ui/themes/components/theme";
+import { Theme } from "@radix-ui/themes";
 import { render, type RenderOptions } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
@@ -47,11 +47,23 @@ type TestProvidersProps = PropsWithChildren<{
 }>;
 
 function createTestStorage(locale: SupportedLocale): Storage {
+  let persistedLocale: string | null = locale;
+
   return {
-    getItem: vi.fn((key: string) => (key === LOCALE_STORAGE_KEY ? locale : null)),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
+    getItem: vi.fn((key: string) => (key === LOCALE_STORAGE_KEY ? persistedLocale : null)),
+    setItem: vi.fn((key: string, value: string) => {
+      if (key === LOCALE_STORAGE_KEY) {
+        persistedLocale = value;
+      }
+    }),
+    removeItem: vi.fn((key: string) => {
+      if (key === LOCALE_STORAGE_KEY) {
+        persistedLocale = null;
+      }
+    }),
+    clear: vi.fn(() => {
+      persistedLocale = null;
+    }),
     key: vi.fn(() => null),
     length: 0
   };
@@ -65,9 +77,9 @@ export function TestProviders({ catalogs, children, locale, mode, warn }: TestPr
       mode,
       navigatorLanguages: [locale],
       storage: createTestStorage(locale),
-      warn
-    },
-    createElement(TestThemeWrapper, null, children)
+      warn,
+      children: createElement(TestThemeWrapper, null, children)
+    }
   );
 }
 
@@ -76,7 +88,7 @@ export function renderWithProviders(
   { catalogs, locale = DEFAULT_LOCALE, mode, warn, ...options }: RenderWithProvidersOptions = {}
 ) {
   function Wrapper({ children }: PropsWithChildren) {
-    return createElement(TestProviders, { catalogs, locale, mode, warn }, children);
+    return createElement(TestProviders, { catalogs, locale, mode, warn, children });
   }
 
   return render(ui, {

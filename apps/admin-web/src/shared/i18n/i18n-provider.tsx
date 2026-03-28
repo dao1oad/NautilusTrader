@@ -75,14 +75,6 @@ function resolveInitialLocaleState(
   };
 }
 
-function resolveMode(mode: "development" | "production" | undefined): "development" | "production" {
-  if (mode) {
-    return mode;
-  }
-
-  return import.meta.env.MODE === "production" ? "production" : "development";
-}
-
 export function I18nProvider({
   children,
   catalogs = defaultCatalogs,
@@ -92,8 +84,6 @@ export function I18nProvider({
   warn
 }: I18nProviderProps) {
   const [state, setState] = useState(() => resolveInitialLocaleState(storage, navigatorLanguages));
-
-  const currentMode = resolveMode(mode);
 
   useLayoutEffect(() => {
     if (getActiveLocale() !== state.locale) {
@@ -123,7 +113,7 @@ export function I18nProvider({
   function t(key: MessageKey, params?: TranslationParams) {
     return translateCatalog(state.locale, key, params, {
       catalogCollection: catalogs,
-      mode: currentMode,
+      mode,
       warn
     });
   }

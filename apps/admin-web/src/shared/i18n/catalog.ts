@@ -37,12 +37,20 @@ type TranslateCatalogOptions = {
   warn?: (message: string) => void;
 };
 
+type RuntimeImportMeta = ImportMeta & {
+  readonly env?: {
+    readonly MODE?: string;
+  };
+};
+
 function resolveMode(mode: "development" | "production" | undefined): "development" | "production" {
   if (mode) {
     return mode;
   }
 
-  return import.meta.env.MODE === "production" ? "production" : "development";
+  const runtimeMode = (import.meta as RuntimeImportMeta).env?.MODE;
+
+  return runtimeMode === "production" ? "production" : "development";
 }
 
 function readCatalogMessage(catalog: PartialMessageCatalog | undefined, key: MessageKey): string | null {
