@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { vi } from "vitest";
 
@@ -13,6 +13,7 @@ import { OverviewPage } from "../features/overview/overview-page";
 import { I18nProvider } from "../shared/i18n/i18n-provider";
 import type { AuditSnapshot, OverviewSnapshot, RiskSnapshot } from "../shared/types/admin";
 import type { SupportedLocale } from "../shared/i18n/locale";
+import { useI18n } from "../shared/i18n/use-i18n";
 import { WORKSPACE_STORAGE_KEY } from "../shared/workspaces/workspace-store";
 
 
@@ -159,6 +160,16 @@ function WorkbenchShellMetaProbe() {
   );
 }
 
+function LocaleToggleProbe() {
+  const { locale, setLocale } = useI18n();
+
+  return (
+    <button onClick={() => setLocale(locale === "en" ? "zh-CN" : "en")} type="button">
+      Toggle locale
+    </button>
+  );
+}
+
 function renderOverviewRoute(ui: ReactElement, { locale = "en" }: { locale?: SupportedLocale } = {}) {
   const client = createQueryClient();
 
@@ -272,4 +283,29 @@ test("falls back to locale-safe route memory when no audit activity is available
   expect(screen.getByText("数据目录")).toBeInTheDocument();
   expect(screen.queryByText("Risk Center")).not.toBeInTheDocument();
   expect(screen.queryByText("strategy.stop")).not.toBeInTheDocument();
+});
+
+test("updates overview shell metadata when locale changes", async () => {
+  apiMocks.getOverviewSnapshot.mockResolvedValue(createOverviewSnapshot());
+  apiMocks.getRiskSnapshot.mockResolvedValue(createRiskSnapshot());
+  apiMocks.getAuditSnapshot.mockResolvedValue(createAuditSnapshot());
+
+  renderOverviewRoute(
+    <>
+      <LocaleToggleProbe />
+      <OverviewRoutePage />
+    </>,
+    { locale: "en" }
+  );
+
+  expect(await screen.findByText("Page title: Command center")).toBeInTheDocument();
+  expect(
+    screen.getByText("Workbench copy: Runtime posture, risk pressure, and latest control-plane movement at a glance.")
+  ).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Toggle locale" }));
+
+  expect(await screen.findByText("Page title: 命令中心")).toBeInTheDocument();
+  expect(screen.getByText("Workbench copy: 一览运行态势、风险压力与最新控制平面动态。")).toBeInTheDocument();
+  expect(screen.getByText(/Status summary: 节点 running。/)).toBeInTheDocument();
 });

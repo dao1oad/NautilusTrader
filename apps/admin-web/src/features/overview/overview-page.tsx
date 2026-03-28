@@ -22,8 +22,6 @@ import { SignalPill, type SignalTone } from "../../shared/ui/signal-pill";
 import { WorkbenchHeader } from "../../shared/ui/workbench-header";
 import type { WorkspaceRecentRoute } from "../../shared/workspaces/workspace-store";
 
-
-const COMMAND_CENTER_COPY = "Runtime posture, risk pressure, and latest control-plane movement at a glance.";
 const MAX_ACTIVITY_ITEMS = 4;
 type OverviewTranslator = ReturnType<typeof useI18n>["t"];
 type ActivitySourceId = "auditTimeline" | "localRouteMemory" | "pending";
@@ -114,7 +112,7 @@ function buildActivityRailState(
         meta: `${getLocalizedWorkbenchLabel(t, route.workbench)} ${t("chrome.workbench")}`,
         summary: route.to,
         timestamp: route.visitedAt,
-        title: getLocalizedRouteLabel(t, route.to),
+        title: getLocalizedRouteLabel(t, route.to, route.label),
         tone: "neutral"
       })),
       sourceId: "localRouteMemory",
@@ -131,41 +129,46 @@ function buildActivityRailState(
   };
 }
 
-function buildActivitySourceSummary(activityCount: number, sourceId: ActivitySourceId): string | null {
+function buildActivitySourceSummary(
+  t: OverviewTranslator,
+  activityCount: number,
+  sourceId: ActivitySourceId
+): string | null {
   if (activityCount === 0) {
     return null;
   }
 
-  if (sourceId === "auditTimeline") {
-    return `${activityCount} recent audit items ready.`;
-  }
-
-  if (sourceId === "localRouteMemory") {
-    return `${activityCount} recent local route memory items ready.`;
-  }
-
-  return `${activityCount} recent activity items ready.`;
+  return t(`overview.status.sourceSummary.${sourceId}`, { count: activityCount });
 }
 
 function buildStatusSummary(
+  t: OverviewTranslator,
   snapshot: OverviewSnapshot | null | undefined,
   riskSnapshot: RiskSnapshot | null | undefined,
   activityCount: number,
   activitySourceId: ActivitySourceId,
 ) {
   if (!snapshot) {
-    return "Awaiting runtime summary.";
+    return t("overview.status.awaitingRuntimeSummary");
   }
 
-  const sourceSummary = buildActivitySourceSummary(activityCount, activitySourceId);
+  const sourceSummary = buildActivitySourceSummary(t, activityCount, activitySourceId);
 
   if (!riskSnapshot) {
-    return [`Node ${snapshot.node.status}.`, "Risk snapshot pending.", sourceSummary].filter(Boolean).join(" ");
+    return [
+      t("overview.status.node", { status: snapshot.node.status }),
+      t("overview.status.riskPending"),
+      sourceSummary
+    ].filter(Boolean).join(" ");
   }
 
   return [
-    `Node ${snapshot.node.status}.`,
-    `Risk ${riskSnapshot.summary.risk_level} with ${riskSnapshot.summary.active_alerts} active alerts and ${riskSnapshot.summary.blocked_actions} blocked actions.`,
+    t("overview.status.node", { status: snapshot.node.status }),
+    t("overview.status.risk", {
+      riskLevel: riskSnapshot.summary.risk_level,
+      activeAlerts: riskSnapshot.summary.active_alerts,
+      blockedActions: riskSnapshot.summary.blocked_actions
+    }),
     sourceSummary
   ].filter(Boolean).join(" ");
 }
@@ -189,15 +192,17 @@ export function OverviewPage({
   );
   const lastUpdated = freshestTimestamp ? <LastUpdatedBadge stale={isStale} timestamp={freshestTimestamp} /> : null;
   const activityRail = buildActivityRailState(t, auditSnapshot, recentRoutes);
-  const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceId);
+  const statusSummary = buildStatusSummary(t, snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceId);
   const nodeTone = snapshot ? toNodeTone(snapshot.node.status) : "neutral";
   const riskTone = riskSnapshot ? toRiskTone(riskSnapshot.summary.risk_level) : "neutral";
+  const commandCenterTitle = t("overview.commandCenter.title");
+  const commandCenterDescription = t("overview.commandCenter.description");
 
   useWorkbenchShellMeta({
     lastUpdated: freshestTimestamp,
-    pageTitle: "Command center",
+    pageTitle: commandCenterTitle,
     statusSummary,
-    workbenchCopy: COMMAND_CENTER_COPY
+    workbenchCopy: commandCenterDescription
   });
 
   if (isLoading && !snapshot) {
@@ -269,9 +274,9 @@ export function OverviewPage({
   return (
     <section className="overview-command-center">
       <WorkbenchHeader
-        description={COMMAND_CENTER_COPY}
+        description={commandCenterDescription}
         summary={statusSummary}
-        title="Command center"
+        title={commandCenterTitle}
       >
         <SignalPill
           detail={snapshot.node.node_id ?? "No node id"}

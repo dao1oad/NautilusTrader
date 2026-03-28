@@ -88,7 +88,7 @@ export function WorkbenchShell({ children }: Props) {
   }));
   const recentRoutes: ConsoleRecentRoute[] = workspaceState.recentRoutes.slice(0, 4).map((route) => ({
     ...route,
-    label: getLocalizedRouteLabel(t, route.to)
+    label: getLocalizedRouteLabel(t, route.to, route.label)
   }));
   const runtimeMeta = useCurrentWorkbenchShellMeta({
     pageTitle: getLocalizedRouteLabel(t, currentRoute.to),

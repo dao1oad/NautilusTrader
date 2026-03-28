@@ -77,10 +77,25 @@ export const zhCN = {
     }
   },
   overview: {
+    commandCenter: {
+      title: "命令中心",
+      description: "一览运行态势、风险压力与最新控制平面动态。"
+    },
     activitySource: {
       auditTimeline: "审计时间线",
       localRouteMemory: "本地路由记忆",
       pending: "活动待定"
+    },
+    status: {
+      awaitingRuntimeSummary: "等待运行摘要。",
+      node: "节点 {status}。",
+      riskPending: "风险快照待更新。",
+      risk: "风险 {riskLevel}，当前有 {activeAlerts} 个活跃告警和 {blockedActions} 个阻断操作。",
+      sourceSummary: {
+        auditTimeline: "{count} 条近期审计事件已就绪。",
+        localRouteMemory: "{count} 条近期本地路由记忆已就绪。",
+        pending: "{count} 条近期活动已就绪。"
+      }
     }
   },
   errors: {

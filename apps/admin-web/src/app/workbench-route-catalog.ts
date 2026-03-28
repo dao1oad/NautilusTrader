@@ -76,18 +76,28 @@ export function getWorkbenchRouteDescriptorOrDefault(pathname: string): Workbenc
   return getWorkbenchRouteDescriptor(pathname) ?? WORKBENCH_ROUTE_CATALOG[0];
 }
 
+export function isWorkbenchRoute(pathname: string, workbench?: WorkbenchId): boolean {
+  const descriptor = getWorkbenchRouteDescriptor(pathname);
+
+  if (!descriptor) {
+    return false;
+  }
+
+  return workbench ? descriptor.workbench === workbench : true;
+}
+
 export function getLocalizedWorkbenchLabel(t: CatalogTranslator, workbench: WorkbenchId): string {
   return t(WORKBENCH_LABEL_KEYS[workbench]);
 }
 
-export function getLocalizedRouteLabel(t: CatalogTranslator, to: string): string {
+export function getLocalizedRouteLabel(t: CatalogTranslator, to: string, fallbackLabel?: string): string {
   const descriptor = getWorkbenchRouteDescriptor(to);
 
   if (descriptor) {
     return t(descriptor.labelKey);
   }
 
-  return t(getWorkbenchRouteDescriptorOrDefault(getDefaultWorkbenchRoute("operations")).labelKey);
+  return fallbackLabel ?? to;
 }
 
 export function getLocalizedWorkbenchNavGroups(t: CatalogTranslator): LocalizedWorkbenchNavGroup[] {

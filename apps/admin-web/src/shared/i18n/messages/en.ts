@@ -74,10 +74,25 @@ export const en = {
     }
   },
   overview: {
+    commandCenter: {
+      title: "Command center",
+      description: "Runtime posture, risk pressure, and latest control-plane movement at a glance."
+    },
     activitySource: {
       auditTimeline: "Audit timeline",
       localRouteMemory: "Local route memory",
       pending: "Activity pending"
+    },
+    status: {
+      awaitingRuntimeSummary: "Awaiting runtime summary.",
+      node: "Node {status}.",
+      riskPending: "Risk snapshot pending.",
+      risk: "Risk {riskLevel} with {activeAlerts} active alerts and {blockedActions} blocked actions.",
+      sourceSummary: {
+        auditTimeline: "{count} recent audit items ready.",
+        localRouteMemory: "{count} recent local route memory items ready.",
+        pending: "{count} recent activity items ready."
+      }
     }
   },
   errors: {

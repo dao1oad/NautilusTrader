@@ -73,3 +73,37 @@ test("normalizes legacy route memory without depending on persisted localized la
   });
   expect(workspace.recentRoutes[0]).not.toHaveProperty("label");
 });
+
+test("repairs invalid workbench destinations and preserves legacy labels for unknown routes", () => {
+  const storage = {
+    getItem: vi.fn(() => JSON.stringify({
+      activeWorkbench: "operations",
+      lastRouteByWorkbench: {
+        operations: "/missing",
+        analysis: "/ghost"
+      },
+      recentRoutes: [
+        {
+          to: "/missing",
+          label: "Legacy Route",
+          workbench: "operations",
+          visitedAt: "2026-03-28T08:20:00.000Z"
+        }
+      ],
+      routePreferences: {}
+    }))
+  };
+
+  const workspace = readWorkspaceState(storage);
+
+  expect(workspace.lastRouteByWorkbench).toEqual({
+    operations: "/",
+    analysis: "/backtests"
+  });
+  expect(workspace.recentRoutes[0]).toMatchObject({
+    to: "/missing",
+    label: "Legacy Route",
+    workbench: "operations",
+    visitedAt: "2026-03-28T08:20:00.000Z"
+  });
+});

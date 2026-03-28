@@ -1,3 +1,10 @@
+import {
+  getDefaultWorkbenchRoute,
+  getWorkbenchRouteDescriptor,
+  isWorkbenchRoute
+} from "../../app/workbench-route-catalog";
+
+
 export type WorkbenchId = "operations" | "analysis";
 
 export type WorkspaceRoutePreference = {
@@ -15,6 +22,7 @@ export type WorkspaceRecentRoute = {
   to: string;
   workbench: WorkbenchId;
   visitedAt: string;
+  label?: string;
 };
 
 export type WorkspaceState = {
@@ -72,10 +80,16 @@ function normalizeRecentRoute(route: Partial<PersistedWorkspaceRecentRoute> | nu
     return null;
   }
 
+  const descriptor = getWorkbenchRouteDescriptor(route.to);
+  if (!descriptor && typeof route.label !== "string") {
+    return null;
+  }
+
   return {
     to: route.to,
-    workbench: route.workbench,
-    visitedAt: route.visitedAt
+    workbench: descriptor?.workbench ?? route.workbench,
+    visitedAt: route.visitedAt,
+    ...(descriptor ? {} : { label: route.label })
   };
 }
 
@@ -90,8 +104,8 @@ function normalizeWorkspaceState(value: Partial<PersistedWorkspaceState> | null 
   return {
     activeWorkbench: value?.activeWorkbench === "analysis" ? "analysis" : defaults.activeWorkbench,
     lastRouteByWorkbench: {
-      operations: value?.lastRouteByWorkbench?.operations ?? defaults.lastRouteByWorkbench.operations,
-      analysis: value?.lastRouteByWorkbench?.analysis ?? defaults.lastRouteByWorkbench.analysis
+      operations: normalizeWorkbenchDestination("operations", value?.lastRouteByWorkbench?.operations),
+      analysis: normalizeWorkbenchDestination("analysis", value?.lastRouteByWorkbench?.analysis)
     },
     recentRoutes: recentRoutes.length > 0 ? recentRoutes : defaults.recentRoutes,
     routePreferences: {
@@ -99,6 +113,14 @@ function normalizeWorkspaceState(value: Partial<PersistedWorkspaceState> | null 
       ...(value?.routePreferences ?? {})
     }
   };
+}
+
+function normalizeWorkbenchDestination(workbench: WorkbenchId, route: string | null | undefined): string {
+  if (route && isWorkbenchRoute(route, workbench)) {
+    return route;
+  }
+
+  return getDefaultWorkbenchRoute(workbench);
 }
 
 export function readWorkspaceState(storage?: StorageLike | null): WorkspaceState {
