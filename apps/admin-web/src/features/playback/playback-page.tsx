@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useAdminRuntime } from "../../app/admin-runtime";
+import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import {
   getPlaybackSnapshot,
   PLAYBACK_DEFAULT_END_TIME,
@@ -8,10 +9,42 @@ import {
   READ_ONLY_DEFAULT_LIMIT
 } from "../../shared/api/admin-client";
 import { adminQueryKeys } from "../../shared/query/query-client";
+import type { PlaybackSnapshot } from "../../shared/types/admin";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
 import { PageState } from "../../shared/ui/page-state";
+import { SectionPanel } from "../../shared/ui/section-panel";
+import { SignalPill } from "../../shared/ui/signal-pill";
+import { WorkbenchHeader } from "../../shared/ui/workbench-header";
 import { PlaybackPreviewChart } from "./playback-preview-chart";
 
+
+const PLAYBACK_COPY =
+  "Bounded replay request, preview chart, and projected event stream for the selected analysis window.";
+
+function renderResourceErrors(errors: Array<{ section: string; message: string }>) {
+  if (errors.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className="resource-errors">
+      {errors.map((resourceError) => (
+        <li key={`${resourceError.section}:${resourceError.message}`}>
+          <strong>{resourceError.section}</strong>
+          {`: ${resourceError.message}`}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function buildPlaybackStatusSummary(snapshot: PlaybackSnapshot | null) {
+  if (!snapshot) {
+    return "Awaiting bounded replay telemetry.";
+  }
+
+  return `${snapshot.events.length} projected events, ${snapshot.timeline.length} timeline points, limit ${snapshot.request.limit}.`;
+}
 
 export function PlaybackPage() {
   const { connectionState, error: runtimeError } = useAdminRuntime();
@@ -25,6 +58,13 @@ export function PlaybackPage() {
   const hasCachedError = Boolean(error) && Boolean(snapshot);
   const isStale = connectionState === "stale" || hasCachedError;
   const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
+
+  useWorkbenchShellMeta({
+    lastUpdated: snapshot?.generated_at ?? null,
+    pageTitle: "Playback",
+    statusSummary: buildPlaybackStatusSummary(snapshot),
+    workbenchCopy: PLAYBACK_COPY
+  });
 
   if (query.isLoading && !snapshot) {
     return <PageState kind="loading" title="Playback" description="Loading bounded playback diagnostics." />;
@@ -51,25 +91,27 @@ export function PlaybackPage() {
 
   return (
     <div className="resource-stack">
-      <section className="resource-card">
-        <div className="resource-header">
-          <div>
-            <h2>Playback</h2>
-            <p className="overview-copy">Bounded event replay preview for catalog windows before a full playback run.</p>
-            {snapshot.partial ? <p className="resource-alert">Showing the latest partial playback snapshot.</p> : null}
-          </div>
-          {lastUpdated}
-        </div>
-        {snapshot.errors.length > 0 ? (
-          <ul className="resource-errors">
-            {snapshot.errors.map((resourceError) => (
-              <li key={`${resourceError.section}:${resourceError.message}`}>
-                <strong>{resourceError.section}</strong>
-                {`: ${resourceError.message}`}
-              </li>
-            ))}
-          </ul>
-        ) : null}
+      <WorkbenchHeader
+        description={PLAYBACK_COPY}
+        eyebrow="Analysis workbench"
+        summary={buildPlaybackStatusSummary(snapshot)}
+        title="Playback"
+      >
+        <SignalPill
+          detail={`${snapshot.events.length} projected events`}
+          label={snapshot.request.request_id}
+          tone={snapshot.partial ? "warning" : "info"}
+        />
+        {lastUpdated}
+      </WorkbenchHeader>
+
+      <SectionPanel
+        description="Bounded request parameters and operator feedback for the selected UTC replay window."
+        eyebrow="Replay request"
+        title="Bounded request"
+      >
+        {snapshot.partial ? <p className="resource-alert">Showing the latest partial playback snapshot.</p> : null}
+        {renderResourceErrors(snapshot.errors)}
         <div className="detail-stack">
           <dl className="resource-detail-grid">
             <div>
@@ -108,24 +150,21 @@ export function PlaybackPage() {
             </ul>
           </section>
         </div>
-      </section>
+      </SectionPanel>
 
-      <section className="resource-card">
-        <div className="resource-header">
-          <div>
-            <h3>Playback preview</h3>
-            <p className="overview-copy">Projected mid-price path for the bounded replay window.</p>
-          </div>
-        </div>
+      <SectionPanel
+        description="Projected mid-price path for the bounded replay window."
+        eyebrow="Preview path"
+        title="Playback preview"
+      >
         <PlaybackPreviewChart timeline={snapshot.timeline} />
-      </section>
+      </SectionPanel>
 
-      <section className="resource-card">
-        <div className="resource-header">
-          <div>
-            <h3>Projected events</h3>
-          </div>
-        </div>
+      <SectionPanel
+        description="Projected event stream remains bounded to the selected UTC window and event limit."
+        eyebrow="Projected event stream"
+        title="Projected events"
+      >
         <table aria-label="Projected playback events" className="resource-table">
           <thead>
             <tr>
@@ -144,7 +183,7 @@ export function PlaybackPage() {
             ))}
           </tbody>
         </table>
-      </section>
+      </SectionPanel>
     </div>
   );
 }
