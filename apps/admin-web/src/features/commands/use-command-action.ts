@@ -1,5 +1,6 @@
 import { startTransition, useEffect, useRef, useState } from "react";
 
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { subscribeToCommandReceipts } from "../../shared/realtime/command-receipt-bus";
 import type { CommandReceipt } from "../../shared/types/admin";
 
@@ -13,6 +14,7 @@ export type CommandIntent = {
 
 
 export function useCommandAction() {
+  const { t } = useI18n();
   const [activeIntent, setActiveIntent] = useState<CommandIntent | null>(null);
   const [receipt, setReceipt] = useState<CommandReceipt | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function useCommandAction() {
       });
     } catch (error) {
       startTransition(() => {
-        setActionError(error instanceof Error ? error.message : "Command execution failed.");
+        setActionError(error instanceof Error ? error.message : t("commands.executionFailed"));
       });
     } finally {
       startTransition(() => {

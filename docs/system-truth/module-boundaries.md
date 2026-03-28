@@ -10,7 +10,7 @@
 - `python/nautilus_trader/*`: PyO3 输出层与类型桩；职责是稳定 Python import surface，而不是重新实现业务逻辑。
 - `apps/admin-web/src/app/*`: 管理控制台壳层、路由树与运行态上下文；负责组合 `Overview/Nodes/.../Audit/Config/Blotter/Fills/Positions/Accounts/Risk Center/Catalog/Playback/Diagnostics/Backtests/Reports` 页面、统一 workbench 导航、terminal-editorial shell metadata，以及 shared websocket runtime，而不是直接读取底层 runtime object。
 - `apps/admin-web/src/features/*`: 按页面切分的 route surface；`strategies`、`adapters` 可以通过 shared command hook 触发低风险 POST，但 feature 本身只负责编排确认 UI、receipt 展示与 query-backed 页面逻辑。`orders`、`fills`、`positions`、`accounts`、`risk`、`catalog`、`playback`、`diagnostics`、`backtests` 与 `reports` 页面仍保持只读，只能在 bounded snapshot 上做筛选、分页、summary render、drill-down 与 bounded preview render。
-- `apps/admin-web/src/shared/*`: admin DTO 类型镜像、API client、query key、realtime invalidation、command receipt bus 与 shared page-state / workbench-header / section-panel / metric-tile / signal-pill / terminal-table primitive；是前端跨页面共享层，不得越界成 runtime orchestration layer。
+- `apps/admin-web/src/shared/*`: admin DTO 类型镜像、API client、query key、realtime invalidation、command receipt bus、shared i18n provider/catalog，以及 shared page-state / workbench-header / section-panel / metric-tile / signal-pill / terminal-table primitive；是前端跨页面共享层，不得越界成 runtime orchestration layer。
 - `apps/admin-web/src/shared/workspaces/*`: 浏览器本地 workspace model 边界；负责记录 active workbench、per-workbench last route、recent views 与 per-route layout/filter 偏好，只能使用本地存储，不能越界成服务端会话或多用户同步层。
 - `apps/admin-web/scripts/*`: 前端交付工具边界；当前只承载 bundle budget 检查，不定义浏览器运行时逻辑，也不替代 CI/workflow 入口。
 - `schema/sql/*`: 数据库持久化对象定义；其边界与 `crates/persistence`、`nautilus_trader/persistence` 对齐。
@@ -40,6 +40,7 @@
 - `Phase 4B` 的 `WorkbenchShell` 只能在浏览器侧重组既有 route tree、切换 `Operations/Analysis` 入口并持久化本地 workspace 偏好；它不能创建新后端契约，也不能把 local storage state 演化成远端同步配置中心。
 - `apps/admin-web/src/app/workbench-shell-meta.tsx` 只负责浏览器内 route -> shell 的元数据桥接；它可以按优先级合并 route page 的标题、说明、状态与 last-updated 信号，但不能接管 query 生命周期、local storage workspace state 或任何后端契约。
 - `apps/admin-web/src/features/read-only/admin-list-page.tsx` 继续作为 bounded list surface 复用层；它现在可以选择性组合 `WorkbenchHeader` 与更细分的 `SectionPanel` copy，但不能改变底层 snapshot query、filter/pagination semantics、drill-down 模型或 invalidation 语义。
+- `apps/admin-web/src/shared/i18n/*` 只负责浏览器拥有的 shell/page 文案、locale 持久化与缺失翻译兜底；它不能翻译 admin DTO 中的 backend-originated status/message/ID/target/timestamp，也不能创建新的 Accept-Language API 契约。
 - `Phase 4C` 的 `nautilus_trader/admin/app.py` 可以在 API/WS 路由之后托管 `/`、SPA deep link 与 `/assets/*` 静态文件，但它只能消费已构建 bundle 路径解析结果，不能接管前端构建器、浏览器偏好或桌面壳生命周期。
 - `Phase 4C` 的 Playwright smoke 只验证 backend-hosted bundle 的关键浏览器路径；它不能反向成为新的产品运行时依赖，也不能把测试用 bootstrap 脚本升级成生产入口。
 - `nautilus_trader/admin/services/commands.py` 只负责命令 receipt/failure 组装与审计/事件联动；`nautilus_trader/admin/services/audit.py` 只负责 append-only 审计记录投影；`nautilus_trader/admin/services/config.py` 只负责 control-plane config diff / runbook snapshot。三者都不能越界成完整的运行时控制编排器。

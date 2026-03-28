@@ -9,7 +9,16 @@ import {
   type ConsoleWorkbenchEntry,
   type ConsoleWorkbenchId
 } from "./console-shell";
+import {
+  getDefaultWorkbenchRoute,
+  getLocalizedRouteLabel,
+  getLocalizedWorkbenchLabel,
+  getLocalizedWorkbenchNavGroups,
+  getWorkbenchOrder,
+  getWorkbenchRouteDescriptorOrDefault
+} from "../workbench-route-catalog";
 import { useCurrentWorkbenchShellMeta } from "../workbench-shell-meta";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import {
   readWorkspaceState,
   recordRouteVisit,
@@ -18,52 +27,23 @@ import {
   writeWorkspaceState
 } from "../../shared/workspaces/workspace-store";
 
-
-const OPERATIONS_ITEMS = [
-  { to: "/", label: "Overview", workbench: "operations" },
-  { to: "/nodes", label: "Nodes", workbench: "operations" },
-  { to: "/strategies", label: "Strategies", workbench: "operations" },
-  { to: "/adapters", label: "Adapters", workbench: "operations" },
-  { to: "/audit", label: "Audit", workbench: "operations" },
-  { to: "/config", label: "Config", workbench: "operations" },
-  { to: "/orders", label: "Blotter", workbench: "operations" },
-  { to: "/fills", label: "Fills", workbench: "operations" },
-  { to: "/positions", label: "Positions", workbench: "operations" },
-  { to: "/accounts", label: "Accounts", workbench: "operations" },
-  { to: "/risk", label: "Risk Center", workbench: "operations" },
-  { to: "/logs", label: "Logs", workbench: "operations" }
-] as const;
-
-const ANALYSIS_ITEMS = [
-  { to: "/catalog", label: "Catalog", workbench: "analysis" },
-  { to: "/playback", label: "Playback", workbench: "analysis" },
-  { to: "/diagnostics", label: "Diagnostics", workbench: "analysis" },
-  { to: "/backtests", label: "Backtests", workbench: "analysis" },
-  { to: "/reports", label: "Reports", workbench: "analysis" }
-] as const;
-
-const WORKBENCH_COPY: Record<ConsoleWorkbenchId, string> = {
-  operations: "Live control-plane routes, receipts, and runtime guardrails stay grouped under the operations workstation.",
-  analysis: "Backtests, reports, playback, and diagnostics stay grouped under the bounded analysis workstation."
+const WORKBENCH_COPY_KEYS: Record<ConsoleWorkbenchId, "workbenchShell.copy.operations" | "workbenchShell.copy.analysis"> = {
+  operations: "workbenchShell.copy.operations",
+  analysis: "workbenchShell.copy.analysis"
 };
 
-const WORKBENCH_STATUS_SUMMARY: Record<ConsoleWorkbenchId, string> = {
-  operations: "Operational routes are pinned locally with recent-view memory preserved in the browser workspace.",
-  analysis: "Analysis routes remain bounded to local playback, catalog, diagnostics, and reporting surfaces."
+const WORKBENCH_READY_KEYS: Record<ConsoleWorkbenchId, "workbenchShell.ready.operations" | "workbenchShell.ready.analysis"> = {
+  operations: "workbenchShell.ready.operations",
+  analysis: "workbenchShell.ready.analysis"
 };
 
-const NAV_GROUPS: ConsoleNavGroup[] = [
-  {
-    title: "Operations",
-    items: OPERATIONS_ITEMS.map(({ to, label }) => ({ to, label }))
-  },
-  {
-    title: "Analysis",
-    items: ANALYSIS_ITEMS.map(({ to, label }) => ({ to, label }))
-  }
-];
-
-const ALL_ITEMS = [...OPERATIONS_ITEMS, ...ANALYSIS_ITEMS];
+const WORKBENCH_STATUS_KEYS: Record<
+  ConsoleWorkbenchId,
+  "workbenchShell.status.operations" | "workbenchShell.status.analysis"
+> = {
+  operations: "workbenchShell.status.operations",
+  analysis: "workbenchShell.status.analysis"
+};
 
 function getBrowserStorage(): Storage | null {
   if (typeof window === "undefined") {
@@ -73,28 +53,17 @@ function getBrowserStorage(): Storage | null {
   return window.localStorage;
 }
 
-function getRouteDescriptor(pathname: string): {
-  to: string;
-  label: string;
-  workbench: WorkbenchId;
-} {
-  return ALL_ITEMS.find((item) => item.to === pathname) ?? OPERATIONS_ITEMS[0];
-}
-
-function getWorkbenchLabel(workbench: ConsoleWorkbenchId) {
-  return workbench.charAt(0).toUpperCase() + workbench.slice(1);
-}
-
 type Props = {
   children: ReactNode;
 };
 
 export function WorkbenchShell({ children }: Props) {
+  const { t } = useI18n();
   const pathname = useRouterState({
     select: (state) => state.location.pathname
   });
   const [workspaceState, setWorkspaceState] = useState(() => readWorkspaceState(getBrowserStorage()));
-  const currentRoute = getRouteDescriptor(pathname);
+  const currentRoute = getWorkbenchRouteDescriptorOrDefault(pathname);
 
   useEffect(() => {
     const storage = getBrowserStorage();
@@ -105,30 +74,34 @@ export function WorkbenchShell({ children }: Props) {
   }, [currentRoute, pathname]);
 
   const activeWorkbench = currentRoute.workbench;
-  const workbenchEntries: ConsoleWorkbenchEntry[] = [
-    {
-      label: "Operations",
-      to: resolveWorkbenchDestination(workspaceState, "operations", "/"),
-      active: activeWorkbench === "operations"
-    },
-    {
-      label: "Analysis",
-      to: resolveWorkbenchDestination(workspaceState, "analysis", "/backtests"),
-      active: activeWorkbench === "analysis"
-    }
-  ];
+  const navGroups: ConsoleNavGroup[] = getLocalizedWorkbenchNavGroups(t).map((group) => ({
+    title: group.title,
+    items: group.items.map((item) => ({
+      to: item.to,
+      label: item.label
+    }))
+  }));
+  const workbenchEntries: ConsoleWorkbenchEntry[] = getWorkbenchOrder().map((workbench) => ({
+    label: getLocalizedWorkbenchLabel(t, workbench),
+    to: resolveWorkbenchDestination(workspaceState, workbench as WorkbenchId, getDefaultWorkbenchRoute(workbench)),
+    active: activeWorkbench === workbench
+  }));
+  const recentRoutes: ConsoleRecentRoute[] = workspaceState.recentRoutes.slice(0, 4).map((route) => ({
+    ...route,
+    label: getLocalizedRouteLabel(t, route.to, route.label)
+  }));
   const runtimeMeta = useCurrentWorkbenchShellMeta({
-    pageTitle: currentRoute.label,
-    workbenchCopy: WORKBENCH_COPY[currentRoute.workbench],
+    pageTitle: getLocalizedRouteLabel(t, currentRoute.to),
+    workbenchCopy: t(WORKBENCH_COPY_KEYS[currentRoute.workbench]),
     lastUpdated: null,
-    statusSummary: `${getWorkbenchLabel(currentRoute.workbench)} workbench ready. ${WORKBENCH_STATUS_SUMMARY[currentRoute.workbench]}`
+    statusSummary: `${t(WORKBENCH_READY_KEYS[currentRoute.workbench])} ${t(WORKBENCH_STATUS_KEYS[currentRoute.workbench])}`
   });
 
   return (
     <ConsoleShell
       currentWorkbench={activeWorkbench}
-      navGroups={NAV_GROUPS}
-      recentRoutes={workspaceState.recentRoutes.slice(0, 4) as ConsoleRecentRoute[]}
+      navGroups={navGroups}
+      recentRoutes={recentRoutes}
       runtimeMeta={runtimeMeta}
       workbenchEntries={workbenchEntries}
     >

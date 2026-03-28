@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { ConnectionBanner } from "../../features/connection/connection-banner";
+import { useI18n } from "../../shared/i18n/use-i18n";
+import { LocaleSwitcher } from "../../shared/ui/locale-switcher";
 import { useAdminRuntime } from "../admin-runtime";
 
 
@@ -57,18 +59,41 @@ const COMPACT_NAVIGATION_FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])"
 ].join(", ");
 
-function formatWorkbenchLabel(workbench: ConsoleWorkbenchId) {
-  return workbench.charAt(0).toUpperCase() + workbench.slice(1);
+type WorkbenchLabels = Record<ConsoleWorkbenchId, string>;
+
+function getWorkbenchLabels(t: ReturnType<typeof useI18n>["t"]): WorkbenchLabels {
+  return {
+    operations: t("chrome.workbenches.operations"),
+    analysis: t("chrome.workbenches.analysis")
+  };
 }
 
-function formatCompactTimestamp(timestamp: string | null) {
+function formatWorkbenchLabel(workbench: ConsoleWorkbenchId, workbenchLabels: WorkbenchLabels) {
+  return workbenchLabels[workbench];
+}
+
+function localizeWorkbenchName(label: string, workbenchLabels: WorkbenchLabels) {
+  const normalizedLabel = label.trim().toLowerCase();
+
+  if (normalizedLabel === "operations") {
+    return workbenchLabels.operations;
+  }
+
+  if (normalizedLabel === "analysis") {
+    return workbenchLabels.analysis;
+  }
+
+  return label;
+}
+
+function formatCompactTimestamp(timestamp: string | null, fallbackCopy: string) {
   if (!timestamp) {
-    return "Awaiting page telemetry";
+    return fallbackCopy;
   }
 
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) {
-    return "Awaiting page telemetry";
+    return fallbackCopy;
   }
 
   return `${date.toISOString().replace("T", " ").slice(0, 16)} UTC`;
@@ -100,13 +125,15 @@ export function ConsoleShell({
   runtimeMeta,
   workbenchEntries
 }: Props) {
+  const { t } = useI18n();
   const { connectionState } = useAdminRuntime();
   const [isCompactNavigation, setIsCompactNavigation] = useState(() => readCompactNavigationMatch());
   const [navigationOpen, setNavigationOpen] = useState(false);
   const navigationRef = useRef<HTMLElement | null>(null);
   const navigationTriggerRef = useRef<HTMLButtonElement | null>(null);
   const shouldRestoreTriggerFocusRef = useRef(false);
-  const currentWorkbenchLabel = formatWorkbenchLabel(currentWorkbench);
+  const workbenchLabels = getWorkbenchLabels(t);
+  const currentWorkbenchLabel = formatWorkbenchLabel(currentWorkbench, workbenchLabels);
   const shouldRenderSidebar = !isCompactNavigation || navigationOpen;
 
   function closeNavigation({ restoreFocus }: { restoreFocus: boolean }) {
@@ -228,7 +255,7 @@ export function ConsoleShell({
       <div className="console-frame">
         {shouldRenderSidebar ? (
           <aside
-            aria-label={isCompactNavigation ? "Workbench navigation" : undefined}
+            aria-label={isCompactNavigation ? t("chrome.workbenchNavigation") : undefined}
             aria-modal={isCompactNavigation ? true : undefined}
             className="console-sidebar"
             data-open={navigationOpen ? "true" : "false"}
@@ -238,26 +265,26 @@ export function ConsoleShell({
             tabIndex={isCompactNavigation ? -1 : undefined}
           >
             <div className="console-sidebar-header">
-              <p className="app-kicker">Operator workstation</p>
-              <h1>NautilusTrader Admin</h1>
-              <p className="console-sidebar-copy">Pinned local shell for live operations, runtime diagnostics, and bounded analysis surfaces.</p>
+              <p className="app-kicker">{t("chrome.operatorWorkstation")}</p>
+              <h1>{t("chrome.appName")}</h1>
+              <p className="console-sidebar-copy">{t("chrome.sidebarCopy")}</p>
             </div>
             <dl className="console-sidebar-meta">
               <div className="console-sidebar-meta-item">
-                <dt>Runtime</dt>
-                <dd>Local process</dd>
+                <dt>{t("chrome.runtime")}</dt>
+                <dd>{t("chrome.localProcess")}</dd>
               </div>
               <div className="console-sidebar-meta-item">
-                <dt>Workspace</dt>
-                <dd>Browser-pinned memory</dd>
+                <dt>{t("chrome.workspace")}</dt>
+                <dd>{t("chrome.browserPinnedMemory")}</dd>
               </div>
               <div className="console-sidebar-meta-item">
-                <dt>Active desk</dt>
+                <dt>{t("chrome.activeDesk")}</dt>
                 <dd>{currentWorkbenchLabel}</dd>
               </div>
             </dl>
             <section className="console-workbench-switcher">
-              <p className="app-kicker">Workbench entry points</p>
+              <p className="app-kicker">{t("chrome.workbenchEntryPoints")}</p>
               <div className="console-workbench-entry-list">
                 {workbenchEntries.map((entry) => (
                   <Link
@@ -267,16 +294,16 @@ export function ConsoleShell({
                     onClick={() => closeNavigation({ restoreFocus: true })}
                     to={entry.to}
                   >
-                    {entry.label}
+                    {localizeWorkbenchName(entry.label, workbenchLabels)}
                   </Link>
                 ))}
               </div>
             </section>
-            <nav aria-label="Workbench routes" className="console-nav">
+            <nav aria-label={t("chrome.workbenchRoutes")} className="console-nav">
               <div className="console-nav-groups">
                 {navGroups.map((group) => (
                   <section className="console-nav-group" key={group.title}>
-                    <h3 className="console-nav-group-title">{group.title}</h3>
+                    <h3 className="console-nav-group-title">{localizeWorkbenchName(group.title, workbenchLabels)}</h3>
                     <ul className="console-nav-list">
                       {group.items.map((item) => (
                         <li key={item.to}>
@@ -295,7 +322,7 @@ export function ConsoleShell({
               </div>
             </nav>
             <section className="console-recent-routes">
-              <p className="app-kicker">Recent views</p>
+              <p className="app-kicker">{t("chrome.recentViews")}</p>
               <ul className="console-recent-list">
                 {recentRoutes.map((route) => (
                   <li className="console-recent-item" key={`${route.to}:${route.visitedAt}`}>
@@ -306,8 +333,10 @@ export function ConsoleShell({
                     >
                       <span className="console-recent-label">{route.label}</span>
                       <span className="console-recent-meta">
-                        <span className="console-recent-workbench">{formatWorkbenchLabel(route.workbench)}</span>
-                        <time dateTime={route.visitedAt}>{formatCompactTimestamp(route.visitedAt)}</time>
+                        <span className="console-recent-workbench">{formatWorkbenchLabel(route.workbench, workbenchLabels)}</span>
+                        <time dateTime={route.visitedAt}>
+                          {formatCompactTimestamp(route.visitedAt, t("chrome.awaitingPageTelemetry"))}
+                        </time>
                       </span>
                     </Link>
                   </li>
@@ -318,7 +347,7 @@ export function ConsoleShell({
         ) : null}
         {isCompactNavigation && navigationOpen ? (
           <button
-            aria-label="Close navigation"
+            aria-label={t("chrome.closeNavigation")}
             className="console-nav-scrim"
             onClick={() => closeNavigation({ restoreFocus: true })}
             type="button"
@@ -328,7 +357,7 @@ export function ConsoleShell({
           <header className="console-toolbar">
             <div className="console-toolbar-main">
               <div>
-                <p className="console-section-kicker">Runtime status</p>
+                <p className="console-section-kicker">{t("chrome.runtimeStatus")}</p>
                 <h2>{runtimeMeta.pageTitle}</h2>
                 <p className="console-toolbar-copy">{runtimeMeta.workbenchCopy}</p>
                 {runtimeMeta.statusSummary ? (
@@ -352,31 +381,32 @@ export function ConsoleShell({
                   ref={navigationTriggerRef}
                   type="button"
                 >
-                  {navigationOpen ? "Close navigation" : "Open navigation"}
+                  {navigationOpen ? t("chrome.closeNavigation") : t("chrome.openNavigation")}
                 </button>
+                <LocaleSwitcher />
                 <ConnectionBanner state={connectionState} />
               </div>
             </div>
             <div className="console-runtime-strip">
               <section className="console-runtime-card">
-                <p className="console-runtime-label">Workbench</p>
+                <p className="console-runtime-label">{t("chrome.workbench")}</p>
                 <strong>{currentWorkbenchLabel}</strong>
               </section>
               <section className="console-runtime-card">
-                <p className="console-runtime-label">Surface</p>
+                <p className="console-runtime-label">{t("chrome.surface")}</p>
                 <strong>{runtimeMeta.pageTitle}</strong>
               </section>
               <section className="console-runtime-card">
-                <p className="console-runtime-label">Last updated</p>
+                <p className="console-runtime-label">{t("chrome.lastUpdated")}</p>
                 <strong>
                   <time dateTime={runtimeMeta.lastUpdated ?? undefined}>
-                    {formatCompactTimestamp(runtimeMeta.lastUpdated)}
+                    {formatCompactTimestamp(runtimeMeta.lastUpdated, t("chrome.awaitingPageTelemetry"))}
                   </time>
                 </strong>
               </section>
               <section className="console-runtime-card">
-                <p className="console-runtime-label">Environment</p>
-                <strong>Local operator shell</strong>
+                <p className="console-runtime-label">{t("chrome.environment")}</p>
+                <strong>{t("chrome.localOperatorShell")}</strong>
               </section>
             </div>
           </header>

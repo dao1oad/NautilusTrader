@@ -15,9 +15,11 @@ import { subscribeToAdminEvents } from "./shared/realtime/admin-events";
 import { adminQueryKeys, queryClient } from "./shared/query/query-client";
 import { subscribeToInvalidations } from "./shared/realtime/invalidation-bus";
 import type { AdminEvent, ConnectionState } from "./shared/types/admin";
+import { useI18n } from "./shared/i18n/use-i18n";
 
 
 export function App() {
+  const { t } = useI18n();
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function App() {
   const handleAdminEvent = useEffectEvent((event: AdminEvent) => {
     if (event.type === "server.error") {
       startTransition(() => {
-        setError(event.message ?? "Admin event stream error");
+        setError(event.message ?? t("errors.adminEventStream"));
       });
     }
   });

@@ -1,0 +1,21 @@
+# Local PR Review
+
+- Issue: #52
+- Review Type: local pre-PR review
+- Reviewer: Codex local main agent
+- Scope: Admin-web display-only internationalization for shell and operations workbench pages, shared i18n fallback hardening, mapped truth docs, and issue-scoped review evidence for the mainline merge path.
+- Findings:
+  - No blocking product defects remained after rerunning the full admin-web Vitest suite, the production build, governance checks, and diff hygiene on branch head `a029005`.
+  - The browser i18n flow now keeps `en` and `zh-CN` limited to page-owned display copy while preserving backend-originated payload values such as status, IDs, targets, timestamps, and receipt messages.
+  - Two local review passes found no actionable defects; the only residual risk was missing direct coverage for the partial-English-override fallback path, which is now covered by a dedicated regression test in `src/test/i18n-provider.test.tsx`.
+- Resolution:
+  - Localized the admin-web shell and operations workbench pages for `en` and `zh-CN` without changing API contracts, route paths, or backend payload semantics.
+  - Hardened provider-scoped catalog override semantics so merged English remains the fallback baseline when `zh-CN` keys are missing.
+  - Synced the mapped truth docs, memory, and local review artifacts needed to open a compliant PR against `main`.
+- Evidence:
+  - `cd /root/NautilusTrader/.worktrees/admin-web-i18n-plan/apps/admin-web && npm test -- --run`
+  - `cd /root/NautilusTrader/.worktrees/admin-web-i18n-plan/apps/admin-web && npm run build`
+  - `cd /root/NautilusTrader/.worktrees/admin-web-i18n-plan && bash scripts/check-governance.sh --skip-remote-checks`
+  - `git -C /root/NautilusTrader/.worktrees/admin-web-i18n-plan diff --check`
+  - Local i18n fallback/code review loop: PASS with no findings
+- Status: approved

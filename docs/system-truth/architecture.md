@@ -47,5 +47,7 @@
 - `Phase 4C` 的 CI/交付硬化固定包含三条门禁：前端生产构建、bundle budget 检查、以及针对 backend-hosted bundle 的 Playwright smoke；桌面壳只保留评估结论，不进入当前实现面。
 - `Phase 4` 当前已经收敛为单一主线路径：操作员通过同一个浏览器 workbench 在 `Operations` 与 `Analysis` 间切换，并始终命中 FastAPI 同源托管的 admin-web bundle；不存在并行的桌面壳、独立前端部署真值或第二套导航/runtime 模型。
 - 当前 admin-web 的页面上下文收敛为 project-owned terminal-editorial shell：route page 通过 `WorkbenchShellMeta` 发布 `pageTitle/workbenchCopy/statusSummary/lastUpdated`，统一 runtime strip 与页面 header 只消费这些浏览器本地元数据，不新增任何后端 API、session 或远端偏好同步契约。
+- 当前 admin-web 的界面文案国际化固定为浏览器 display-only 模型：仅支持 `en` 与 `zh-CN` 两个 locale，locale 状态由浏览器本地存储与 navigator 解析驱动；后端 DTO、payload message、status、ID、target、timestamp 与 route path 不会因 locale 切换而改变。
+- provider-scoped i18n catalog override 当前必须先与内置英文 catalog 合并，再让非默认 locale 的缺失 key 回退到这份合并后的英文基线；这样可以允许 branch- or test-scoped partial override，同时保持缺失翻译的稳定兜底语义。
 - `schema/sql/` 变更属于持久化契约变更，必须同步更新 `data_model` 与 `api_contracts`
 - 本机 `agentboard` 提供对 `codex-orchestrator` 会话的观测与人工接管能力

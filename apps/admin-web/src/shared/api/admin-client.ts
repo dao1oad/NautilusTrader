@@ -18,6 +18,7 @@ import type {
   RiskSnapshot,
   StrategiesSnapshot
 } from "../types/admin";
+import { translateNonReact } from "../i18n/use-i18n";
 
 
 export const READ_ONLY_DEFAULT_LIMIT = 100;
@@ -47,11 +48,77 @@ function buildBoundedPath(
 
 
 async function parseJson<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    throw new Error(`Admin request failed with status ${response.status}`);
+  if (response.ok) {
+    return response.json() as Promise<T>;
   }
 
-  return response.json() as Promise<T>;
+  const errorMessage = await readErrorResponseMessage(response);
+  throw new Error(
+    errorMessage ??
+      translateNonReact("errors.adminRequestFailedWithStatus", { status: response.status })
+  );
+}
+
+async function readErrorResponseMessage(response: Response): Promise<string | null> {
+  const responseText = await readResponseText(response);
+  if (responseText) {
+    return readResponseMessage(parseResponseText(responseText)) ?? responseText;
+  }
+
+  const payload = await readResponseJson(response);
+  return readResponseMessage(payload);
+}
+
+async function readResponseJson(response: Response): Promise<unknown> {
+  if (typeof response.json !== "function") {
+    return undefined;
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
+  }
+}
+
+async function readResponseText(response: Response): Promise<string | null> {
+  if (typeof response.text !== "function") {
+    return null;
+  }
+
+  try {
+    const responseText = (await response.text()).trim();
+    return responseText.length > 0 ? responseText : null;
+  } catch {
+    return null;
+  }
+}
+
+function parseResponseText(responseText: string): unknown {
+  try {
+    return JSON.parse(responseText) as unknown;
+  } catch {
+    return responseText;
+  }
+}
+
+function readResponseMessage(payload: unknown): string | null {
+  if (typeof payload === "string" && payload.trim().length > 0) {
+    return payload.trim();
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const record = payload as { detail?: unknown; message?: unknown };
+  const detail = typeof record.detail === "string" && record.detail.trim().length > 0 ? record.detail.trim() : null;
+  if (detail) {
+    return detail;
+  }
+
+  const message = typeof record.message === "string" && record.message.trim().length > 0 ? record.message.trim() : null;
+  return message;
 }
 
 

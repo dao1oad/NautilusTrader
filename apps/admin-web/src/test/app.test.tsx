@@ -1,6 +1,40 @@
-import { render, screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 
 import { App } from "../app";
+import { renderWithProviders } from "./setup";
+
+type Listener = (event: Event | { data: string }) => void;
+
+
+class FakeWebSocket {
+  static instances: FakeWebSocket[] = [];
+
+  listeners: Record<string, Listener[]> = {};
+  sent: string[] = [];
+  url: string;
+
+  constructor(url: string) {
+    this.url = url;
+    FakeWebSocket.instances.push(this);
+  }
+
+  addEventListener(type: string, listener: Listener) {
+    this.listeners[type] ??= [];
+    this.listeners[type].push(listener);
+  }
+
+  close() {}
+
+  emit(type: string, event: Event | { data: string }) {
+    for (const listener of this.listeners[type] ?? []) {
+      listener(event);
+    }
+  }
+
+  send(payload: string) {
+    this.sent.push(payload);
+  }
+}
 
 
 test("renders empty overview state from api payload", async () => {
@@ -21,7 +55,7 @@ test("renders empty overview state from api payload", async () => {
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect(await screen.findByText("No live node configured")).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith("/api/admin/overview");
@@ -36,7 +70,7 @@ test("renders fetch error state when admin overview returns 500", async () => {
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect(await screen.findByText("Admin request failed with status 500")).toBeInTheDocument();
 });
@@ -82,7 +116,7 @@ test("renders analysis route copy in the shell runtime strip for catalog", async
 
   vi.stubGlobal("fetch", fetchMock);
 
-  render(<App />);
+  renderWithProviders(<App />);
 
   expect((await screen.findAllByRole("heading", { name: "Catalog" })).length).toBeGreaterThan(0);
   expect(await screen.findByText("History query capped at 100 rows across the selected 2 hour window.")).toBeInTheDocument();
@@ -95,4 +129,64 @@ test("renders analysis route copy in the shell runtime strip for catalog", async
   );
 
   window.history.pushState({}, "", "/");
+});
+
+
+test("uses provider-scoped fallback translations for admin event stream errors", async () => {
+  FakeWebSocket.instances = [];
+
+  vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      generated_at: "2026-03-23T00:00:00Z",
+      stale: false,
+      partial: false,
+      node: { status: "not_configured", node_id: null },
+      strategies: [],
+      adapters: [],
+      accounts: [],
+      positions: [],
+      errors: []
+    })
+  }));
+
+  renderWithProviders(<App />, {
+    catalogs: {
+      en: {
+        chrome: {
+          appName: "NautilusTrader Admin"
+        },
+        errors: {
+          adminEventStream: "Custom English stream fallback",
+          adminRequestFailedWithStatus: "Admin request failed with status {status}"
+        }
+      },
+      "zh-CN": {
+        chrome: {
+          appName: "NautilusTrader Admin"
+        },
+        errors: {
+          adminEventStream: "自定义事件流回退文案",
+          adminRequestFailedWithStatus: "管理端请求失败，状态码 {status}"
+        }
+      }
+    },
+    locale: "zh-CN"
+  });
+
+  expect(await screen.findByText("No live node configured")).toBeInTheDocument();
+
+  const socket = FakeWebSocket.instances[0];
+  act(() => {
+    socket.emit("open", new Event("open"));
+    socket.emit("message", {
+      data: JSON.stringify({
+        type: "server.error",
+        code: "transient"
+      })
+    });
+  });
+
+  expect(await screen.findByText("自定义事件流回退文案")).toBeInTheDocument();
 });

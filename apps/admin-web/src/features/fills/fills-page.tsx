@@ -1,47 +1,51 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getFillsSnapshot, READ_ONLY_DEFAULT_LIMIT } from "../../shared/api/admin-client";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { adminQueryKeys } from "../../shared/query/query-client";
 import type { FillSummary } from "../../shared/types/admin";
 import { AdminListPage } from "../read-only/admin-list-page";
 
 
 const TRADING_PAGE_SIZE = 25;
+type FillsTranslator = ReturnType<typeof useI18n>["t"];
 
-const FILL_COLUMNS = [
-  {
-    header: "Fill",
-    render: (fill: FillSummary) => fill.fill_id
-  },
-  {
-    header: "Order",
-    render: (fill: FillSummary) => fill.client_order_id
-  },
-  {
-    header: "Instrument",
-    render: (fill: FillSummary) => fill.instrument_id
-  },
-  {
-    header: "Side",
-    render: (fill: FillSummary) => fill.side
-  },
-  {
-    header: "Quantity",
-    render: (fill: FillSummary) => fill.quantity
-  },
-  {
-    header: "Price",
-    render: (fill: FillSummary) => fill.price
-  },
-  {
-    header: "Liquidity",
-    render: (fill: FillSummary) => fill.liquidity_side
-  },
-  {
-    header: "Time",
-    render: (fill: FillSummary) => fill.timestamp
-  }
-] as const;
+function buildFillColumns(t: FillsTranslator) {
+  return [
+    {
+      header: t("pages.fills.columns.fill"),
+      render: (fill: FillSummary) => fill.fill_id
+    },
+    {
+      header: t("pages.fills.columns.order"),
+      render: (fill: FillSummary) => fill.client_order_id
+    },
+    {
+      header: t("pages.fills.columns.instrument"),
+      render: (fill: FillSummary) => fill.instrument_id
+    },
+    {
+      header: t("pages.fills.columns.side"),
+      render: (fill: FillSummary) => fill.side
+    },
+    {
+      header: t("pages.fills.columns.quantity"),
+      render: (fill: FillSummary) => fill.quantity
+    },
+    {
+      header: t("pages.fills.columns.price"),
+      render: (fill: FillSummary) => fill.price
+    },
+    {
+      header: t("pages.fills.columns.liquidity"),
+      render: (fill: FillSummary) => fill.liquidity_side
+    },
+    {
+      header: t("pages.fills.columns.time"),
+      render: (fill: FillSummary) => fill.timestamp
+    }
+  ] as const;
+}
 
 function getFillSearchText(fill: FillSummary) {
   return [
@@ -57,6 +61,7 @@ function getFillSearchText(fill: FillSummary) {
 }
 
 export function FillsPage() {
+  const { t } = useI18n();
   const query = useQuery({
     queryKey: adminQueryKeys.fills(READ_ONLY_DEFAULT_LIMIT),
     queryFn: () => getFillsSnapshot(READ_ONLY_DEFAULT_LIMIT)
@@ -64,19 +69,19 @@ export function FillsPage() {
 
   return (
     <AdminListPage
-      columns={FILL_COLUMNS}
-      emptyDescription="No fills are currently reported by the admin API."
+      columns={buildFillColumns(t)}
+      emptyDescription={t("pages.fills.emptyDescription")}
       filter={{
         getSearchText: getFillSearchText,
-        placeholder: "Filter by fill id, order id, instrument, side, price, liquidity, or time"
+        placeholder: t("pages.fills.filterPlaceholder")
       }}
       getRowKey={(fill) => fill.fill_id}
-      loadingDescription="Loading the latest fill diagnostics."
+      loadingDescription={t("pages.fills.loadingDescription")}
       pagination={{ pageSize: TRADING_PAGE_SIZE }}
       query={query}
-      summaryCopy="Recent executions with side, liquidity, and timestamp context from the current bounded fill window."
-      tableLabel="Fills"
-      title="Fills"
+      summaryCopy={t("pages.fills.summaryCopy")}
+      tableLabel={t("pages.fills.tableLabel")}
+      title={t("pages.fills.title")}
     />
   );
 }

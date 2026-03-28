@@ -2,6 +2,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useId, useState, type ReactNode } from "react";
 
 import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import type { AdminListSnapshot } from "../../shared/types/admin";
 import { FilterBar } from "../../shared/ui/filter-bar";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
@@ -37,7 +38,7 @@ type Props<T> = {
   };
   drillDown?: {
     title: string;
-    getButtonLabel: (item: T, index: number, expanded: boolean) => string;
+    getButtonLabel?: (item: T, index: number, expanded: boolean) => string;
     render: (item: T) => ReactNode;
   };
   filter?: {
@@ -83,6 +84,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   drillDown,
   filter
 }: SnapshotProps<T, TSnapshot>) {
+  const { t } = useI18n();
   const { connectionState, error: runtimeError } = useAdminRuntime();
   const filterInputId = useId();
   const [pageIndex, setPageIndex] = useState(0);
@@ -107,11 +109,18 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   const startIndex = pageSize === null ? 0 : currentPage * pageSize;
   const endIndex = pageSize === null || !snapshot ? totalItems : Math.min(startIndex + pageSize, totalItems);
   const visibleItems = filteredItems.slice(startIndex, endIndex);
-  const pageSummary = pageSize !== null && totalItems > 0 ? `Rows ${startIndex + 1}-${endIndex} of ${totalItems}` : null;
+  const pageSummary =
+    pageSize !== null && totalItems > 0
+      ? t("filters.rowsSummary", {
+        start: startIndex + 1,
+        end: endIndex,
+        total: totalItems
+      })
+      : null;
   const showWorkbenchHeader = Boolean(header);
   const panelDescription = surface?.description ?? (showWorkbenchHeader ? undefined : summaryCopy);
-  const panelEyebrow = surface?.eyebrow ?? "Live snapshot";
-  const panelTitle = surface?.title ?? (showWorkbenchHeader ? "Snapshot window" : title);
+  const panelEyebrow = surface?.eyebrow ?? t("tables.liveSnapshot");
+  const panelTitle = surface?.title ?? (showWorkbenchHeader ? t("tables.snapshotWindow") : title);
 
   useWorkbenchShellMeta({
     lastUpdated: snapshot?.generated_at ?? null,
@@ -149,11 +158,11 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   }
 
   if (!snapshot && connectionState === "stale") {
-    return <PageState description="Waiting for a fresh admin snapshot." kind="stale" title={title} />;
+    return <PageState description={t("tables.waitingForFreshSnapshot")} kind="stale" title={title} />;
   }
 
   if (!snapshot && connectionState === "disconnected") {
-    return <PageState description="Reconnect the admin API to refresh runtime state." kind="stale" title={title} />;
+    return <PageState description={t("tables.reconnectAdminApi")} kind="stale" title={title} />;
   }
 
   if (!snapshot) {
@@ -163,7 +172,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   if (isStale) {
     return (
       <PageState
-        description={error ?? "Showing the last successfully received admin snapshot."}
+        description={error ?? t("tables.showingLastSnapshot")}
         kind="stale"
         meta={lastUpdated}
         title={title}
@@ -178,9 +187,9 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   const filterToolbar = snapshot && filter ? (
     <FilterBar
       inputId={filterInputId}
-      label="Operator filter"
+      label={t("filters.operatorLabel")}
       onChange={setFilterText}
-      placeholder={filter.placeholder ?? `Search ${title.toLowerCase()} by keyword`}
+      placeholder={filter.placeholder ?? t("filters.searchByKeyword", { title })}
       value={filterText}
     />
   ) : null;
@@ -215,7 +224,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
             setPageIndex((current) => Math.max(current - 1, 0));
           }}
         >
-          Previous page
+          {t("filters.previousPage")}
         </button>
         <button
           type="button"
@@ -225,7 +234,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
             setPageIndex((current) => Math.min(current + 1, totalPages - 1));
           }}
         >
-          Next page
+          {t("filters.nextPage")}
         </button>
       </div>
     </div>
@@ -234,30 +243,32 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
   const mainBody =
     filteredItems.length === 0 ? (
       <StateBanner
-        description="No rows match the current operator filter."
+        description={t("filters.noRowsDescription")}
         kind="empty"
-        title="Filter returned no rows"
+        title={t("filters.noRowsTitle")}
       />
     ) : (
       <TerminalTable
         actionColumn={
           drillDown
             ? {
-              header: "Details",
+              header: t("tables.details"),
               render: (item, rowIndex, rowKey) => {
                 const isSelected = rowKey === selectedRowKey;
+                const buttonText = isSelected ? t("tables.hideDetails") : t("tables.viewDetails");
+                const ariaLabel = drillDown.getButtonLabel?.(item, rowIndex, isSelected) ?? buttonText;
 
                 return (
                   <button
                     type="button"
                     className="command-button command-button-secondary resource-table-action"
                     aria-pressed={isSelected}
-                    aria-label={drillDown.getButtonLabel(item, rowIndex, isSelected)}
+                    aria-label={ariaLabel}
                     onClick={() => {
                       setSelectedRowKey(isSelected ? null : rowKey);
                     }}
                   >
-                    {isSelected ? "Hide details" : "View details"}
+                    {buttonText}
                   </button>
                 );
               }
@@ -293,7 +304,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
         actions={showWorkbenchHeader ? undefined : lastUpdated}
         description={panelDescription}
         eyebrow={panelEyebrow}
-        meta={snapshot?.partial ? <p className="resource-alert">Showing the latest partial snapshot.</p> : null}
+        meta={snapshot?.partial ? <p className="resource-alert">{t("tables.partialSnapshot")}</p> : null}
         title={panelTitle}
       >
         {snapshot ? renderResourceErrors(snapshot.errors) : null}
@@ -303,7 +314,7 @@ export function AdminListPage<T, TSnapshot extends AdminListSnapshot<T>>({
         {mainBody}
       </SectionPanel>
       {drillDown && selectedItem ? (
-        <SectionPanel eyebrow="Selected row" title={drillDown.title}>
+        <SectionPanel eyebrow={t("tables.selectedRow")} title={drillDown.title}>
           {drillDown.render(selectedItem)}
         </SectionPanel>
       ) : null}

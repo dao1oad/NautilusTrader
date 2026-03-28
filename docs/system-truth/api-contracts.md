@@ -87,6 +87,12 @@
   - 固定浏览器到后端的读取契约：`overview`、`nodes`、`strategies`、`adapters`、`audit`、`config/diff`、`risk`、`diagnostics` 走无参 `GET`；`orders`、`fills`、`positions`、`accounts`、`logs`、`backtests`、`reports` 走带 `limit` 的 `GET`；`catalog` 与 `playback` 走带 `limit + start_time + end_time` 的 `GET`
   - 固定浏览器到后端的低风险 command 契约：策略与适配器控制通过 `POST /api/admin/commands/*` 返回 typed `CommandReceipt`
   - `READ_ONLY_DEFAULT_LIMIT` 当前固定为 `100`；`CATALOG_DEFAULT_START_TIME/END_TIME` 与 `PLAYBACK_DEFAULT_START_TIME/END_TIME` 固定了浏览器默认 bounded query window
+- `apps/admin-web/src/shared/i18n/locale.ts`
+  - 契约：admin-web 仅支持 `en` 与 `zh-CN` 两个 locale，并把浏览器选择持久化到 `localStorage["nautilus-admin-locale"]`
+  - 解析规则：优先读取持久化 locale；若无效或缺失，则按 navigator 首选语言把 `zh` / `zh-CN` / `zh-Hans` 归一化到 `zh-CN`，其余语言回退到 `en`
+- `apps/admin-web/src/shared/i18n/catalog.ts` / `i18n-provider.tsx`
+  - 契约：provider-scoped catalog override 是 partial message catalog；`en` override 必须与内置英文 catalog 深度合并，`zh-CN` 缺失 key 必须回退到这份合并后的英文 catalog
+  - 边界：i18n 只覆盖 shell 与 page-owned display copy，不改写 admin DTO payload 中来自后端的 `status`、`message`、`command target`、标识符、时间戳或 route path
 - `apps/admin-web/src/app/routes/__root.tsx` / `apps/admin-web/src/app/layouts/workbench-shell.tsx`
   - 契约：浏览器根路由必须先进入 unified workbench shell，再渲染具体 route page；该 shell 固定暴露 `Operations` 与 `Analysis` 两个入口 link，并在不改变既有 admin route path 的前提下对页面进行分组导航
 - `apps/admin-web/src/app/workbench-shell-meta.tsx`

@@ -2,6 +2,11 @@ import {
   resolveFreshestWorkbenchTimestamp,
   useWorkbenchShellMeta
 } from "../../app/workbench-shell-meta";
+import {
+  getLocalizedRouteLabel,
+  getLocalizedWorkbenchLabel
+} from "../../app/workbench-route-catalog";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import type {
   AuditSnapshot,
   ConnectionState,
@@ -17,9 +22,9 @@ import { SignalPill, type SignalTone } from "../../shared/ui/signal-pill";
 import { WorkbenchHeader } from "../../shared/ui/workbench-header";
 import type { WorkspaceRecentRoute } from "../../shared/workspaces/workspace-store";
 
-
-const COMMAND_CENTER_COPY = "Runtime posture, risk pressure, and latest control-plane movement at a glance.";
 const MAX_ACTIVITY_ITEMS = 4;
+type OverviewTranslator = ReturnType<typeof useI18n>["t"];
+type ActivitySourceId = "auditTimeline" | "localRouteMemory" | "pending";
 
 type Props = {
   auditSnapshot?: AuditSnapshot | null;
@@ -73,15 +78,13 @@ function toActivityTone(status: AuditSnapshot["items"][number]["status"]): Signa
   }
 }
 
-function formatWorkbenchLabel(workbench: WorkspaceRecentRoute["workbench"]) {
-  return workbench.charAt(0).toUpperCase() + workbench.slice(1);
-}
-
 function buildActivityRailState(
+  t: OverviewTranslator,
   auditSnapshot: AuditSnapshot | null | undefined,
   recentRoutes: WorkspaceRecentRoute[],
 ): {
   items: ActivityRailItem[];
+  sourceId: ActivitySourceId;
   sourceLabel: string;
   sourceTone: SignalTone;
 } {
@@ -89,13 +92,14 @@ function buildActivityRailState(
     return {
       items: auditSnapshot.items.slice(0, MAX_ACTIVITY_ITEMS).map((record) => ({
         id: `${record.command_id}:${record.sequence_id}`,
-        meta: record.message ?? `Status ${record.status}`,
-        summary: record.target ?? "No target recorded",
+        meta: record.message ?? t("overview.fallback.statusMeta", { status: record.status }),
+        summary: record.target ?? t("overview.fallback.noTargetRecorded"),
         timestamp: record.recorded_at,
         title: record.command,
         tone: toActivityTone(record.status)
       })),
-      sourceLabel: "Audit timeline",
+      sourceId: "auditTimeline",
+      sourceLabel: t("overview.activitySource.auditTimeline"),
       sourceTone: "info"
     };
   }
@@ -105,43 +109,66 @@ function buildActivityRailState(
       items: recentRoutes.slice(0, MAX_ACTIVITY_ITEMS).map((route) => ({
         href: route.to,
         id: `${route.to}:${route.visitedAt}`,
-        meta: `${formatWorkbenchLabel(route.workbench)} workbench`,
+        meta: `${getLocalizedWorkbenchLabel(t, route.workbench)} ${t("chrome.workbench")}`,
         summary: route.to,
         timestamp: route.visitedAt,
-        title: route.label,
+        title: getLocalizedRouteLabel(t, route.to, route.label),
         tone: "neutral"
       })),
-      sourceLabel: "Local route memory",
+      sourceId: "localRouteMemory",
+      sourceLabel: t("overview.activitySource.localRouteMemory"),
       sourceTone: "neutral"
     };
   }
 
   return {
     items: [],
-    sourceLabel: "Activity pending",
+    sourceId: "pending",
+    sourceLabel: t("overview.activitySource.pending"),
     sourceTone: "neutral"
   };
 }
 
+function buildActivitySourceSummary(
+  t: OverviewTranslator,
+  activityCount: number,
+  sourceId: ActivitySourceId
+): string | null {
+  if (activityCount === 0) {
+    return null;
+  }
+
+  return t(`overview.status.sourceSummary.${sourceId}`, { count: activityCount });
+}
+
 function buildStatusSummary(
+  t: OverviewTranslator,
   snapshot: OverviewSnapshot | null | undefined,
   riskSnapshot: RiskSnapshot | null | undefined,
   activityCount: number,
-  activitySourceLabel: string,
+  activitySourceId: ActivitySourceId,
 ) {
   if (!snapshot) {
-    return "Awaiting runtime summary.";
+    return t("overview.status.awaitingRuntimeSummary");
   }
 
-  const sourceSummary = activityCount > 0 ? `${activityCount} recent ${activitySourceLabel.toLowerCase()} items ready.` : null;
+  const sourceSummary = buildActivitySourceSummary(t, activityCount, activitySourceId);
 
   if (!riskSnapshot) {
-    return [`Node ${snapshot.node.status}.`, "Risk snapshot pending.", sourceSummary].filter(Boolean).join(" ");
+    return [
+      t("overview.status.node", { status: snapshot.node.status }),
+      t("overview.status.riskPending"),
+      sourceSummary
+    ].filter(Boolean).join(" ");
   }
 
   return [
-    `Node ${snapshot.node.status}.`,
-    `Risk ${riskSnapshot.summary.risk_level} with ${riskSnapshot.summary.active_alerts} active alerts and ${riskSnapshot.summary.blocked_actions} blocked actions.`,
+    t("overview.status.node", { status: snapshot.node.status }),
+    t("overview.status.risk", {
+      riskLevel: riskSnapshot.summary.risk_level,
+      activeAlerts: riskSnapshot.summary.active_alerts,
+      blockedActions: riskSnapshot.summary.blocked_actions
+    }),
     sourceSummary
   ].filter(Boolean).join(" ");
 }
@@ -155,6 +182,7 @@ export function OverviewPage({
   recentRoutes = [],
   riskSnapshot
 }: Props = {}) {
+  const { t } = useI18n();
   const hasCachedError = Boolean(error) && Boolean(snapshot);
   const isStale = connectionState === "stale" || snapshot?.stale === true || hasCachedError;
   const freshestTimestamp = resolveFreshestWorkbenchTimestamp(
@@ -163,38 +191,40 @@ export function OverviewPage({
     auditSnapshot?.generated_at
   );
   const lastUpdated = freshestTimestamp ? <LastUpdatedBadge stale={isStale} timestamp={freshestTimestamp} /> : null;
-  const activityRail = buildActivityRailState(auditSnapshot, recentRoutes);
-  const statusSummary = buildStatusSummary(snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceLabel);
+  const activityRail = buildActivityRailState(t, auditSnapshot, recentRoutes);
+  const statusSummary = buildStatusSummary(t, snapshot, riskSnapshot, activityRail.items.length, activityRail.sourceId);
   const nodeTone = snapshot ? toNodeTone(snapshot.node.status) : "neutral";
   const riskTone = riskSnapshot ? toRiskTone(riskSnapshot.summary.risk_level) : "neutral";
+  const commandCenterTitle = t("overview.commandCenter.title");
+  const commandCenterDescription = t("overview.commandCenter.description");
 
   useWorkbenchShellMeta({
     lastUpdated: freshestTimestamp,
-    pageTitle: "Command center",
+    pageTitle: commandCenterTitle,
     statusSummary,
-    workbenchCopy: COMMAND_CENTER_COPY
+    workbenchCopy: commandCenterDescription
   });
 
   if (isLoading && !snapshot) {
     return (
       <PageState
         kind="loading"
-        title="Loading overview"
-        description="Waiting for the latest admin snapshot."
+        title={t("overview.pageState.loadingTitle")}
+        description={t("overview.pageState.loadingDescription")}
       />
     );
   }
 
   if (error && !snapshot) {
-    return <PageState kind="error" title="Overview unavailable" description={error} />;
+    return <PageState kind="error" title={t("overview.pageState.unavailableTitle")} description={error} />;
   }
 
   if (!snapshot && connectionState === "stale") {
     return (
       <PageState
         kind="stale"
-        title="Connection stale"
-        description="Waiting for a fresh admin snapshot."
+        title={t("overview.pageState.connectionStaleTitle")}
+        description={t("overview.pageState.loadingDescription")}
       />
     );
   }
@@ -203,8 +233,8 @@ export function OverviewPage({
     return (
       <PageState
         kind="stale"
-        title="Disconnected from admin API"
-        description="Reconnect the admin API to refresh runtime state."
+        title={t("overview.pageState.disconnectedTitle")}
+        description={t("overview.pageState.disconnectedDescription")}
       />
     );
   }
@@ -213,8 +243,8 @@ export function OverviewPage({
     return (
       <PageState
         kind="loading"
-        title="Loading overview"
-        description="Waiting for the latest admin snapshot."
+        title={t("overview.pageState.loadingTitle")}
+        description={t("overview.pageState.loadingDescription")}
       />
     );
   }
@@ -223,8 +253,8 @@ export function OverviewPage({
     return (
       <PageState
         kind="stale"
-        title={hasCachedError ? "Overview refresh failed" : "Connection stale"}
-        description={error ?? "Showing the last successfully received admin snapshot."}
+        title={hasCachedError ? t("overview.pageState.refreshFailedTitle") : t("overview.pageState.connectionStaleTitle")}
+        description={error ?? t("overview.pageState.staleDescription")}
         meta={lastUpdated}
       />
     );
@@ -234,8 +264,8 @@ export function OverviewPage({
     return (
       <PageState
         kind="empty"
-        title="No live node configured"
-        description="Connect a live node to populate runtime operations data."
+        title={t("overview.pageState.noLiveNodeTitle")}
+        description={t("overview.pageState.noLiveNodeDescription")}
         meta={lastUpdated}
       />
     );
@@ -244,24 +274,24 @@ export function OverviewPage({
   return (
     <section className="overview-command-center">
       <WorkbenchHeader
-        description={COMMAND_CENTER_COPY}
+        description={commandCenterDescription}
         summary={statusSummary}
-        title="Command center"
+        title={commandCenterTitle}
       >
         <SignalPill
-          detail={snapshot.node.node_id ?? "No node id"}
-          label={`Node ${snapshot.node.status}`}
+          detail={snapshot.node.node_id ?? t("overview.signal.noNodeId")}
+          label={t("overview.signal.nodeLabel", { status: snapshot.node.status })}
           tone={nodeTone}
         />
         {riskSnapshot ? (
           <SignalPill
-            detail={`${riskSnapshot.summary.active_alerts} alerts`}
-            label={`Risk ${riskSnapshot.summary.risk_level}`}
+            detail={t("overview.signal.alertsDetail", { count: riskSnapshot.summary.active_alerts })}
+            label={t("overview.signal.riskLabel", { riskLevel: riskSnapshot.summary.risk_level })}
             tone={riskTone}
           />
         ) : null}
         <SignalPill
-          detail={`${activityRail.items.length} items`}
+          detail={t("overview.signal.itemsDetail", { count: activityRail.items.length })}
           label={activityRail.sourceLabel}
           tone={activityRail.sourceTone}
         />
@@ -269,53 +299,61 @@ export function OverviewPage({
       </WorkbenchHeader>
 
       {snapshot.partial ? (
-        <p className="resource-alert">Showing the latest partial runtime snapshot.</p>
+        <p className="resource-alert">{t("overview.alerts.partialRuntimeSnapshot")}</p>
       ) : null}
       {isStale ? (
         <p className="resource-alert">
-          {error ?? "Snapshot refresh is delayed. Showing the freshest available command-center data."}
+          {error ?? t("overview.pageState.staleDescription")}
         </p>
       ) : null}
 
       <div className="overview-command-grid">
         <div className="overview-main-stack">
           <SectionPanel
-            description="Runtime breadth across live strategies, adapters, accounts, and open positions."
-            title="Runtime summary"
+            description={t("overview.runtimeSummary.description")}
+            title={t("overview.runtimeSummary.title")}
           >
             <div className="overview-metric-grid">
               <MetricTile
-                detail={snapshot.node.node_id ? "Connected node" : "Node id pending"}
-                label="Node status"
-                meta={snapshot.node.node_id ?? "Unassigned"}
+                detail={
+                  snapshot.node.node_id
+                    ? t("overview.runtimeSummary.connectedNodeDetail")
+                    : t("overview.runtimeSummary.nodeIdPendingDetail")
+                }
+                label={t("overview.runtimeSummary.nodeStatusLabel")}
+                meta={snapshot.node.node_id ?? t("pages.nodes.unassigned")}
                 tone={nodeTone}
                 value={snapshot.node.status}
               />
               <MetricTile
-                detail={`${snapshot.strategies.filter((strategy) => strategy.status === "running").length} running`}
-                label="Active strategies"
-                meta="Supervised strategies"
+                detail={t("overview.runtimeSummary.activeStrategiesDetail", {
+                  count: snapshot.strategies.filter((strategy) => strategy.status === "running").length
+                })}
+                label={t("overview.runtimeSummary.activeStrategiesLabel")}
+                meta={t("overview.runtimeSummary.activeStrategiesMeta")}
                 tone="info"
                 value={snapshot.strategies.length}
               />
               <MetricTile
-                detail="Bounded venue adapters"
-                label="Adapter links"
-                meta={`${snapshot.adapters.filter((adapter) => adapter.status === "connected").length} connected`}
+                detail={t("overview.runtimeSummary.adapterLinksDetail")}
+                label={t("overview.runtimeSummary.adapterLinksLabel")}
+                meta={t("overview.runtimeSummary.adapterLinksMeta", {
+                  count: snapshot.adapters.filter((adapter) => adapter.status === "connected").length
+                })}
                 tone="info"
                 value={snapshot.adapters.length}
               />
               <MetricTile
-                detail="Accounts projected into the shell"
-                label="Accounts"
-                meta="Balances and exposures"
+                detail={t("overview.runtimeSummary.accountsDetail")}
+                label={t("overview.runtimeSummary.accountsLabel")}
+                meta={t("overview.runtimeSummary.accountsMeta")}
                 tone="neutral"
                 value={snapshot.accounts.length}
               />
               <MetricTile
-                detail="Projected live positions"
-                label="Open positions"
-                meta="Cross-venue exposure"
+                detail={t("overview.runtimeSummary.openPositionsDetail")}
+                label={t("overview.runtimeSummary.openPositionsLabel")}
+                meta={t("overview.runtimeSummary.openPositionsMeta")}
                 tone="warning"
                 value={snapshot.positions.length}
               />
@@ -323,79 +361,79 @@ export function OverviewPage({
           </SectionPanel>
 
           <SectionPanel
-            description="Cross-account guardrails, live alerts, and the latest operator blocks."
-            title="Risk snapshot"
+            description={t("overview.riskSnapshot.description")}
+            title={t("overview.riskSnapshot.title")}
           >
             {riskSnapshot ? (
               <div className="overview-risk-stack">
                 <div className="overview-metric-grid">
                   <MetricTile
-                    detail="Operator gate status"
-                    label="Trading state"
-                    meta="Risk coordinator"
+                    detail={t("overview.riskSnapshot.tradingStateDetail")}
+                    label={t("overview.riskSnapshot.tradingStateLabel")}
+                    meta={t("overview.riskSnapshot.tradingStateMeta")}
                     tone={riskTone}
                     value={riskSnapshot.summary.trading_state}
                   />
                   <MetricTile
-                    detail="Current posture"
-                    label="Risk level"
-                    meta="Margin and exposure"
+                    detail={t("overview.riskSnapshot.riskLevelDetail")}
+                    label={t("overview.riskSnapshot.riskLevelLabel")}
+                    meta={t("overview.riskSnapshot.riskLevelMeta")}
                     tone={riskTone}
                     value={riskSnapshot.summary.risk_level}
                   />
                   <MetricTile
                     detail={riskSnapshot.summary.margin_utilization}
-                    label="Active alerts"
-                    meta="Margin utilization"
+                    label={t("overview.riskSnapshot.activeAlertsLabel")}
+                    meta={t("overview.riskSnapshot.activeAlertsMeta")}
                     tone="warning"
                     value={riskSnapshot.summary.active_alerts}
                   />
                   <MetricTile
                     detail={riskSnapshot.summary.exposure_utilization}
-                    label="Blocked actions"
-                    meta="Exposure utilization"
+                    label={t("overview.riskSnapshot.blockedActionsLabel")}
+                    meta={t("overview.riskSnapshot.blockedActionsMeta")}
                     tone={riskSnapshot.summary.blocked_actions > 0 ? "danger" : "positive"}
                     value={riskSnapshot.summary.blocked_actions}
                   />
                 </div>
                 <div className="detail-list">
                   <div className="audit-item">
-                    <h3>Latest alert</h3>
+                    <h3>{t("overview.riskSnapshot.latestAlertTitle")}</h3>
                     {riskSnapshot.events.length > 0 ? (
                       <>
                         <p className="audit-item-command">{riskSnapshot.events[0].title}</p>
                         <p className="command-receipt-copy">{riskSnapshot.events[0].message}</p>
                       </>
                     ) : (
-                      <p className="command-receipt-copy">No live risk alerts are currently projected.</p>
+                      <p className="command-receipt-copy">{t("overview.riskSnapshot.noLiveAlerts")}</p>
                     )}
                   </div>
                   <div className="audit-item">
-                    <h3>Latest block</h3>
+                    <h3>{t("overview.riskSnapshot.latestBlockTitle")}</h3>
                     {riskSnapshot.blocks.length > 0 ? (
                       <>
                         <p className="audit-item-command">{riskSnapshot.blocks[0].reason}</p>
                         <p className="command-receipt-copy">{riskSnapshot.blocks[0].scope}</p>
                       </>
                     ) : (
-                      <p className="command-receipt-copy">No operator blocks are currently active.</p>
+                      <p className="command-receipt-copy">{t("overview.riskSnapshot.noActiveBlocks")}</p>
                     )}
                   </div>
                 </div>
               </div>
             ) : (
-              <p className="command-receipt-copy">Risk snapshot is not available yet.</p>
+              <p className="command-receipt-copy">{t("overview.riskSnapshot.unavailable")}</p>
             )}
           </SectionPanel>
         </div>
 
         <ActivityRail
-          description="Latest control receipts, with local route memory as the quiet-state fallback."
-          emptyState="No audit activity or local route history is available yet."
+          description={t("overview.activity.description")}
+          emptyState={t("overview.activity.emptyState")}
           items={activityRail.items}
           sourceLabel={activityRail.sourceLabel}
           sourceTone={activityRail.sourceTone}
-          title="Recent activity"
+          title={t("overview.activity.title")}
         />
       </div>
     </section>

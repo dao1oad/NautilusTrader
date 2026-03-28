@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { connectAdapterCommand, disconnectAdapterCommand, getAdaptersSnapshot } from "../../shared/api/admin-client";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { adminQueryKeys } from "../../shared/query/query-client";
 import type { AdapterSummary } from "../../shared/types/admin";
 import { ConfirmCommandDialog } from "../commands/confirm-command-dialog";
@@ -11,6 +12,7 @@ import { PageState } from "../../shared/ui/page-state";
 
 
 export function AdaptersPage() {
+  const { t } = useI18n();
   const query = useQuery({
     queryKey: adminQueryKeys.adapters(),
     queryFn: getAdaptersSnapshot
@@ -19,22 +21,22 @@ export function AdaptersPage() {
 
   const columns = [
     {
-      header: "Adapter",
+      header: t("pages.adapters.columns.adapter"),
       render: (adapter: AdapterSummary) => adapter.adapter_id
     },
     {
-      header: "Status",
+      header: t("pages.adapters.columns.status"),
       render: (adapter: AdapterSummary) => adapter.status
     },
     {
-      header: "Controls",
+      header: t("pages.adapters.columns.controls"),
       render: (adapter: AdapterSummary) => (
         <div className="command-action-group">
           <button
             className="command-button"
             onClick={() =>
               openIntent({
-                commandLabel: "Connect adapter",
+                commandLabel: t("pages.adapters.commands.connect"),
                 targetLabel: `adapters/${adapter.adapter_id}`,
                 confirmationValue: "CONNECT",
                 submit: () => connectAdapterCommand(adapter.adapter_id)
@@ -42,13 +44,13 @@ export function AdaptersPage() {
             }
             type="button"
           >
-            {`Connect adapter ${adapter.adapter_id}`}
+            {t("pages.adapters.buttons.connect", { adapterId: adapter.adapter_id })}
           </button>
           <button
             className="command-button command-button-secondary"
             onClick={() =>
               openIntent({
-                commandLabel: "Disconnect adapter",
+                commandLabel: t("pages.adapters.commands.disconnect"),
                 targetLabel: `adapters/${adapter.adapter_id}`,
                 confirmationValue: "DISCONNECT",
                 submit: () => disconnectAdapterCommand(adapter.adapter_id)
@@ -56,7 +58,7 @@ export function AdaptersPage() {
             }
             type="button"
           >
-            {`Disconnect adapter ${adapter.adapter_id}`}
+            {t("pages.adapters.buttons.disconnect", { adapterId: adapter.adapter_id })}
           </button>
         </div>
       )
@@ -67,15 +69,15 @@ export function AdaptersPage() {
     <>
       <AdminListPage
         columns={columns}
-        emptyDescription="No adapters are currently reported by the admin API."
+        emptyDescription={t("pages.adapters.emptyDescription")}
         getRowKey={(adapter) => adapter.adapter_id}
-        loadingDescription="Loading the latest adapter diagnostics."
+        loadingDescription={t("pages.adapters.loadingDescription")}
         query={query}
-        summaryCopy="Venue adapter connectivity, current link posture, and guarded connect or disconnect controls."
-        tableLabel="Adapters"
-        title="Adapters"
+        summaryCopy={t("pages.adapters.summaryCopy")}
+        tableLabel={t("pages.adapters.tableLabel")}
+        title={t("pages.adapters.title")}
       />
-      {actionError ? <PageState kind="error" title="Command failed" description={actionError} /> : null}
+      {actionError ? <PageState kind="error" title={t("pages.adapters.actionErrorTitle")} description={actionError} /> : null}
       {receipt ? <CommandReceiptCard receipt={receipt} /> : null}
       <ConfirmCommandDialog
         commandLabel={activeIntent?.commandLabel ?? ""}

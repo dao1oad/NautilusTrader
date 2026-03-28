@@ -52,6 +52,12 @@
 
 该 flow 只服务浏览器壳层排版与运行态提示，不改变 query key、snapshot invalidation、REST/WS 契约或本地 workspace 持久化模型。
 
+## Admin Locale Resolution Flow
+
+`localStorage["nautilus-admin-locale"] / navigator.languages -> normalizeLocale + resolveInitialLocale -> I18nProvider locale state -> shared catalog lookup -> shell/page-owned UI copy render`
+
+该 flow 只影响浏览器 display copy。`zh-CN` 缺失 key 会在开发模式下记录 warning，并回退到与 provider override 合并后的英文 catalog；来自后端 snapshot、receipt、audit 与 config payload 的 `status`、`message`、标识符、target、timestamp 与 route path 保持原样，不参与翻译。
+
 ## Admin Frontend Delivery Flow
 
 `npm run build -> apps/admin-web/dist/index.html + hashed assets -> nautilus_trader/admin/static.resolve_admin_frontend_dir() 解析 env/package/repo bundle -> FastAPI GET / 与 GET /{frontend_path} 托管入口 HTML / 静态资产 -> 浏览器以同源方式访问 /api/admin/* 与 /ws/admin/events`

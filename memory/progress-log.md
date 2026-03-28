@@ -101,3 +101,11 @@
 - Merged PR `#48` to `main`, completing the Phase 4C backend-hosted delivery slice after the pre-commit and cross-platform static-hosting follow-up fixes landed.
 - Finalized umbrella issue `#12` in `/root/NautilusTrader/.worktrees/issue-12` by recording the shipped Phase 4 mainline: a single `Operations` + `Analysis` workbench, a backend-hosted admin-web bundle as the only delivery path, executable build/bundle-budget/Playwright release gates, and a deferred-only Tauri decision.
 - Re-verified the Phase 4 close-out branch with `pwsh -NoProfile -File scripts/check-governance.ps1`, `source /root/NautilusTrader/.venv/bin/activate && pytest tests/unit_tests/admin -q --confcutdir=tests/unit_tests/admin`, `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `cd apps/admin-web && npm run check:bundle`, `cd apps/admin-web && npx playwright test`, and `git diff --check`.
+
+## 2026-03-28
+
+- Created GitHub issue `#52` to track admin-web display-only i18n for English and Simplified Chinese on the mainline merge path.
+- Completed the admin-web i18n branch in `/root/NautilusTrader/.worktrees/admin-web-i18n-plan`, localizing page-owned shell and workbench copy while keeping backend payload values, IDs, statuses, targets, timestamps, and route paths untranslated.
+- Hardened the shared i18n provider so provider-scoped `en` overrides merge with the built-in English catalog and `zh-CN` misses fall back through that merged English baseline instead of the built-in Chinese catalog.
+- Added a direct regression test for the partial-English-override fallback path, reran local review twice with no findings, and captured the issue-scoped local pre-PR review artifacts for `#52`.
+- Re-verified the branch with `cd apps/admin-web && npm test -- --run`, `cd apps/admin-web && npm run build`, `bash scripts/check-governance.sh --skip-remote-checks`, and `git diff --check` before opening the PR to `main`.

@@ -142,6 +142,14 @@
   - 数据职责：浏览器侧 command receipt 事件总线；把 websocket `command.*` 事件分发给当前页面的 receipt 卡片与 command hook
 - `apps/admin-web/src/shared/query/query-client.ts`
   - 数据职责：浏览器侧 query key 与缓存入口；当前固定 `overview`、`nodes`、`strategies`、`adapters`、`audit`、`config`、`risk`、`diagnostics` 八组 `["admin", <resource>]` query key，并为 `orders`、`fills`、`positions`、`accounts`、`logs`、`backtests`、`reports` 定义带 `limit` 维度的 `["admin", <resource>, <limit>]` query key；`catalog` 与 `playback` 额外带 `limit/start/end` 维度，确保 bounded window 是 cache key 的一部分
+- `apps/admin-web/src/shared/i18n/messages/en.ts` / `zh-cn.ts`
+  - 数据职责：admin-web 浏览器拥有的 message catalog；承载 shell、navigation、page header、button、empty-state 与 warning copy，不承载 backend payload message、status、ID、target、timestamp 或 route path 数据
+- `SupportedLocale`
+  - 数据职责：admin-web display-only locale 枚举；当前固定为 `en | zh-CN`
+- `CatalogOverrides`
+  - 数据职责：provider/test 级 partial message catalog overlay；`en` overlay 与内置英文 catalog 合并后形成兜底基线，`zh-CN` overlay 只表达明确覆写的中文 copy
+- `LOCALE_STORAGE_KEY`
+  - 数据职责：浏览器本地 locale 持久化键；当前固定为 `nautilus-admin-locale`
 - `apps/admin-web/src/shared/workspaces/workspace-store.ts`
   - 数据职责：浏览器本地 workspace model；固定保存 active workbench、每个 workbench 的最近 route、recent route 列表，以及 per-route 的 layout/filter 偏好
 - `WorkspaceState`

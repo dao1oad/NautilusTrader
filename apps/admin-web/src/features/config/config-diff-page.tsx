@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminRuntime } from "../../app/admin-runtime";
 import { useWorkbenchShellMeta } from "../../app/workbench-shell-meta";
 import { getConfigDiffSnapshot } from "../../shared/api/admin-client";
+import { useI18n } from "../../shared/i18n/use-i18n";
 import { adminQueryKeys } from "../../shared/query/query-client";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
 import { PageState } from "../../shared/ui/page-state";
@@ -10,7 +11,6 @@ import { SectionPanel } from "../../shared/ui/section-panel";
 import { SignalPill } from "../../shared/ui/signal-pill";
 
 
-const CONFIG_DIFF_COPY = "Local control-plane guardrails, drift ledger, and recovery runbooks for operator verification.";
 const RUNBOOK_LIST_STYLE = {
   display: "grid",
   gap: "16px",
@@ -52,21 +52,23 @@ const RUNBOOK_STEPS_STYLE = {
   margin: 0,
   paddingLeft: "20px"
 } as const;
+type ConfigTranslator = ReturnType<typeof useI18n>["t"];
 
-function buildConfigStatusSummary(totalChecks: number, driftedChecks: number, runbookCount: number) {
+function buildConfigStatusSummary(t: ConfigTranslator, totalChecks: number, driftedChecks: number, runbookCount: number) {
   if (totalChecks === 0) {
-    return "Awaiting the latest control-plane guardrail projection.";
+    return t("pages.config.status.awaiting");
   }
 
   if (driftedChecks === 0) {
-    return `${totalChecks} guardrail checks in sync; ${runbookCount} recovery runbooks available.`;
+    return t("pages.config.status.inSync", { totalChecks, runbookCount });
   }
 
-  return `${driftedChecks} of ${totalChecks} guardrail checks drifted; ${runbookCount} recovery runbooks available.`;
+  return t("pages.config.status.drifted", { driftedChecks, totalChecks, runbookCount });
 }
 
 export function ConfigDiffPage() {
   const { connectionState, error: runtimeError } = useAdminRuntime();
+  const { t } = useI18n();
   const query = useQuery({
     queryKey: adminQueryKeys.config(),
     queryFn: getConfigDiffSnapshot
@@ -79,32 +81,34 @@ export function ConfigDiffPage() {
   const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
   const driftedChecks = snapshot?.items.filter((entry) => entry.status === "drifted").length ?? 0;
   const runbookCount = snapshot?.runbooks.length ?? 0;
+  const configDiffCopy = t("pages.config.copy");
+  const pageTitle = t("pages.config.title");
 
   useWorkbenchShellMeta({
     lastUpdated: snapshot?.generated_at ?? null,
-    pageTitle: "Config diff",
-    statusSummary: buildConfigStatusSummary(snapshot?.items.length ?? 0, driftedChecks, runbookCount),
-    workbenchCopy: CONFIG_DIFF_COPY
+    pageTitle,
+    statusSummary: buildConfigStatusSummary(t, snapshot?.items.length ?? 0, driftedChecks, runbookCount),
+    workbenchCopy: configDiffCopy
   });
 
   if (query.isLoading && !snapshot) {
-    return <PageState kind="loading" title="Config diff" description="Loading local control-plane guardrails." />;
+    return <PageState kind="loading" title={pageTitle} description={t("pages.config.pageState.loadingDescription")} />;
   }
 
   if (error && !snapshot) {
-    return <PageState kind="error" title="Config diff" description={error} />;
+    return <PageState kind="error" title={pageTitle} description={error} />;
   }
 
   if (!snapshot) {
-    return <PageState kind="loading" title="Config diff" description="Waiting for local control-plane settings." />;
+    return <PageState kind="loading" title={pageTitle} description={t("pages.config.pageState.waitingDescription")} />;
   }
 
   if (snapshot.items.length === 0) {
     return (
       <PageState
         kind="empty"
-        title="Config diff"
-        description="No control-plane config entries are currently projected."
+        title={pageTitle}
+        description={t("pages.config.pageState.emptyDescription")}
         meta={lastUpdated}
       />
     );
@@ -113,25 +117,29 @@ export function ConfigDiffPage() {
   return (
     <div className="resource-stack config-diff-stack">
       <SectionPanel
-        description={CONFIG_DIFF_COPY}
-        eyebrow="Guardrail drift ledger"
+        description={configDiffCopy}
+        eyebrow={t("pages.config.ledger.eyebrow")}
         meta={lastUpdated}
         signal={
           <SignalPill
-            detail={driftedChecks > 0 ? `${driftedChecks} drifted` : "in sync"}
-            label={`${snapshot.items.length} checks`}
+            detail={
+              driftedChecks > 0
+                ? t("pages.config.ledger.signalDrifted", { count: driftedChecks })
+                : t("pages.config.ledger.signalInSync")
+            }
+            label={t("pages.config.ledger.signalChecks", { count: snapshot.items.length })}
             tone={driftedChecks > 0 ? "warning" : "positive"}
           />
         }
-        title="Config diff"
+        title={pageTitle}
       >
-        <table aria-label="Config diff" className="resource-table config-diff-table">
+        <table aria-label={t("pages.config.ledger.tableLabel")} className="resource-table config-diff-table">
           <thead>
             <tr>
-              <th scope="col">Key</th>
-              <th scope="col">Desired</th>
-              <th scope="col">Actual</th>
-              <th scope="col">Status</th>
+              <th scope="col">{t("pages.config.ledger.columns.key")}</th>
+              <th scope="col">{t("pages.config.ledger.columns.desired")}</th>
+              <th scope="col">{t("pages.config.ledger.columns.actual")}</th>
+              <th scope="col">{t("pages.config.ledger.columns.status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -151,10 +159,10 @@ export function ConfigDiffPage() {
       </SectionPanel>
 
       <SectionPanel
-        description="Runbooks remain navigation and verification aids for local recovery; they do not execute changes from this page."
-        eyebrow="Recovery guidance"
-        signal={<SignalPill label={`${runbookCount} runbooks`} tone="info" />}
-        title="Recovery runbooks"
+        description={t("pages.config.runbooks.description")}
+        eyebrow={t("pages.config.runbooks.eyebrow")}
+        signal={<SignalPill label={t("pages.config.runbooks.signal", { count: runbookCount })} tone="info" />}
+        title={t("pages.config.runbooks.title")}
       >
         <ul style={RUNBOOK_LIST_STYLE}>
           {snapshot.runbooks.map((runbook) => (

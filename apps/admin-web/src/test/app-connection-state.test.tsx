@@ -146,6 +146,37 @@ test("clears transient server errors once a fresh overview snapshot arrives", as
 });
 
 
+test("renders disconnected connection chrome in Simplified Chinese", async () => {
+  vi.doMock("../shared/api/admin-client", () => ({
+    getOverviewSnapshot: vi.fn(async () => {
+      throw new Error("Transient overview failure");
+    })
+  }));
+
+  vi.doMock("../shared/realtime/admin-events", () => ({
+    subscribeToAdminEvents: vi.fn(({ onStateChange }: { onStateChange: (state: "disconnected") => void }) => {
+      onStateChange("disconnected");
+      return () => {};
+    })
+  }));
+
+  const { App } = await import("../app");
+  const { I18nProvider } = await import("../shared/i18n/i18n-provider");
+
+  render(
+    <I18nProvider navigatorLanguages={["zh-CN"]}>
+      <App />
+    </I18nProvider>
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText("连接已断开")).toBeInTheDocument();
+  });
+
+  expect(screen.queryByText("Link offline")).not.toBeInTheDocument();
+});
+
+
 test("keeps transient server errors visible until an invalidated overview refetch succeeds", async () => {
   const deferred = createDeferred<OverviewSnapshot>();
   let invalidateOverview: ((topic: "overview") => void) | undefined;
