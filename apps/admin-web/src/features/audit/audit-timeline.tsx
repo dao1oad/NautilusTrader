@@ -7,7 +7,7 @@ import { adminQueryKeys } from "../../shared/query/query-client";
 import { LastUpdatedBadge } from "../../shared/ui/last-updated-badge";
 import { PageState } from "../../shared/ui/page-state";
 import { SectionPanel } from "../../shared/ui/section-panel";
-import { SignalPill } from "../../shared/ui/signal-pill";
+import { SignalPill, type SignalTone } from "../../shared/ui/signal-pill";
 
 
 const AUDIT_TIMELINE_COPY =
@@ -95,9 +95,38 @@ function formatTerminalTimestamp(timestamp: string) {
   return `${date.toISOString().replace("T", " ").slice(0, 19)} UTC`;
 }
 
-function buildAuditStatusSummary(receiptCount: number, failureCount: number) {
+function renderResourceErrors(errors: Array<{ section: string; message: string }>) {
+  if (errors.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className="resource-errors">
+      {errors.map((resourceError) => (
+        <li key={`${resourceError.section}:${resourceError.message}`}>
+          <strong>{resourceError.section}</strong>
+          {`: ${resourceError.message}`}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function buildAuditStatusSummary(receiptCount: number, failureCount: number, partial: boolean, errorCount: number) {
   if (receiptCount === 0) {
     return "Awaiting the first low-risk control receipt.";
+  }
+
+  if (partial || errorCount > 0) {
+    const degradationSummary = partial
+      ? "Partial audit projection."
+      : `${errorCount} audit source ${errorCount === 1 ? "error" : "errors"}.`;
+
+    if (failureCount === 0) {
+      return `${degradationSummary} ${receiptCount} receipts currently visible.`;
+    }
+
+    return `${degradationSummary} ${failureCount} receipts require recovery guidance.`;
   }
 
   if (failureCount === 0) {
@@ -105,6 +134,30 @@ function buildAuditStatusSummary(receiptCount: number, failureCount: number) {
   }
 
   return `${receiptCount} receipts recorded; ${failureCount} require recovery guidance.`;
+}
+
+function buildAuditSignalDetail(partial: boolean, errorCount: number, failureCount: number) {
+  if (partial) {
+    return "partial snapshot";
+  }
+
+  if (errorCount > 0) {
+    return `${errorCount} source ${errorCount === 1 ? "error" : "errors"}`;
+  }
+
+  if (failureCount > 0) {
+    return `${failureCount} flagged`;
+  }
+
+  return "all current";
+}
+
+function buildAuditSignalTone(partial: boolean, errorCount: number, failureCount: number): SignalTone {
+  if (partial || errorCount > 0 || failureCount > 0) {
+    return "warning";
+  }
+
+  return "info";
 }
 
 export function AuditTimeline() {
@@ -121,11 +174,12 @@ export function AuditTimeline() {
   const lastUpdated = snapshot ? <LastUpdatedBadge stale={isStale} timestamp={snapshot.generated_at} /> : null;
   const receiptCount = snapshot?.items.length ?? 0;
   const failureCount = snapshot?.items.filter((record) => record.failure != null).length ?? 0;
+  const sectionErrors = snapshot?.errors ?? [];
 
   useWorkbenchShellMeta({
     lastUpdated: snapshot?.generated_at ?? null,
     pageTitle: "Audit timeline",
-    statusSummary: buildAuditStatusSummary(receiptCount, failureCount),
+    statusSummary: buildAuditStatusSummary(receiptCount, failureCount, snapshot?.partial ?? false, sectionErrors.length),
     workbenchCopy: AUDIT_TIMELINE_COPY
   });
 
@@ -159,13 +213,16 @@ export function AuditTimeline() {
       meta={lastUpdated}
       signal={
         <SignalPill
-          detail={failureCount > 0 ? `${failureCount} flagged` : "all current"}
+          detail={buildAuditSignalDetail(snapshot.partial, sectionErrors.length, failureCount)}
           label={`${receiptCount} receipts`}
-          tone={failureCount > 0 ? "warning" : "info"}
+          tone={buildAuditSignalTone(snapshot.partial, sectionErrors.length, failureCount)}
         />
       }
       title="Audit timeline"
     >
+      {snapshot.partial ? <p className="resource-alert">Showing the latest partial audit snapshot.</p> : null}
+      {hasCachedError ? <p className="resource-alert">{error}</p> : null}
+      {renderResourceErrors(sectionErrors)}
       <ol style={RECEIPT_LIST_STYLE}>
         {snapshot.items.map((record) => (
           <li key={`${record.command_id}:${record.sequence_id}`} style={RECEIPT_ITEM_STYLE}>
