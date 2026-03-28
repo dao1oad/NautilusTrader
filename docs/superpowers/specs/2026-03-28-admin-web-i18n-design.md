@@ -88,9 +88,11 @@ The first phase should optimize for:
 
 On app startup, resolve the active locale in this order:
 
-1. previously persisted locale from browser storage
+1. previously persisted locale from browser storage, if it is valid
 2. browser language preference
 3. fallback locale `en`
+
+If browser storage contains an unsupported locale value, treat it as absent for resolution purposes, continue to browser-language detection, and then repair storage by writing back the resolved supported locale.
 
 ### Browser Language Mapping
 
@@ -240,7 +242,7 @@ Do not introduce ICU message formatting, plural rules, or a broader localization
 
 ### Invalid Persisted Locale
 
-If browser storage contains an unsupported locale, normalize back to `en`.
+If browser storage contains an unsupported locale, do not use it as the active locale. Treat it as missing, continue normal resolution through browser-language detection and fallback, then overwrite storage with the resolved supported locale.
 
 ### Backend and Runtime Errors
 
@@ -310,11 +312,10 @@ The feature does not expand backend APIs, but governance still requires implemen
 Recommended implementation order:
 
 1. add the shared i18n module and provider wiring
-2. localize shell chrome and language-switcher behavior
+2. localize shell chrome, language-switcher behavior, and recent-route label persistence together
 3. localize shared state and list-surface components
 4. localize page-level feature copy
-5. update persistence logic for recent-route labels
-6. update tests and truth docs
+5. update tests and truth docs
 
 This order keeps risk low and exposes regression points early.
 
