@@ -49,7 +49,12 @@ test("resolves the initial locale from persisted or navigator languages", () => 
   expect(resolveInitialLocale({ persistedLocale: "zh-CN", navigatorLanguages: ["en-US"] })).toBe("zh-CN");
   expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh"] })).toBe("zh-CN");
   expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh-CN"] })).toBe("zh-CN");
+  expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh-Hans"] })).toBe("zh-CN");
+  expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh-TW"] })).toBe("en");
+  expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh-HK"] })).toBe("en");
+  expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["zh-Hant"] })).toBe("en");
   expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["fr-FR"] })).toBe("en");
+  expect(resolveInitialLocale({ persistedLocale: null, navigatorLanguages: ["fr-FR", "zh-CN"] })).toBe("en");
   expect(resolveInitialLocale({ persistedLocale: "broken", navigatorLanguages: ["zh-Hans"] })).toBe("zh-CN");
 });
 

@@ -18,15 +18,28 @@ export function normalizeLocale(locale: string | null | undefined): SupportedLoc
   }
 
   const normalizedLocale = locale.trim().toLowerCase();
-  if (normalizedLocale.startsWith("zh")) {
+  if (normalizedLocale === "zh-cn") {
     return "zh-CN";
   }
 
-  if (normalizedLocale.startsWith("en")) {
+  if (normalizedLocale === "en") {
     return "en";
   }
 
   return null;
+}
+
+function resolveNavigatorLocale(locale: string | null | undefined): SupportedLocale {
+  if (!locale) {
+    return DEFAULT_LOCALE;
+  }
+
+  const normalizedLocale = locale.trim().toLowerCase();
+  if (normalizedLocale === "zh" || normalizedLocale === "zh-cn" || normalizedLocale === "zh-hans") {
+    return "zh-CN";
+  }
+
+  return DEFAULT_LOCALE;
 }
 
 export function resolveInitialLocale({ persistedLocale, navigatorLanguages }: ResolveInitialLocaleOptions): SupportedLocale {
@@ -35,14 +48,7 @@ export function resolveInitialLocale({ persistedLocale, navigatorLanguages }: Re
     return normalizedPersistedLocale;
   }
 
-  for (const navigatorLanguage of navigatorLanguages) {
-    const normalizedNavigatorLocale = normalizeLocale(navigatorLanguage);
-    if (normalizedNavigatorLocale) {
-      return normalizedNavigatorLocale;
-    }
-  }
-
-  return DEFAULT_LOCALE;
+  return resolveNavigatorLocale(navigatorLanguages[0] ?? null);
 }
 
 export function getNavigatorLanguages(

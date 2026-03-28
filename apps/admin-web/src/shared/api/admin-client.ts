@@ -111,8 +111,14 @@ function readResponseMessage(payload: unknown): string | null {
     return null;
   }
 
-  const message = (payload as { message?: unknown }).message;
-  return typeof message === "string" && message.trim().length > 0 ? message.trim() : null;
+  const record = payload as { detail?: unknown; message?: unknown };
+  const detail = typeof record.detail === "string" && record.detail.trim().length > 0 ? record.detail.trim() : null;
+  if (detail) {
+    return detail;
+  }
+
+  const message = typeof record.message === "string" && record.message.trim().length > 0 ? record.message.trim() : null;
+  return message;
 }
 
 

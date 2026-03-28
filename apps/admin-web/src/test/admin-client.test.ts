@@ -62,3 +62,20 @@ test("preserves raw plain-text backend error bodies before falling back to the l
 
   await expect(getOverviewSnapshot()).rejects.toThrow("Upstream proxy exploded");
 });
+
+
+test("preserves FastAPI detail messages instead of surfacing the raw JSON blob", async () => {
+  setActiveLocale("zh-CN");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: async () => '{"detail":"Not found"}'
+    })
+  );
+
+  await expect(getOverviewSnapshot()).rejects.toMatchObject({
+    message: "Not found"
+  });
+});
